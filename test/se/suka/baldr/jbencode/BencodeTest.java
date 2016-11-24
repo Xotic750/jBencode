@@ -237,7 +237,7 @@ public final class BencodeTest {
      */
     @Test
     public void testDecodeListIntStr() {
-        AtomList l = Bencode.decodeList("li5e5:Helloe");
+        Atom l = Bencode.decodeList("li5e5:Helloe");
         AtomList expected = new AtomList();
         expected.add(new AtomInteger(5));
         expected.add(new AtomString("Hello"));
@@ -249,7 +249,7 @@ public final class BencodeTest {
      */
     @Test
     public void testDecodeListIntStrLst() {
-        AtomList l = Bencode.decodeList("lli5e5:Helloeli50000000e11:Hello Worldee");
+        Atom l = Bencode.decodeList("lli5e5:Helloeli50000000e11:Hello Worldee");
         AtomList expected = new AtomList();
         AtomList il = new AtomList();
         il.add(new AtomInteger(5));

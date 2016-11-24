@@ -76,7 +76,7 @@ public final class AtomIntegerTest {
      */
     @Test
     public void testAtomIntegerConstructorEmpty() {
-        AtomInteger atomInteger = new AtomInteger();
+        Atom atomInteger = new AtomInteger();
         assertEquals(new AtomInteger(), atomInteger);
     }
 
@@ -85,7 +85,7 @@ public final class AtomIntegerTest {
      */
     @Test
     public void testAtomIntegerConstructorEmptyBLength() {
-        AtomInteger ai = new AtomInteger();
+        Atom ai = new AtomInteger();
         assertEquals(ai.bLength(), 3);
     }
 
@@ -94,7 +94,7 @@ public final class AtomIntegerTest {
      */
     @Test
     public void testAtomIntegerConstructorEmptyEncode() {
-        AtomInteger ai = new AtomInteger();
+        Atom ai = new AtomInteger();
         assertEquals(ai.encode(), "i0e");
     }
 
@@ -103,7 +103,7 @@ public final class AtomIntegerTest {
      */
     @Test
     public void testAtomIntegerConstructorEmptyLength() {
-        AtomInteger ai = new AtomInteger();
+        Atom ai = new AtomInteger();
         assertEquals(ai.toString().length(), 1);
     }
 
@@ -112,7 +112,7 @@ public final class AtomIntegerTest {
      */
     @Test
     public void testAtomIntegerConstructorEmptyString() {
-        AtomInteger ai = new AtomInteger();
+        Atom ai = new AtomInteger();
         assertEquals(ai.toString(), "0");
     }
 
@@ -131,7 +131,7 @@ public final class AtomIntegerTest {
     @Test
     public void testAtomIntegerConstructorNegativeAtom() {
         AtomInteger ai = new AtomInteger(-1);
-        AtomInteger atomInteger = new AtomInteger(ai);
+        Atom atomInteger = new AtomInteger(ai);
         assertEquals(ai, atomInteger);
     }
 
@@ -141,7 +141,7 @@ public final class AtomIntegerTest {
     @Test
     public void testAtomIntegerConstructorNegativeAtomBLength() {
         AtomInteger ai = new AtomInteger(-1);
-        AtomInteger ai1 = new AtomInteger(ai);
+        Atom ai1 = new AtomInteger(ai);
         assertEquals(ai1.bLength(), 4);
     }
 
@@ -151,7 +151,7 @@ public final class AtomIntegerTest {
     @Test
     public void testAtomIntegerConstructorNegativeAtomEncode() {
         AtomInteger ai = new AtomInteger(-1);
-        AtomInteger ai1 = new AtomInteger(ai);
+        Atom ai1 = new AtomInteger(ai);
         assertEquals(ai1.encode(), "i-1e");
     }
 
@@ -161,7 +161,7 @@ public final class AtomIntegerTest {
     @Test
     public void testAtomIntegerConstructorNegativeAtomLength() {
         AtomInteger ai = new AtomInteger(-1);
-        AtomInteger ai1 = new AtomInteger(ai);
+        Atom ai1 = new AtomInteger(ai);
         assertEquals(ai1.toString().length(), 2);
     }
 
@@ -180,7 +180,7 @@ public final class AtomIntegerTest {
     @Test
     public void testAtomIntegerConstructorNegativeAtomString() {
         AtomInteger ai = new AtomInteger(-1);
-        AtomInteger ai1 = new AtomInteger(ai);
+        Atom ai1 = new AtomInteger(ai);
         assertEquals(ai1.toString(), "-1");
     }
 
@@ -199,8 +199,8 @@ public final class AtomIntegerTest {
      */
     @Test
     public void testAtomIntegerConstructorNegativeEquals() {
-        AtomInteger ai = new AtomInteger(-1);
-        AtomInteger ai1 = new AtomInteger(-1);
+        Atom ai = new AtomInteger(-1);
+        Atom ai1 = new AtomInteger(-1);
         assertEquals(ai, ai1);
     }
 
@@ -209,7 +209,7 @@ public final class AtomIntegerTest {
      */
     @Test
     public void testAtomIntegerConstructorNegativeInt() {
-        AtomInteger atomInteger = new AtomInteger(-1);
+        Atom atomInteger = new AtomInteger(-1);
         assertEquals(new AtomInteger(-1), atomInteger);
     }
 
@@ -218,7 +218,7 @@ public final class AtomIntegerTest {
      */
     @Test
     public void testAtomIntegerConstructorNegativeIntBLength() {
-        AtomInteger ai = new AtomInteger(-1);
+        Atom ai = new AtomInteger(-1);
         assertEquals(ai.bLength(), 4);
     }
 
@@ -227,7 +227,7 @@ public final class AtomIntegerTest {
      */
     @Test
     public void testAtomIntegerConstructorNegativeIntEncode() {
-        AtomInteger ai = new AtomInteger(-1);
+        Atom ai = new AtomInteger(-1);
         assertEquals(ai.encode(), "i-1e");
     }
 
@@ -236,7 +236,7 @@ public final class AtomIntegerTest {
      */
     @Test
     public void testAtomIntegerConstructorNegativeIntLength() {
-        AtomInteger ai = new AtomInteger(-1);
+        Atom ai = new AtomInteger(-1);
         assertEquals(ai.toString().length(), 2);
     }
 
@@ -245,7 +245,7 @@ public final class AtomIntegerTest {
      */
     @Test
     public void testAtomIntegerConstructorNegativeIntString() {
-        AtomInteger ai = new AtomInteger(-1);
+        Atom ai = new AtomInteger(-1);
         assertEquals(ai.toString(), "-1");
     }
 
@@ -263,8 +263,8 @@ public final class AtomIntegerTest {
      */
     @Test
     public void testAtomIntegerConstructorNegativeNotEquals() {
-        AtomInteger ai = new AtomInteger(-1);
-        AtomInteger ai1 = new AtomInteger(-2);
+        Atom ai = new AtomInteger(-1);
+        Atom ai1 = new AtomInteger(-2);
         assertNotEquals(ai, ai1);
     }
 
@@ -274,7 +274,7 @@ public final class AtomIntegerTest {
     @Test
     public void testAtomIntegerConstructorPositiveAtom() {
         AtomInteger ai = new AtomInteger(1);
-        AtomInteger atomInteger = new AtomInteger(ai);
+        Atom atomInteger = new AtomInteger(ai);
         assertEquals(ai, atomInteger);
     }
 
@@ -284,7 +284,7 @@ public final class AtomIntegerTest {
     @Test
     public void testAtomIntegerConstructorPositiveAtomBLength() {
         AtomInteger ai = new AtomInteger(1);
-        AtomInteger ai1 = new AtomInteger(ai);
+        Atom ai1 = new AtomInteger(ai);
         assertEquals(ai1.bLength(), 3);
     }
 
@@ -294,7 +294,7 @@ public final class AtomIntegerTest {
     @Test
     public void testAtomIntegerConstructorPositiveAtomEncode() {
         AtomInteger ai = new AtomInteger(1);
-        AtomInteger ai1 = new AtomInteger(ai);
+        Atom ai1 = new AtomInteger(ai);
         assertEquals(ai1.encode(), "i1e");
     }
 
@@ -304,7 +304,7 @@ public final class AtomIntegerTest {
     @Test
     public void testAtomIntegerConstructorPositiveAtomLength() {
         AtomInteger ai = new AtomInteger(1);
-        AtomInteger ai1 = new AtomInteger(ai);
+        Atom ai1 = new AtomInteger(ai);
         assertEquals(ai1.toString().length(), 1);
     }
 
@@ -323,7 +323,7 @@ public final class AtomIntegerTest {
     @Test
     public void testAtomIntegerConstructorPositiveAtomString() {
         AtomInteger ai = new AtomInteger(1);
-        AtomInteger ai1 = new AtomInteger(ai);
+        Atom ai1 = new AtomInteger(ai);
         assertEquals(ai1.toString(), "1");
     }
 
@@ -342,8 +342,8 @@ public final class AtomIntegerTest {
      */
     @Test
     public void testAtomIntegerConstructorPositiveEquals() {
-        AtomInteger ai = new AtomInteger(1);
-        AtomInteger ai1 = new AtomInteger(1);
+        Atom ai = new AtomInteger(1);
+        Atom ai1 = new AtomInteger(1);
         assertEquals(ai, ai1);
     }
 
@@ -352,7 +352,7 @@ public final class AtomIntegerTest {
      */
     @Test
     public void testAtomIntegerConstructorPositiveInt() {
-        AtomInteger atomInteger = new AtomInteger(1);
+        Atom atomInteger = new AtomInteger(1);
         assertEquals(new AtomInteger(1), atomInteger);
     }
 
@@ -361,7 +361,7 @@ public final class AtomIntegerTest {
      */
     @Test
     public void testAtomIntegerConstructorPositiveIntBLength() {
-        AtomInteger ai = new AtomInteger(1);
+        Atom ai = new AtomInteger(1);
         assertEquals(ai.bLength(), 3);
     }
 
@@ -370,7 +370,7 @@ public final class AtomIntegerTest {
      */
     @Test
     public void testAtomIntegerConstructorPositiveIntEncode() {
-        AtomInteger ai = new AtomInteger(1);
+        Atom ai = new AtomInteger(1);
         assertEquals(ai.encode(), "i1e");
     }
 
@@ -379,7 +379,7 @@ public final class AtomIntegerTest {
      */
     @Test
     public void testAtomIntegerConstructorPositiveIntLength() {
-        AtomInteger ai = new AtomInteger(1);
+        Atom ai = new AtomInteger(1);
         assertEquals(ai.toString().length(), 1);
     }
 
@@ -397,7 +397,7 @@ public final class AtomIntegerTest {
      */
     @Test
     public void testAtomIntegerConstructorPositiveIntString() {
-        AtomInteger ai = new AtomInteger(1);
+        Atom ai = new AtomInteger(1);
         assertEquals(ai.toString(), "1");
     }
 
@@ -415,8 +415,8 @@ public final class AtomIntegerTest {
      */
     @Test
     public void testAtomIntegerConstructorPositiveNotEquals() {
-        AtomInteger ai = new AtomInteger(1);
-        AtomInteger ai1 = new AtomInteger(2);
+        Atom ai = new AtomInteger(1);
+        Atom ai1 = new AtomInteger(2);
         assertNotEquals(ai, ai1);
     }
 
