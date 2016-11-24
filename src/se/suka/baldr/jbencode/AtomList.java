@@ -1,5 +1,3 @@
-package se.suka.baldr.jbencode;
-
 /*
  * The MIT License
  *
@@ -23,6 +21,9 @@ package se.suka.baldr.jbencode;
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+package se.suka.baldr.jbencode;
+
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -41,40 +42,45 @@ import java.util.Objects;
  * @author Graham Fairweather
  * @see <a href="https://en.wikipedia.org/wiki/Bencode">Bencode</a>
  */
-public final class AtomList extends Atom<ArrayList<Atom<?>>> implements List<Atom<?>> {
+public final class AtomList extends Atom implements List<Atom>, Serializable {
+
+    private final List<Atom> value;
 
     /**
      *
      */
     public AtomList() {
-        this(new ArrayList<>());
+        this(10);
+    }
+
+    /**
+     *
+     * @param initialCapacity
+     */
+    public AtomList(final int initialCapacity) {
+        value = new ArrayList<>(initialCapacity);
     }
 
     /**
      *
      * @param atomList
      */
-    public AtomList(AtomList atomList) {
+    public AtomList(final AtomList atomList) {
         this();
-        Objects.requireNonNull(atomList);
-        atomList.forEach((atom) -> {
-            Class<?> atomClass = atom.getClass();
-            if (atomClass.equals(AtomInteger.class)) {
+        atomList.stream().forEach(atom -> {
+            final Class<?> atomClass = atom.getClass();
+            if (atom instanceof AtomInteger) {
                 add(new AtomInteger((AtomInteger) atom));
-            } else if (atomClass.equals(AtomString.class)) {
+            } else if (atom instanceof AtomString) {
                 add(new AtomString((AtomString) atom));
-            } else if (atomClass.equals(AtomList.class)) {
+            } else if (atom instanceof AtomList) {
                 add(new AtomList((AtomList) atom));
-            } else if (atomClass.equals(AtomDictionary.class)) {
+            } else if (atom instanceof AtomDictionary) {
                 add(new AtomDictionary((AtomDictionary) atom));
             } else {
                 System.err.println("AtomList: unknown Atom type");
             }
         });
-    }
-
-    private AtomList(ArrayList<Atom<?>> value) {
-        super(value);
     }
 
     /**
@@ -100,9 +106,8 @@ public final class AtomList extends Atom<ArrayList<Atom<?>>> implements List<Ato
      * prevents it from being added to this list
      */
     @Override
-    public boolean add(Atom<?> atom) {
-        Objects.requireNonNull(atom);
-        return getValue().add(atom);
+    public final boolean add(final Atom atom) {
+        return value.add(Objects.requireNonNull(atom));
     }
 
     /**
@@ -125,10 +130,8 @@ public final class AtomList extends Atom<ArrayList<Atom<?>>> implements List<Ato
      * &lt; 0 || index &gt; size()</tt>)
      */
     @Override
-    public void add(int index, Atom<?> atom) {
-        Objects.requireNonNull(atom);
-        rangeCheck(index, size());
-        getValue().add(index, atom);
+    public final void add(final int index, final Atom atom) {
+        value.add(index, Objects.requireNonNull(atom));
     }
 
     /**
@@ -153,15 +156,8 @@ public final class AtomList extends Atom<ArrayList<Atom<?>>> implements List<Ato
      * @see #add(Object)
      */
     @Override
-    public boolean addAll(Collection<? extends Atom<?>> c) {
-        Objects.requireNonNull(c);
-        final ArrayList<Atom<?>> LIST = getValue();
-        c.stream().map((final Atom<?> ATOM) -> {
-            Objects.requireNonNull(ATOM);
-            return ATOM;
-        }).forEachOrdered((final Atom<?> ATOM) -> {
-            LIST.add(ATOM);
-        });
+    public final boolean addAll(final Collection<? extends Atom> c) {
+        c.stream().forEachOrdered(atom -> add(atom));
         return !c.isEmpty();
     }
 
@@ -192,13 +188,9 @@ public final class AtomList extends Atom<ArrayList<Atom<?>>> implements List<Ato
      * &lt; 0 || index &gt; size()</tt>)
      */
     @Override
-    public boolean addAll(int index, Collection<? extends Atom<?>> c) {
-        Objects.requireNonNull(c);
-        final int SIZE = size();
-        rangeCheck(index, SIZE);
-        final ArrayList<Atom<?>> LIST = getValue();
-        for (final Atom<?> ATOM : c) {
-            LIST.add(rangeCheck(index++, SIZE), Objects.requireNonNull(ATOM));
+    public final boolean addAll(int index, final Collection<? extends Atom> c) {
+        for (Atom atom : c) {
+            add(index++, atom);
         }
         return !c.isEmpty();
     }
@@ -208,8 +200,8 @@ public final class AtomList extends Atom<ArrayList<Atom<?>>> implements List<Ato
      * @return The length of the encoded string when Bencoded.
      */
     @Override
-    public int bLength() {
-        return getValue().stream().map((final Atom<?> ATOM) -> ATOM.bLength()).reduce(2, Integer::sum);
+    public final int bLength() {
+        return value.stream().map(atom -> atom.bLength()).reduce(2, Integer::sum);
     }
 
     /**
@@ -220,8 +212,8 @@ public final class AtomList extends Atom<ArrayList<Atom<?>>> implements List<Ato
      * not supported by this list
      */
     @Override
-    public void clear() {
-        getValue().clear();
+    public final void clear() {
+        value.clear();
     }
 
     /**
@@ -230,7 +222,6 @@ public final class AtomList extends Atom<ArrayList<Atom<?>>> implements List<Ato
      * least one element <tt>e</tt> such that
      * <tt>(o==null&nbsp;?&nbsp;e==null&nbsp;:&nbsp;o.equals(e))</tt>.
      *
-     * @param atom element whose presence in this list is to be tested
      * @return <tt>true</tt> if this list contains the specified element
      * @throws ClassCastException if the type of the specified element is
      * incompatible with this list
@@ -239,16 +230,9 @@ public final class AtomList extends Atom<ArrayList<Atom<?>>> implements List<Ato
      * list does not permit null elements
      * (<a href="Collection.html#optional-restrictions">optional</a>)
      */
-    public boolean contains(Atom<?> atom) {
-        Objects.requireNonNull(atom);
-        return getValue().contains(atom);
-    }
-
     @Override
-    public boolean contains(Object o) {
-        Objects.requireNonNull(o);
-        atomCheck(o);
-        return contains((Atom<?>) o);
+    public final boolean contains(final Object o) {
+        return value.contains(o);
     }
 
     /**
@@ -268,8 +252,8 @@ public final class AtomList extends Atom<ArrayList<Atom<?>>> implements List<Ato
      * @see #contains(Object)
      */
     @Override
-    public boolean containsAll(Collection<?> c) {
-        return getValue().containsAll(c);
+    public final boolean containsAll(final Collection<?> c) {
+        return value.containsAll(c);
     }
 
     /**
@@ -277,11 +261,9 @@ public final class AtomList extends Atom<ArrayList<Atom<?>>> implements List<Ato
      * @return
      */
     @Override
-    public String encode() {
-        StringBuilder str = new StringBuilder("l");
-        getValue().stream().forEach((final Atom<?> ATOM) -> {
-            str.append(ATOM.encode());
-        });
+    public final String encode() {
+        final StringBuilder str = new StringBuilder("l");
+        value.stream().forEach(atom -> str.append(atom.encode()));
         return str.append("e").toString();
     }
 
@@ -294,9 +276,8 @@ public final class AtomList extends Atom<ArrayList<Atom<?>>> implements List<Ato
      * &lt; 0 || index &gt;= size()</tt>)
      */
     @Override
-    public Atom<?> get(int index) {
-        rangeCheck(index, size());
-        return getValue().get(index);
+    public final Atom get(final int index) {
+        return value.get(index);
     }
 
     /**
@@ -306,7 +287,7 @@ public final class AtomList extends Atom<ArrayList<Atom<?>>> implements List<Ato
      * <tt>(o==null&nbsp;?&nbsp;get(i)==null&nbsp;:&nbsp;o.equals(get(i)))</tt>,
      * or -1 if there is no such index.
      *
-     * @param atom element to search for
+     * @param o element to search for
      * @return the index of the first occurrence of the specified element in
      * this list, or -1 if this list does not contain the element
      * @throws ClassCastException if the type of the specified element is
@@ -316,16 +297,9 @@ public final class AtomList extends Atom<ArrayList<Atom<?>>> implements List<Ato
      * list does not permit null elements
      * (<a href="Collection.html#optional-restrictions">optional</a>)
      */
-    public int indexOf(Atom<?> atom) {
-        Objects.requireNonNull(atom);
-        return getValue().indexOf(atom);
-    }
-
     @Override
-    public int indexOf(Object o) {
-        Objects.requireNonNull(o);
-        atomCheck(o);
-        return indexOf((Atom<?>) o);
+    public final int indexOf(final Object o) {
+        return value.indexOf(o);
     }
 
     /**
@@ -334,8 +308,8 @@ public final class AtomList extends Atom<ArrayList<Atom<?>>> implements List<Ato
      * @return <tt>true</tt> if this list contains no elements
      */
     @Override
-    public boolean isEmpty() {
-        return getValue().isEmpty();
+    public final boolean isEmpty() {
+        return value.isEmpty();
     }
 
     /**
@@ -344,8 +318,8 @@ public final class AtomList extends Atom<ArrayList<Atom<?>>> implements List<Ato
      * @return an iterator over the elements in this list in proper sequence
      */
     @Override
-    public Iterator<Atom<?>> iterator() {
-        return getValue().iterator();
+    public final Iterator<Atom> iterator() {
+        return value.iterator();
     }
 
     /**
@@ -355,7 +329,7 @@ public final class AtomList extends Atom<ArrayList<Atom<?>>> implements List<Ato
      * <tt>(o==null&nbsp;?&nbsp;get(i)==null&nbsp;:&nbsp;o.equals(get(i)))</tt>,
      * or -1 if there is no such index.
      *
-     * @param atom element to search for
+     * @param o element to search for
      * @return the index of the last occurrence of the specified element in this
      * list, or -1 if this list does not contain the element
      * @throws ClassCastException if the type of the specified element is
@@ -365,16 +339,9 @@ public final class AtomList extends Atom<ArrayList<Atom<?>>> implements List<Ato
      * list does not permit null elements
      * (<a href="Collection.html#optional-restrictions">optional</a>)
      */
-    public int lastIndexOf(Atom<?> atom) {
-        Objects.requireNonNull(atom);
-        return getValue().lastIndexOf(atom);
-    }
-
     @Override
-    public int lastIndexOf(Object o) {
-        Objects.requireNonNull(o);
-        atomCheck(o);
-        return lastIndexOf((Atom<?>) o);
+    public final int lastIndexOf(final Object o) {
+        return value.lastIndexOf(o);
     }
 
     /**
@@ -385,8 +352,8 @@ public final class AtomList extends Atom<ArrayList<Atom<?>>> implements List<Ato
      * sequence)
      */
     @Override
-    public ListIterator<Atom<?>> listIterator() {
-        return getValue().listIterator();
+    public final ListIterator<Atom> listIterator() {
+        return value.listIterator();
     }
 
     /**
@@ -405,31 +372,29 @@ public final class AtomList extends Atom<ArrayList<Atom<?>>> implements List<Ato
      * ({@code index < 0 || index > size()})
      */
     @Override
-    public ListIterator<Atom<?>> listIterator(int index) {
-        rangeCheck(index, size());
-        return getValue().listIterator(index);
+    public final ListIterator<Atom> listIterator(final int index) {
+        return value.listIterator(index);
     }
 
     /**
      *
      */
-    public void randomise() {
-        Collections.shuffle(getValue());
+    public final void randomise() {
+        Collections.shuffle(value);
     }
 
     /**
      *
-     * @param HOW_MANY
+     * @param howMany
      * @return
      */
-    public AtomList getRandomSlice(final int HOW_MANY) {
-        int index = Utils.clampInt(HOW_MANY, 0, getValue().size());
-        final ArrayList<Atom<?>> LIST = getValue();
-        final AtomList NEW_LIST = new AtomList();
+    public final AtomList getRandomSlice(final int howMany) {
+        int index = Utils.clampInt(howMany, 0, value.size());
+        final AtomList slice = new AtomList(index);
         while (index-- > 0) {
-            NEW_LIST.add(LIST.get(index));
+            slice.add(value.get(index));
         }
-        return NEW_LIST;
+        return slice;
     }
 
     /**
@@ -445,9 +410,8 @@ public final class AtomList extends Atom<ArrayList<Atom<?>>> implements List<Ato
      * &lt; 0 || index &gt;= size()</tt>)
      */
     @Override
-    public Atom<?> remove(int index) {
-        rangeCheck(index, size());
-        return getValue().remove(index);
+    public final Atom remove(final int index) {
+        return value.remove(index);
     }
 
     /**
@@ -460,7 +424,6 @@ public final class AtomList extends Atom<ArrayList<Atom<?>>> implements List<Ato
      * the specified element (or equivalently, if this list changed as a result
      * of the call).
      *
-     * @param atom element to be removed from this list, if present
      * @return <tt>true</tt> if this list contained the specified element
      * @throws ClassCastException if the type of the specified element is
      * incompatible with this list
@@ -471,16 +434,9 @@ public final class AtomList extends Atom<ArrayList<Atom<?>>> implements List<Ato
      * @throws UnsupportedOperationException if the <tt>remove</tt> operation is
      * not supported by this list
      */
-    public boolean remove(Atom<?> atom) {
-        Objects.requireNonNull(atom);
-        return getValue().remove(atom);
-    }
-
     @Override
-    public boolean remove(Object o) {
-        Objects.requireNonNull(o);
-        atomCheck(o);
-        return remove((Atom<?>) o);
+    public final boolean remove(final Object o) {
+        return value.remove(o);
     }
 
     /**
@@ -502,13 +458,13 @@ public final class AtomList extends Atom<ArrayList<Atom<?>>> implements List<Ato
      * @see #contains(Object)
      */
     @Override
-    public boolean removeAll(Collection<?> c) {
-        Objects.requireNonNull(c);
+    public final boolean removeAll(final Collection<?> c) {
         boolean removed = false;
-        for (final Object OBJ : c) {
-            Objects.requireNonNull(OBJ);
-            atomCheck(OBJ);
-            removed = removed == false && remove((Atom<?>) OBJ);
+        for (final Object obj : c) {
+            // TODO: look at this?
+            if (remove(obj)) {
+                removed = true;
+            }
         }
         return removed;
     }
@@ -534,15 +490,14 @@ public final class AtomList extends Atom<ArrayList<Atom<?>>> implements List<Ato
      * @see #contains(Object)
      */
     @Override
-    public boolean retainAll(Collection<?> c) {
-        Objects.requireNonNull(c);
+    public final boolean retainAll(final Collection<?> c) {
         boolean removed = false;
-        for (final Object OBJ : c) {
-            Objects.requireNonNull(OBJ);
-            atomCheck(OBJ);
-            final Atom<?> ATOM = (Atom<?>) OBJ;
-            if (!c.contains(ATOM)) {
-                removed = removed == false && remove(ATOM);
+        for (final Object obj : c) {
+            if (!c.contains(obj)) {
+                // TODO: look at this?
+                if (remove(obj)) {
+                    removed = true;
+                }
             }
         }
         return removed;
@@ -567,10 +522,8 @@ public final class AtomList extends Atom<ArrayList<Atom<?>>> implements List<Ato
      * &lt; 0 || index &gt;= size()</tt>)
      */
     @Override
-    public Atom<?> set(int index, Atom<?> atom) {
-        Objects.requireNonNull(atom);
-        rangeCheck(index, size());
-        return getValue().set(index, atom);
+    public final Atom set(final int index, final Atom atom) {
+        return value.set(index, Objects.requireNonNull(atom));
     }
 
     /**
@@ -581,8 +534,8 @@ public final class AtomList extends Atom<ArrayList<Atom<?>>> implements List<Ato
      * @return the number of elements in this list
      */
     @Override
-    public int size() {
-        return getValue().size();
+    public final int size() {
+        return value.size();
     }
 
     /**
@@ -619,9 +572,8 @@ public final class AtomList extends Atom<ArrayList<Atom<?>>> implements List<Ato
      * toIndex</tt>)
      */
     @Override
-    public List<Atom<?>> subList(int fromIndex, int toIndex) {
-        subListRangeCheck(fromIndex, toIndex, size());
-        return getValue().subList(fromIndex, toIndex);
+    public final List<Atom> subList(final int fromIndex, final int toIndex) {
+        return value.subList(fromIndex, toIndex);
     }
 
     /**
@@ -642,8 +594,8 @@ public final class AtomList extends Atom<ArrayList<Atom<?>>> implements List<Ato
      * @see Arrays#asList(Object[])
      */
     @Override
-    public Object[] toArray() {
-        return getValue().toArray();
+    public final Object[] toArray() {
+        return value.toArray();
     }
 
     /**
@@ -688,9 +640,32 @@ public final class AtomList extends Atom<ArrayList<Atom<?>>> implements List<Ato
      * @throws NullPointerException if the specified array is null
      */
     @Override
-    public <T> T[] toArray(T[] a) {
-        Objects.requireNonNull(a);
-        return getValue().toArray(a);
+    public final <T> T[] toArray(final T[] a) {
+        // TODO: look at this?
+        return value.toArray(a);
+    }
+
+    @Override
+    public final int hashCode() {
+        int hash = 7;
+        hash = 17 * hash + Objects.hashCode(this.value);
+        return hash;
+    }
+
+    @Override
+    public final boolean equals(final Object obj) {
+        if (this == obj) {
+            return true;
+        }
+        if (obj instanceof AtomList) {
+            return value.equals(((AtomList) obj).value);
+        }
+        return false;
+    }
+
+    @Override
+    public final String toString() {
+        return value.toString();
     }
 
 }

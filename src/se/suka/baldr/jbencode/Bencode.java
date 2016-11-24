@@ -1,5 +1,3 @@
-package se.suka.baldr.jbencode;
-
 /*
  * The MIT License
  *
@@ -23,6 +21,10 @@ package se.suka.baldr.jbencode;
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+package se.suka.baldr.jbencode;
+
+import java.util.Objects;
+
 /**
  * Bencode (pronounced like B encode) is the encoding used by the peer-to-peer
  * file sharing system BitTorrent for storing and transmitting loosely
@@ -52,7 +54,7 @@ public abstract class Bencode {
      * @param x
      * @return
      */
-    public static Atom<?> decode(String x) {
+    public static Atom decode(String x) {
         return decode(x, 0);
     }
 
@@ -62,7 +64,7 @@ public abstract class Bencode {
      * @param uiStart
      * @return
      */
-    public static Atom<?> decode(String x, int uiStart) {
+    public static Atom decode(String x, int uiStart) {
         if (!isArgCheckOk(x, uiStart, "decode")) {
             return null;
         }
@@ -110,14 +112,14 @@ public abstract class Bencode {
         AtomDictionary dict = new AtomDictionary();
         int length = x.length();
         while (isMore(x, uiStart, length)) {
-            Atom<?> key = decode(x, uiStart);
-            if (key == null || !(key instanceof AtomString)) {
+            Atom key = decode(x, uiStart);
+            if (!(key instanceof AtomString)) {
                 itemError("key", "decodeDict");
                 return null;
             }
             uiStart += key.bLength();
-            Atom<?> value = decode(x, uiStart);
-            if (value == null || !(key instanceof Atom)) {
+            Atom value = decode(x, uiStart);
+            if (!(key instanceof Atom)) {
                 itemError("value", "decodeDict");
                 return null;
             }
@@ -136,9 +138,9 @@ public abstract class Bencode {
      * @param fileName
      * @return
      */
-    public static Atom<?> decodeFile(String fileName) {
+    public static Atom decodeFile(String fileName) {
         String s = Utils.readFileBytesToString(fileName, "windows-1252");
-        Atom<?> atom = Bencode.decode(s);
+        Atom atom = Bencode.decode(s);
         return atom;
     }
 
@@ -210,8 +212,8 @@ public abstract class Bencode {
         AtomList list = new AtomList();
         int length = x.length();
         while (isMore(x, uiStart, length)) {
-            Atom<?> value = decode(x, uiStart);
-            if (value == null) {
+            Atom value = decode(x, uiStart);
+            if (Objects.isNull(value)) {
                 itemError("value", "decodeList");
                 return null;
             }
@@ -270,8 +272,8 @@ public abstract class Bencode {
      * @param atom
      * @return
      */
-    public static String encode(Atom<?> atom) {
-        if (atom != null) {
+    public static String encode(Atom atom) {
+        if (Objects.nonNull(atom)) {
             return atom.encode();
         }
         System.err.println("encode: error encoding, halting encode");
@@ -287,7 +289,7 @@ public abstract class Bencode {
     }
 
     private static boolean isArgCheckOk(String x, int uiStart, String methodName) {
-        if (x == null) {
+        if (Objects.isNull(x)) {
             System.err.println(methodName + ": null string, halting decode");
             return false;
         }
@@ -312,6 +314,9 @@ public abstract class Bencode {
 
     private static void itemError(String type, String methodName) {
         System.err.println(methodName + ": error decoding " + type + ", halting decode");
+    }
+
+    private Bencode() {
     }
 
 }

@@ -1,5 +1,3 @@
-package se.suka.baldr.jbencode;
-
 /*
  * The MIT License
  *
@@ -23,6 +21,8 @@ package se.suka.baldr.jbencode;
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+package se.suka.baldr.jbencode;
+
 import java.io.IOException;
 import java.nio.charset.Charset;
 import java.nio.file.Files;

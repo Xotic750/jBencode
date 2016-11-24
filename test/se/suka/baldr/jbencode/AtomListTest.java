@@ -256,8 +256,8 @@ public final class AtomListTest {
 
         AtomList ai3 = new AtomList(ai2);
 
-        Atom<?> ai2first = ai2.iterator().next();
-        Atom<?> ai3first = ai3.iterator().next();
+        Atom ai2first = ai2.iterator().next();
+        Atom ai3first = ai3.iterator().next();
         assertTrue(ai == ai2first);
         assertTrue(ai != ai3first);
         assertEquals(ai2first, ai3first);
@@ -273,7 +273,7 @@ public final class AtomListTest {
         ai.add(i);
         AtomString s = new AtomString("Hello");
         ai.add(s);
-        for (Atom<?> atom : ai) {
+        for (Atom atom : ai) {
             assertTrue(atom instanceof Atom);
         }
     }
@@ -292,7 +292,7 @@ public final class AtomListTest {
         ai.add(new AtomString("ABC90"));
         ai.add(new AtomString("ABC100"));
         String order = "";
-        for (Atom<?> atom : ai) {
+        for (Atom atom : ai) {
             order += atom.toString();
         }
         assertEquals(order, "foobarboo90100ABC90ABC100");

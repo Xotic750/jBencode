@@ -93,7 +93,7 @@ public final class BencodeTest {
      */
     @Test
     public void testDecodeEmptyInt() {
-        Atom<?> atom = Bencode.decode("ie");
+        Atom atom = Bencode.decode("ie");
         assertNull(atom);
     }
 
@@ -102,7 +102,7 @@ public final class BencodeTest {
      */
     @Test
     public void testDecodeEmptyStr() {
-        Atom<?> atom = Bencode.decodeStr("0:");
+        Atom atom = Bencode.decodeStr("0:");
         assertEquals(atom, new AtomString());
     }
 
@@ -111,7 +111,7 @@ public final class BencodeTest {
      */
     @Test
     public void testDecodeFileSample1() {
-        Atom<?> atom = Bencode.decodeFile("samples/sample1.torrent");
+        Atom atom = Bencode.decodeFile("samples/sample1.torrent");
         assertNotNull(atom);
     }
 
@@ -120,7 +120,7 @@ public final class BencodeTest {
      */
     @Test
     public void testDecodeFileSample2() {
-        Atom<?> atom = Bencode.decodeFile("samples/sample2.torrent");
+        Atom atom = Bencode.decodeFile("samples/sample2.torrent");
         assertNotNull(atom);
     }
 
@@ -129,7 +129,7 @@ public final class BencodeTest {
      */
     @Test
     public void testDecodeIntEmpty() {
-        AtomInteger atom = Bencode.decodeInt("");
+        Atom atom = Bencode.decodeInt("");
         assertNull(atom);
     }
 
@@ -138,7 +138,7 @@ public final class BencodeTest {
      */
     @Test
     public void testDecodeIntEmptyLE() {
-        AtomInteger atom = Bencode.decodeInt("ie");
+        Atom atom = Bencode.decodeInt("ie");
         assertNull(atom);
     }
 
@@ -147,7 +147,7 @@ public final class BencodeTest {
      */
     @Test
     public void testDecodeIntInvalidNegZero() {
-        AtomInteger atom = Bencode.decodeInt("i-0e");
+        Atom atom = Bencode.decodeInt("i-0e");
         assertNull(atom);
     }
 
@@ -156,7 +156,7 @@ public final class BencodeTest {
      */
     @Test
     public void testDecodeIntNeg() {
-        AtomInteger atom = Bencode.decodeInt("i-12e");
+        Atom atom = Bencode.decodeInt("i-12e");
         assertEquals(atom, new AtomInteger(-12));
     }
 
@@ -165,7 +165,7 @@ public final class BencodeTest {
      */
     @Test
     public void testDecodeIntNull() {
-        AtomInteger atom = Bencode.decodeInt(null);
+        Atom atom = Bencode.decodeInt(null);
         assertNull(atom);
     }
 
@@ -174,7 +174,7 @@ public final class BencodeTest {
      */
     @Test
     public void testDecodeIntPos() {
-        AtomInteger atom = Bencode.decodeInt("i12e");
+        Atom atom = Bencode.decodeInt("i12e");
         assertEquals(atom, new AtomInteger(12));
     }
 
@@ -183,7 +183,7 @@ public final class BencodeTest {
      */
     @Test
     public void testDecodeIntPosZero() {
-        AtomInteger atom = Bencode.decodeInt("i0e");
+        Atom atom = Bencode.decodeInt("i0e");
         assertEquals(atom, new AtomInteger(0));
     }
 
@@ -192,7 +192,7 @@ public final class BencodeTest {
      */
     @Test
     public void testDecodeIntStrLst() {
-        Atom<?> l = Bencode.decode("d3:barli50000000e11:Hello Worlde3:fooli5e5:Helloee");
+        Atom l = Bencode.decode("d3:barli50000000e11:Hello Worlde3:fooli5e5:Helloee");
         AtomDictionary expected = new AtomDictionary();
         AtomList il = new AtomList();
         il.add(new AtomInteger(5));
@@ -210,7 +210,7 @@ public final class BencodeTest {
      */
     @Test
     public void testDecodeInvalidNegZeroInt() {
-        Atom<?> atom = Bencode.decode("i-0e");
+        Atom atom = Bencode.decode("i-0e");
         assertNull(atom);
     }
 
@@ -219,7 +219,7 @@ public final class BencodeTest {
      */
     @Test
     public void testDecodeListEmpty() {
-        AtomList atom = Bencode.decodeList("");
+        Atom atom = Bencode.decodeList("");
         assertNull(atom);
     }
 
@@ -228,7 +228,7 @@ public final class BencodeTest {
      */
     @Test
     public void testDecodeListEmptyLE() {
-        AtomList atom = Bencode.decodeList("le");
+        Atom atom = Bencode.decodeList("le");
         assertEquals(atom, new AtomList());
     }
 
@@ -267,7 +267,7 @@ public final class BencodeTest {
      */
     @Test
     public void testDecodeListNull() {
-        AtomList atom = Bencode.decodeList(null);
+        Atom atom = Bencode.decodeList(null);
         assertNull(atom);
     }
 
@@ -276,7 +276,7 @@ public final class BencodeTest {
      */
     @Test
     public void testDecodeNegInt() {
-        Atom<?> atom = Bencode.decode("i-12e");
+        Atom atom = Bencode.decode("i-12e");
         assertEquals(atom, new AtomInteger(-12));
     }
 
@@ -285,7 +285,7 @@ public final class BencodeTest {
      */
     @Test
     public void testDecodeNull() {
-        Atom<?> atom = Bencode.decode(null);
+        Atom atom = Bencode.decode(null);
         assertNull(atom);
     }
 
@@ -295,7 +295,7 @@ public final class BencodeTest {
     @Test
     public void testDecodePartialTorrent1() {
         String s = "d6:lengthi20e4:name10:sample.txt12:piece lengthi65536e6:pieces0:7:privatei1ee";
-        Atom<?> atom = Bencode.decodeDict(s);
+        Atom atom = Bencode.decodeDict(s);
         assertNotNull(atom);
         assertEquals(s.length(), atom.bLength());
     }
@@ -306,7 +306,7 @@ public final class BencodeTest {
     @Test
     public void testDecodePartialTorrent2() {
         String s = "d8:announce35:udp://tracker.openbittorrent.com:8013:creation datei1327049827e4:infod6:lengthi20e4:name10:sample.txt12:piece lengthi65536e6:pieces0:7:privatei1eee";
-        Atom<?> atom = Bencode.decodeDict(s);
+        Atom atom = Bencode.decodeDict(s);
         assertNotNull(atom);
         assertEquals(s.length(), atom.bLength());
     }
@@ -316,7 +316,7 @@ public final class BencodeTest {
      */
     @Test
     public void testDecodePosInt() {
-        Atom<?> atom = Bencode.decode("i12e");
+        Atom atom = Bencode.decode("i12e");
         assertEquals(atom, new AtomInteger(12));
     }
 
@@ -325,7 +325,7 @@ public final class BencodeTest {
      */
     @Test
     public void testDecodePosZeroInt() {
-        Atom<?> atom = Bencode.decode("i0e");
+        Atom atom = Bencode.decode("i0e");
         assertEquals(atom, new AtomInteger(0));
     }
 
@@ -334,7 +334,7 @@ public final class BencodeTest {
      */
     @Test
     public void testDecodeSmallStr() {
-        Atom<?> atom = Bencode.decodeStr("5:Hello");
+        Atom atom = Bencode.decodeStr("5:Hello");
         assertEquals(atom, new AtomString("Hello"));
     }
 
@@ -343,7 +343,7 @@ public final class BencodeTest {
      */
     @Test
     public void testDecodeStr() {
-        AtomString atom = Bencode.decodeStr("5:Hello");
+        Atom atom = Bencode.decodeStr("5:Hello");
         assertEquals(atom, new AtomString("Hello"));
     }
 
@@ -352,7 +352,7 @@ public final class BencodeTest {
      */
     @Test
     public void testDecodeStrEmpty() {
-        AtomString atom = Bencode.decodeStr("");
+        Atom atom = Bencode.decodeStr("");
         assertNull(atom);
     }
 
@@ -361,7 +361,7 @@ public final class BencodeTest {
      */
     @Test
     public void testDecodeStrEmpty0() {
-        AtomString atom = Bencode.decodeStr("0:");
+        Atom atom = Bencode.decodeStr("0:");
         assertEquals(atom, new AtomString(""));
     }
 
@@ -370,7 +370,7 @@ public final class BencodeTest {
      */
     @Test
     public void testDecodeStrInvalidChar() {
-        Atom<?> atom = Bencode.decodeStr("0a:");
+        Atom atom = Bencode.decodeStr("0a:");
         assertNull(atom);
     }
 
@@ -379,7 +379,7 @@ public final class BencodeTest {
      */
     @Test
     public void testDecodeStrLarge() {
-        AtomString atom = Bencode.decodeStr("11:Hello World");
+        Atom atom = Bencode.decodeStr("11:Hello World");
         assertEquals(atom, new AtomString("Hello World"));
     }
 
@@ -388,7 +388,7 @@ public final class BencodeTest {
      */
     @Test
     public void testDecodeStrLargeStr() {
-        Atom<?> atom = Bencode.decodeStr("11:Hello World");
+        Atom atom = Bencode.decodeStr("11:Hello World");
         assertEquals(atom, new AtomString("Hello World"));
     }
 
@@ -397,7 +397,7 @@ public final class BencodeTest {
      */
     @Test
     public void testDecodeStrMissing() {
-        Atom<?> s = Bencode.decodeStr("0");
+        Atom s = Bencode.decodeStr("0");
         assertNull(s);
     }
 
@@ -406,7 +406,7 @@ public final class BencodeTest {
      */
     @Test
     public void testDecodeStrMissingNum() {
-        Atom<?> atom = Bencode.decodeStr("a");
+        Atom atom = Bencode.decodeStr("a");
         assertNull(atom);
     }
 
@@ -415,7 +415,7 @@ public final class BencodeTest {
      */
     @Test
     public void testDecodeStrNull() {
-        AtomString atom = Bencode.decodeStr(null);
+        Atom atom = Bencode.decodeStr(null);
         assertNull(atom);
     }
 
@@ -424,7 +424,7 @@ public final class BencodeTest {
      */
     @Test
     public void testEncodeAtom() {
-        Atom<?> atom = new AtomInteger(5);
+        Atom atom = new AtomInteger(5);
         String encoded = Bencode.encode(atom);
         assertEquals(encoded, "i5e");
     }
@@ -476,7 +476,7 @@ public final class BencodeTest {
      */
     @Test
     public void testEncondeInt() {
-        AtomInteger atom = new AtomInteger(1);
+        Atom atom = new AtomInteger(1);
         String encoded = Bencode.encode(atom);
         assertEquals(encoded, "i1e");
     }
@@ -486,7 +486,7 @@ public final class BencodeTest {
      */
     @Test
     public void testEncondeStr() {
-        AtomString atom = new AtomString("Hello");
+        Atom atom = new AtomString("Hello");
         String encoded = Bencode.encode(atom);
         assertEquals(encoded, "5:Hello");
     }

@@ -1,5 +1,3 @@
-package se.suka.baldr.jbencode;
-
 /*
  * The MIT License
  *
@@ -23,6 +21,11 @@ package se.suka.baldr.jbencode;
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+package se.suka.baldr.jbencode;
+
+import java.io.Serializable;
+import java.util.Objects;
+
 /**
  * A byte string (a sequence of bytes, not necessarily characters) is encoded as
  * &lt;length&gt;:&lt;contents&gt;. The length is encoded in base 10, like
@@ -38,7 +41,9 @@ package se.suka.baldr.jbencode;
  * @author Graham Fairweather
  * @see <a href="https://en.wikipedia.org/wiki/Bencode">Bencode</a>
  */
-public final class AtomString extends Atom<String> {
+public final class AtomString extends Atom implements Serializable, Comparable<AtomString> {
+
+    private final String value;
 
     /**
      * Initialises a newly created {@code AtomString} object so that it
@@ -56,7 +61,7 @@ public final class AtomString extends Atom<String> {
      *
      * @param atom A {@code AtomString}
      */
-    public AtomString(AtomString atom) {
+    public AtomString(final AtomString atom) {
         this(atom.toString());
     }
 
@@ -67,8 +72,8 @@ public final class AtomString extends Atom<String> {
      *
      * @param value A {@code String}
      */
-    public AtomString(String value) {
-        super(value);
+    public AtomString(final String value) {
+        this.value = value;
     }
 
     /**
@@ -76,9 +81,9 @@ public final class AtomString extends Atom<String> {
      * @return
      */
     @Override
-    public int bLength() {
-        final int LEN = length();
-        return Integer.toString(LEN).length() + 1 + LEN;
+    public final int bLength() {
+        final int len = value.length();
+        return Integer.toString(len).length() + 1 + len;
     }
 
     /**
@@ -86,19 +91,41 @@ public final class AtomString extends Atom<String> {
      * @return
      */
     @Override
-    public String encode() {
-        return length() + ":" + this;
+    public final String encode() {
+        return value.length() + ":" + value;
+    }
+
+    @Override
+    public final int hashCode() {
+        int hash = 7;
+        hash = 61 * hash + Objects.hashCode(this.value);
+        return hash;
+    }
+
+    @Override
+    public final boolean equals(final Object obj) {
+        if (this == obj) {
+            return true;
+        }
+        if (obj instanceof AtomString) {
+            return value.equals(((AtomString) obj).toString());
+        }
+        return false;
     }
 
     /**
-     * Returns the length of this string. The length is equal to the number of
-     * <a href="Character.html#unicode">Unicode code units</a> in the string.
+     * This object's value is itself returned.
      *
-     * @return the length of the sequence of characters represented by this
-     * object.
+     * @return the string itself.
      */
-    public int length() {
-        return getValue().length();
+    @Override
+    public final String toString() {
+        return value;
+    }
+
+    @Override
+    public final int compareTo(final AtomString atomString) {
+        return value.compareTo(atomString.toString());
     }
 
 }

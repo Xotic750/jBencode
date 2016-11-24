@@ -39,12 +39,6 @@ public final class AtomStringTest {
     /**
      *
      */
-    public AtomStringTest() {
-    }
-
-    /**
-     *
-     */
     @BeforeClass
     public static void setUpClass() {
     }
@@ -54,6 +48,12 @@ public final class AtomStringTest {
      */
     @AfterClass
     public static void tearDownClass() {
+    }
+
+    /**
+     *
+     */
+    public AtomStringTest() {
     }
 
     /**
@@ -133,7 +133,7 @@ public final class AtomStringTest {
     @Test
     public void testAtomStringConstructorEmptyLength() {
         AtomString ai = new AtomString();
-        assertEquals(ai.length(), 0);
+        assertEquals(ai.toString().length(), 0);
     }
 
     /**
@@ -215,7 +215,7 @@ public final class AtomStringTest {
     @Test
     public void testAtomStringConstructorStringLength() {
         AtomString ai = new AtomString("Hello");
-        assertEquals(ai.length(), 5);
+        assertEquals(ai.toString().length(), 5);
     }
 
     /**

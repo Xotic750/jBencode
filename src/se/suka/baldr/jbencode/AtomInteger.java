@@ -1,5 +1,3 @@
-package se.suka.baldr.jbencode;
-
 /*
  * The MIT License
  *
@@ -23,7 +21,9 @@ package se.suka.baldr.jbencode;
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-import java.util.Objects;
+package se.suka.baldr.jbencode;
+
+import java.io.Serializable;
 
 /**
  * An integer is encoded as i&lt;integer encoded in base ten ASCII&gt;e. Leading
@@ -35,7 +35,9 @@ import java.util.Objects;
  * @author Graham Fairweather
  * @see <a href="https://en.wikipedia.org/wiki/Bencode">Bencode</a>
  */
-public final class AtomInteger extends Atom<Integer> {
+public final class AtomInteger extends Atom implements Serializable, Comparable<AtomInteger> {
+
+    private final int value;
 
     /**
      *
@@ -48,7 +50,7 @@ public final class AtomInteger extends Atom<Integer> {
      *
      * @param atomInteger
      */
-    public AtomInteger(AtomInteger atomInteger) {
+    public AtomInteger(final AtomInteger atomInteger) {
         this(atomInteger.intValue());
     }
 
@@ -56,8 +58,8 @@ public final class AtomInteger extends Atom<Integer> {
      *
      * @param value
      */
-    public AtomInteger(Integer value) {
-        super(value);
+    public AtomInteger(final int value) {
+        this.value = value;
     }
 
     /**
@@ -65,7 +67,7 @@ public final class AtomInteger extends Atom<Integer> {
      * @return
      */
     @Override
-    public int bLength() {
+    public final int bLength() {
         return toString().length() + 2;
     }
 
@@ -74,87 +76,73 @@ public final class AtomInteger extends Atom<Integer> {
      * @return
      */
     @Override
-    public String encode() {
-        return "i" + this + "e";
+    public final String encode() {
+        return "i" + value + "e";
     }
 
     /**
-     * Returns the value of the specified number as an {@code int}, which may
-     * involve rounding or truncation.
+     * Returns the value of this {@code AtomInteger} as a {@code byte} after a
+     * narrowing primitive conversion.
      *
-     * @return the numeric value represented by this object after conversion to
-     * type {@code int}.
+     * @return 
      */
-    public int intValue() {
-        return getValue();
+    public final byte byteValue() {
+        return (byte) value;
     }
 
     /**
-     * Returns the value of the specified number as a {@code long}, which may
-     * involve rounding or truncation.
+     * Returns the value of this {@code AtomInteger} as a {@code short} after a
+     * narrowing primitive conversion.
      *
-     * @return the numeric value represented by this object after conversion to
-     * type {@code long}.
+     * @return 
      */
-    public long longValue() {
-        return (long) intValue();
+    public final short shortValue() {
+        return (short) value;
     }
 
     /**
-     * Returns the value of the specified number as a {@code float}, which may
-     * involve rounding.
-     *
-     * @return the numeric value represented by this object after conversion to
-     * type {@code float}.
+     * Returns the value of this {@code AtomInteger} as an {@code int}.
+     * @return 
      */
-    public float floatValue() {
-        return (float) intValue();
+    public final int intValue() {
+        return value;
     }
 
     /**
-     * Returns the value of the specified number as a {@code double}, which may
-     * involve rounding.
+     * Returns the value of this {@code AtomInteger} as a {@code long} after a
+     * widening primitive conversion.
      *
-     * @return the numeric value represented by this object after conversion to
-     * type {@code double}.
+     * @return 
+     * @see Integer#toUnsignedLong(int)
      */
-    public double doubleValue() {
-        return (double) intValue();
+    public final long longValue() {
+        return (long) value;
     }
 
     /**
-     * Returns the value of the specified number as a {@code byte}, which may
-     * involve rounding or truncation.
+     * Returns the value of this {@code AtomInteger} as a {@code float} after a
+     * widening primitive conversion.
      *
-     * <p>
-     * This implementation returns the result of {@link #intValue} cast to a
-     * {@code byte}.
-     *
-     * @return the numeric value represented by this object after conversion to
-     * type {@code byte}.
+     * @return 
      */
-    public byte byteValue() {
-        return (byte) intValue();
+    public final float floatValue() {
+        return (float) value;
     }
 
     /**
-     * Returns the value of the specified number as a {@code short}, which may
-     * involve rounding or truncation.
+     * Returns the value of this {@code AtomInteger} as a {@code double} after a
+     * widening primitive conversion.
      *
-     * <p>
-     * This implementation returns the result of {@link #intValue} cast to a
-     * {@code short}.
-     *
-     * @return the numeric value represented by this object after conversion to
-     * type {@code short}.
+     * @return 
      */
-    public short shortValue() {
-        return (short) intValue();
+    public final double doubleValue() {
+        return (double) value;
     }
 
     /**
      * Compares two {@code AtomInteger} objects numerically.
      *
+     * @param anotherAtomInteger
      * @param anotherAtomInteger the {@code AtomInteger} to be compared.
      * @throws NullPointerException if the specified anotherAtomInteger is null
      * @return the value {@code 0} if this {@code AtomInteger} is equal to the
@@ -164,9 +152,42 @@ public final class AtomInteger extends Atom<Integer> {
      * {@code AtomInteger} is numerically greater than the argument
      * {@code AtomInteger} (signed comparison).
      */
-    public int compareTo(AtomInteger anotherAtomInteger) {
-        Objects.requireNonNull(anotherAtomInteger);
-        return getValue().compareTo(anotherAtomInteger.intValue());
+    @Override
+    public final int compareTo(final AtomInteger anotherAtomInteger) {
+        return Integer.compare(value, anotherAtomInteger.value);
+    }
+
+    @Override
+    public final int hashCode() {
+        int hash = 3;
+        hash = 79 * hash + this.value;
+        return hash;
+    }
+
+    @Override
+    public final boolean equals(final Object obj) {
+        if (this == obj) {
+            return true;
+        }
+        if (obj instanceof AtomInteger) {
+            return value == ((AtomInteger) obj).intValue();
+        }
+        return false;
+    }
+
+    /**
+     * Returns a {@code String} object representing this {@code AtomInteger}'s
+     * value. The value is converted to signed decimal representation and
+     * returned as a string, exactly as if the integer value were given as an
+     * argument to the {@link
+     * java.lang.Integer#toString(int)} method.
+     *
+     * @return a string representation of the value of this object in
+     * base&nbsp;10.
+     */
+    @Override
+    public final String toString() {
+        return Integer.toString(value);
     }
 
 }

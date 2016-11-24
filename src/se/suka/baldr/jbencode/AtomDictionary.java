@@ -1,5 +1,3 @@
-package se.suka.baldr.jbencode;
-
 /*
  * The MIT License
  *
@@ -23,6 +21,9 @@ package se.suka.baldr.jbencode;
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+package se.suka.baldr.jbencode;
+
+import java.io.Serializable;
 import java.util.Collection;
 import java.util.Map;
 import java.util.Objects;
@@ -41,42 +42,38 @@ import java.util.TreeMap;
  * @author Graham Fairweather
  * @see <a href="https://en.wikipedia.org/wiki/Bencode">Bencode</a>
  */
-public final class AtomDictionary extends Atom<TreeMap<String, Atom<?>>> implements Map<String, Atom<?>> {
+public final class AtomDictionary extends Atom implements Map<String, Atom>, Serializable {
+
+    private final Map<String, Atom> value;
 
     /**
      *
      */
     public AtomDictionary() {
-        this(new TreeMap<>());
+        value = new TreeMap<>();
     }
 
     /**
      *
      * @param atomDict
      */
-    public AtomDictionary(AtomDictionary atomDict) {
+    public AtomDictionary(final AtomDictionary atomDict) {
         this();
-        Objects.requireNonNull(atomDict);
-        atomDict.entrySet().forEach((entry) -> {
-            String key = entry.getKey();
-            Atom<?> value = entry.getValue();
-            Class<?> atomClass = value.getClass();
-            if (atomClass.equals(AtomInteger.class)) {
-                put(key, new AtomInteger((AtomInteger) value));
-            } else if (atomClass.equals(AtomString.class)) {
-                put(key, new AtomString((AtomString) value));
-            } else if (atomClass.equals(AtomList.class)) {
-                put(key, new AtomList((AtomList) value));
-            } else if (atomClass.equals(AtomDictionary.class)) {
-                put(key, new AtomDictionary((AtomDictionary) value));
+        atomDict.entrySet().forEach(entry -> {
+            final String key = entry.getKey();
+            final Atom atom = entry.getValue();
+            if (atom instanceof AtomInteger) {
+                put(key, new AtomInteger((AtomInteger) atom));
+            } else if (atom instanceof AtomString) {
+                put(key, new AtomString((AtomString) atom));
+            } else if (atom instanceof AtomList) {
+                put(key, new AtomList((AtomList) atom));
+            } else if (atom instanceof AtomDictionary) {
+                put(key, new AtomDictionary((AtomDictionary) atom));
             } else {
                 System.err.println("AtomDictionary: unknown Atom type");
             }
         });
-    }
-
-    private AtomDictionary(TreeMap<String, Atom<?>> value) {
-        super(value);
     }
 
     /**
@@ -84,8 +81,8 @@ public final class AtomDictionary extends Atom<TreeMap<String, Atom<?>>> impleme
      * @return
      */
     @Override
-    public int bLength() {
-        return getValue().entrySet().stream().map((final Entry<String, Atom<?>> ENTRY) -> new AtomString(ENTRY.getKey()).bLength() + ENTRY.getValue().bLength()).reduce(2, Integer::sum);
+    public final int bLength() {
+        return value.entrySet().stream().map(entry -> new AtomString(entry.getKey()).bLength() + entry.getValue().bLength()).reduce(2, Integer::sum);
     }
 
     /**
@@ -97,7 +94,7 @@ public final class AtomDictionary extends Atom<TreeMap<String, Atom<?>>> impleme
      */
     @Override
     public void clear() {
-        getValue().clear();
+        value.clear();
     }
 
     /**
@@ -117,16 +114,9 @@ public final class AtomDictionary extends Atom<TreeMap<String, Atom<?>>> impleme
      * does not permit null keys
      * (<a href="{@docRoot}/java/util/Collection.html#optional-restrictions">optional</a>)
      */
-    public boolean containsKey(String key) {
-        Objects.requireNonNull(key);
-        return getValue().containsKey(key);
-    }
-
     @Override
-    public boolean containsKey(Object key) {
-        Objects.requireNonNull(key);
-        stringCheck(key);
-        return containsKey((String) key);
+    public final boolean containsKey(final Object key) {
+        return value.containsKey(Objects.requireNonNull(key));
     }
 
     /**
@@ -137,7 +127,7 @@ public final class AtomDictionary extends Atom<TreeMap<String, Atom<?>>> impleme
      * probably require time linear in the map size for most implementations of
      * the <tt>Map</tt> interface.
      *
-     * @param value value whose presence in this map is to be tested
+     * @param atom value whose presence in this map is to be tested
      * @return <tt>true</tt> if this map maps one or more keys to the specified
      * value
      * @throws ClassCastException if the value is of an inappropriate type for
@@ -147,16 +137,9 @@ public final class AtomDictionary extends Atom<TreeMap<String, Atom<?>>> impleme
      * does not permit null values
      * (<a href="{@docRoot}/java/util/Collection.html#optional-restrictions">optional</a>)
      */
-    public boolean containsValue(Atom<?> value) {
-        Objects.requireNonNull(value);
-        return getValue().containsValue(value);
-    }
-
     @Override
-    public boolean containsValue(Object value) {
-        Objects.requireNonNull(value);
-        atomCheck(value);
-        return containsValue((Atom<?>) value);
+    public final boolean containsValue(final Object atom) {
+        return this.value.containsValue(Objects.requireNonNull(atom));
     }
 
     /**
@@ -164,12 +147,10 @@ public final class AtomDictionary extends Atom<TreeMap<String, Atom<?>>> impleme
      * @return
      */
     @Override
-    public String encode() {
-        StringBuilder str = new StringBuilder("d");
-        getValue().keySet().forEach((final String KEY) -> {
-            str.append(new AtomString(KEY).encode()).append(get(KEY).encode());
-        });
-        return str.append("e").toString();
+    public final String encode() {
+        final StringBuilder encoded = new StringBuilder("d");
+        value.keySet().forEach(key -> encoded.append(new AtomString(key).encode()).append(get(key).encode()));
+        return encoded.append("e").toString();
     }
 
     /**
@@ -189,8 +170,8 @@ public final class AtomDictionary extends Atom<TreeMap<String, Atom<?>>> impleme
      * @return a set view of the mappings contained in this map
      */
     @Override
-    public Set<Entry<String, Atom<?>>> entrySet() {
-        return getValue().entrySet();
+    public final Set<Entry<String, Atom>> entrySet() {
+        return value.entrySet();
     }
 
     /**
@@ -220,16 +201,9 @@ public final class AtomDictionary extends Atom<TreeMap<String, Atom<?>>> impleme
      * does not permit null keys
      * (<a href="{@docRoot}/java/util/Collection.html#optional-restrictions">optional</a>)
      */
-    public Atom<?> get(String key) {
-        Objects.requireNonNull(key);
-        return getValue().get(key);
-    }
-
     @Override
-    public Atom<?> get(Object key) {
-        Objects.requireNonNull(key);
-        stringCheck(key);
-        return get((String) key);
+    public final Atom get(final Object key) {
+        return value.get(Objects.requireNonNull(key));
     }
 
     /**
@@ -238,8 +212,8 @@ public final class AtomDictionary extends Atom<TreeMap<String, Atom<?>>> impleme
      * @return <tt>true</tt> if this map contains no key-value mappings
      */
     @Override
-    public boolean isEmpty() {
-        return getValue().isEmpty();
+    public final boolean isEmpty() {
+        return value.isEmpty();
     }
 
     /**
@@ -257,8 +231,8 @@ public final class AtomDictionary extends Atom<TreeMap<String, Atom<?>>> impleme
      * @return a set view of the keys contained in this map
      */
     @Override
-    public Set<String> keySet() {
-        return getValue().keySet();
+    public final Set<String> keySet() {
+        return value.keySet();
     }
 
     /**
@@ -285,10 +259,8 @@ public final class AtomDictionary extends Atom<TreeMap<String, Atom<?>>> impleme
      * value prevents it from being stored in this map
      */
     @Override
-    public Atom<?> put(String key, Atom<?> atom) {
-        Objects.requireNonNull(key);
-        Objects.requireNonNull(atom);
-        return getValue().put(key, atom);
+    public final Atom put(final String key, final Atom atom) {
+        return value.put(Objects.requireNonNull(key), Objects.requireNonNull(atom));
     }
 
     /**
@@ -311,12 +283,8 @@ public final class AtomDictionary extends Atom<TreeMap<String, Atom<?>>> impleme
      * the specified map prevents it from being stored in this map
      */
     @Override
-    public void putAll(Map<? extends String, ? extends Atom<?>> map) {
-        Objects.requireNonNull(map);
-        final TreeMap<String, Atom<?>> DICT = getValue();
-        map.entrySet().stream().forEach((Entry<? extends String, ? extends Atom<?>> ENTRY) -> {
-            DICT.put(Objects.requireNonNull(ENTRY.getKey()), Objects.requireNonNull(ENTRY.getValue()));
-        });
+    public final void putAll(final Map<? extends String, ? extends Atom> map) {
+        map.entrySet().stream().forEach(entry -> put(entry.getKey(), entry.getValue()));
     }
 
     /**
@@ -352,16 +320,9 @@ public final class AtomDictionary extends Atom<TreeMap<String, Atom<?>>> impleme
      * does not permit null keys
      * (<a href="{@docRoot}/java/util/Collection.html#optional-restrictions">optional</a>)
      */
-    public Atom<?> remove(String key) {
-        Objects.requireNonNull(key);
-        return getValue().remove(key);
-    }
-
     @Override
-    public Atom<?> remove(Object key) {
-        Objects.requireNonNull(key);
-        stringCheck(key);
-        return remove((String) key);
+    public final Atom remove(final Object key) {
+        return value.remove(Objects.requireNonNull(key));
     }
 
     /**
@@ -372,8 +333,8 @@ public final class AtomDictionary extends Atom<TreeMap<String, Atom<?>>> impleme
      * @return the number of key-value mappings in this map
      */
     @Override
-    public int size() {
-        return getValue().size();
+    public final int size() {
+        return value.size();
     }
 
     /**
@@ -391,8 +352,31 @@ public final class AtomDictionary extends Atom<TreeMap<String, Atom<?>>> impleme
      * @return a collection view of the values contained in this map
      */
     @Override
-    public Collection<Atom<?>> values() {
-        return getValue().values();
+    public final Collection<Atom> values() {
+        return value.values();
+    }
+
+    @Override
+    public final int hashCode() {
+        int hash = 7;
+        hash = 67 * hash + Objects.hashCode(this.value);
+        return hash;
+    }
+
+    @Override
+    public final boolean equals(final Object obj) {
+        if (this == obj) {
+            return true;
+        }
+        if (obj instanceof AtomDictionary) {
+            return value.equals(((AtomDictionary) obj).value);
+        }
+        return false;
+    }
+
+    @Override
+    public final String toString() {
+        return value.toString();
     }
 
 }
