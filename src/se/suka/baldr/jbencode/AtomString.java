@@ -1,3 +1,5 @@
+package se.suka.baldr.jbencode;
+
 /*
  * The MIT License
  *
@@ -21,8 +23,6 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package se.suka.baldr.jbencode.models;
-
 /**
  * A byte string (a sequence of bytes, not necessarily characters) is encoded as
  * &lt;length&gt;:&lt;contents&gt;. The length is encoded in base 10, like

@@ -21,18 +21,55 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package se.suka.baldr.jbencode.models.test;
+package se.suka.baldr.jbencode;
 
+import org.junit.After;
+import org.junit.AfterClass;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
+import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Test;
-import se.suka.baldr.jbencode.models.AtomInteger;
 
 /**
  * @author Graham Fairweather
  * @see <a href="https://en.wikipedia.org/wiki/Bencode">Bencode</a>
  */
 public final class AtomIntegerTest {
+
+    /**
+     *
+     */
+    public AtomIntegerTest() {
+    }
+
+    /**
+     *
+     */
+    @BeforeClass
+    public static void setUpClass() {
+    }
+
+    /**
+     *
+     */
+    @AfterClass
+    public static void tearDownClass() {
+    }
+
+    /**
+     *
+     */
+    @Before
+    public void setUp() {
+    }
+
+    /**
+     *
+     */
+    @After
+    public void tearDown() {
+    }
 
     /**
      *

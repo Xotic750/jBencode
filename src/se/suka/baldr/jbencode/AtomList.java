@@ -1,3 +1,5 @@
+package se.suka.baldr.jbencode;
+
 /*
  * The MIT License
  *
@@ -21,8 +23,6 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package se.suka.baldr.jbencode.models;
-
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -31,7 +31,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.Objects;
-import se.suka.baldr.jbencode.utilities.Utils;
 
 /**
  * A list of values is encoded as l&lt;contents&gt;e . The contents consist of

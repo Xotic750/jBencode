@@ -1,3 +1,5 @@
+package se.suka.baldr.jbencode;
+
 /*
  * The MIT License
  *
@@ -20,11 +22,7 @@
  * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
- */package se.suka.baldr.jbencode.models;
-
-import se.suka.baldr.jbencode.utilities.Utils;
-import static se.suka.baldr.jbencode.utilities.Utils.findFirstNotOf;
-
+ */
 /**
  * Bencode (pronounced like B encode) is the encoding used by the peer-to-peer
  * file sharing system BitTorrent for storing and transmitting loosely
@@ -250,7 +248,7 @@ public abstract class Bencode {
             charNotFound("1234567890", "decodeStr");
             return null;
         }
-        int uiSplit = findFirstNotOf(x, "1234567890", uiStart);
+        int uiSplit = Utils.findFirstNotOf(x, "1234567890", uiStart);
         if (uiSplit == -1 || x.charAt(uiSplit) != ':') {
             charNotFound(":", "decodeString");
             return null;

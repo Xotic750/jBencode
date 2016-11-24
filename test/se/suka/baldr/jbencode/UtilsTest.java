@@ -1,7 +1,7 @@
 /*
  * The MIT License
  *
- * Copyright 2016 Graham Fairweather.
+ * Copyright 2016 graham.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -21,22 +21,58 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package se.suka.baldr.jbencode.utilities.test;
+package Utils;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
+import org.junit.After;
+import org.junit.AfterClass;
+import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Test;
-import static se.suka.baldr.jbencode.utilities.Utils.findFirstNotOf;
-import static se.suka.baldr.jbencode.utilities.Utils.findFirstOf;
-import static se.suka.baldr.jbencode.utilities.Utils.readFileBytesToString;
-import static se.suka.baldr.jbencode.utilities.Utils.readFileLinesToString;
+import static org.junit.Assert.*;
+import static se.suka.baldr.jbencode.Utils.findFirstNotOf;
+import static se.suka.baldr.jbencode.Utils.findFirstOf;
+import static se.suka.baldr.jbencode.Utils.readFileBytesToString;
+import static se.suka.baldr.jbencode.Utils.readFileLinesToString;
 
 /**
- * @author Graham Fairweather
- * @see <a href="https://en.wikipedia.org/wiki/Bencode">Bencode</a>
+ *
+ * @author graham
  */
 public class UtilsTest {
+
+    /**
+     *
+     */
+    @BeforeClass
+    public static void setUpClass() {
+    }
+
+    /**
+     *
+     */
+    @AfterClass
+    public static void tearDownClass() {
+    }
+
+    /**
+     *
+     */
+    public UtilsTest() {
+    }
+
+    /**
+     *
+     */
+    @Before
+    public void setUp() {
+    }
+
+    /**
+     *
+     */
+    @After
+    public void tearDown() {
+    }
 
     /**
      *

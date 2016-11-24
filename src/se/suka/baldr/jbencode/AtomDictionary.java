@@ -1,3 +1,5 @@
+package se.suka.baldr.jbencode;
+
 /*
  * The MIT License
  *
@@ -21,8 +23,6 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package se.suka.baldr.jbencode.models;
-
 import java.util.Collection;
 import java.util.Map;
 import java.util.Objects;
