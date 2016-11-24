@@ -25,10 +25,10 @@ package se.suka.baldr.jbencode;
 
 import org.junit.After;
 import org.junit.AfterClass;
+import static org.junit.Assert.*;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import static org.junit.Assert.*;
 
 /**
  * @author Graham Fairweather
@@ -110,18 +110,8 @@ public final class BencodeTest {
      *
      */
     @Test
-    public void testDecodeFileDownloads() {
-        Atom<?> atom = Bencode.decodeFile("bin/Downloads.torrent");
-        assertNotNull(atom);
-        assertTrue(atom instanceof Atom);
-    }
-
-    /**
-     *
-     */
-    @Test
     public void testDecodeFileSample1() {
-        Atom<?> atom = Bencode.decodeFile("bin/sample.torrent");
+        Atom<?> atom = Bencode.decodeFile("samples/sample1.torrent");
         assertNotNull(atom);
     }
 
@@ -130,37 +120,8 @@ public final class BencodeTest {
      */
     @Test
     public void testDecodeFileSample2() {
-        Atom<?> atom = Bencode.decodeFile("bin/sample2.torrent");
+        Atom<?> atom = Bencode.decodeFile("samples/sample2.torrent");
         assertNotNull(atom);
-    }
-
-    /**
-     *
-     */
-    @Test
-    public void testDecodeFileLinux() {
-        Atom<?> atom = Bencode.decodeFile("bin/linux.torrent");
-        assertNotNull(atom);
-    }
-
-    /**
-     *
-     */
-    @Test
-    public void testDecodeFileUTorrent() {
-        Atom<?> atom = Bencode.decodeFile("bin/uTorrent.torrent");
-        assertNotNull(atom);
-        assertTrue(atom instanceof Atom);
-    }
-
-    /**
-     *
-     */
-    @Test
-    public void testDecodeFileWorkspace() {
-        Atom<?> atom = Bencode.decodeFile("bin/workspace.torrent");
-        assertNotNull(atom);
-        assertTrue(atom instanceof Atom);
     }
 
     /**

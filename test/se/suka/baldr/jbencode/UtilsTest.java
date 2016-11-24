@@ -21,7 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package Utils;
+package se.suka.baldr.jbencode;
 
 import org.junit.After;
 import org.junit.AfterClass;
@@ -137,7 +137,7 @@ public class UtilsTest {
      */
     @Test
     public void testReadFileBytesToStringSample1() {
-        String f = readFileBytesToString("bin/sample.torrent", "windows-1252");
+        String f = readFileBytesToString("samples/sample1.torrent", "windows-1252");
         String s = "d8:announce35:udp://tracker.openbittorrent.com:8013:creation datei1327049827e4:infod6:lengthi20e4:name10:sample.txt12:piece lengthi65536e6:pieces0:7:privatei1eee\r";
         assertEquals(f, s);
     }
@@ -147,7 +147,7 @@ public class UtilsTest {
      */
     @Test
     public void testReadFileBytesToStringSample2() {
-        String f = readFileBytesToString("bin/sample2.torrent", "windows-1252");
+        String f = readFileBytesToString("samples/sample2.torrent", "windows-1252");
         assertNotNull(f);
     }
 
@@ -174,7 +174,7 @@ public class UtilsTest {
      */
     @Test
     public void testReadFileLinesToStringSample1() {
-        String f = readFileLinesToString("bin/sample.torrent");
+        String f = readFileLinesToString("samples/sample1.torrent");
         String s = "d8:announce35:udp://tracker.openbittorrent.com:8013:creation datei1327049827e4:infod6:lengthi20e4:name10:sample.txt12:piece lengthi65536e6:pieces0:7:privatei1eee";
         assertEquals(f, s);
     }

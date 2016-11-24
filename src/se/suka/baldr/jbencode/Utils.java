@@ -157,7 +157,7 @@ public class Utils {
      * @return
      */
     public static int getPos(final String pattern, final String characterSequencce, final int startIndex) {
-        final Matcher matcher = Pattern.compile(pattern).matcher(characterSequencce);
+        final Matcher matcher = Pattern.compile(characterSequencce).matcher(pattern);
         return matcher.find(startIndex) ? matcher.start() : -1;
     }
 
