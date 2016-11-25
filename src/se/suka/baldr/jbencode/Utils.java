@@ -31,6 +31,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
 import java.util.Objects;
+import java.util.Random;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -39,6 +40,31 @@ import java.util.regex.Pattern;
  * @see <a href="https://en.wikipedia.org/wiki/Bencode">Bencode</a>
  */
 public class Utils {
+
+    private static final Random RAND = new Random();
+
+    /**
+     * Returns a random integer between min (included) and max (excluded)
+     *
+     * @param min
+     * @param max
+     * @return
+     */
+    public static int randInt(final int min, final int max) {
+        return RAND.nextInt(max - min) + min;
+    }
+
+    /**
+     * Returns a random integer between min (included) and max (included)
+     *
+     * @param min
+     * @param max
+     * @return
+     */
+    public static int randIntClosed(final int min, final int max) {
+        //return RAND.nextInt(max - min + 1) + min;
+        return randInt(min, max + 1);
+    }
 
     /**
      *

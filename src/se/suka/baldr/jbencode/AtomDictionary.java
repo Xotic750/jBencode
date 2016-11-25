@@ -25,6 +25,7 @@ package se.suka.baldr.jbencode;
 
 import java.io.Serializable;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
@@ -44,36 +45,47 @@ import java.util.TreeMap;
  */
 public final class AtomDictionary extends Atom implements Map<String, Atom>, Serializable {
 
+    /**
+     * Backing Map
+     */
     private final Map<String, Atom> value;
+
+    /**
+     * Object on which to synchronize
+     */
+    private final Object mutex;
 
     /**
      *
      */
     public AtomDictionary() {
-        value = new TreeMap<>();
+        value = Collections.synchronizedSortedMap(new TreeMap<>());
+        mutex = this;
     }
 
     /**
      *
-     * @param atomDict
+     * @param atomDictionary
      */
-    public AtomDictionary(final AtomDictionary atomDict) {
+    public AtomDictionary(final AtomDictionary atomDictionary) {
         this();
-        atomDict.entrySet().forEach(entry -> {
-            final String key = entry.getKey();
-            final Atom atom = entry.getValue();
-            if (atom instanceof AtomInteger) {
-                put(key, new AtomInteger((AtomInteger) atom));
-            } else if (atom instanceof AtomString) {
-                put(key, new AtomString((AtomString) atom));
-            } else if (atom instanceof AtomList) {
-                put(key, new AtomList((AtomList) atom));
-            } else if (atom instanceof AtomDictionary) {
-                put(key, new AtomDictionary((AtomDictionary) atom));
-            } else {
-                System.err.println("AtomDictionary: unknown Atom type");
-            }
-        });
+        synchronized (atomDictionary) {
+            atomDictionary.entrySet().stream().forEachOrdered(entry -> {
+                final String key = entry.getKey();
+                final Atom atom = entry.getValue();
+                if (atom instanceof AtomInteger) {
+                    put(key, new AtomInteger((AtomInteger) atom));
+                } else if (atom instanceof AtomString) {
+                    put(key, new AtomString((AtomString) atom));
+                } else if (atom instanceof AtomList) {
+                    put(key, new AtomList((AtomList) atom));
+                } else if (atom instanceof AtomDictionary) {
+                    put(key, new AtomDictionary((AtomDictionary) atom));
+                } else {
+                    System.err.println("AtomDictionary: unknown Atom type");
+                }
+            });
+        }
     }
 
     /**
@@ -82,7 +94,11 @@ public final class AtomDictionary extends Atom implements Map<String, Atom>, Ser
      */
     @Override
     public final int bLength() {
-        return value.entrySet().stream().map(entry -> new AtomString(entry.getKey()).bLength() + entry.getValue().bLength()).reduce(2, Integer::sum);
+        synchronized (mutex) {
+            return value.entrySet().stream()
+                    .map(entry -> new AtomString(entry.getKey()).bLength() + entry.getValue().bLength())
+                    .reduce(2, Integer::sum);
+        }
     }
 
     /**
@@ -139,7 +155,7 @@ public final class AtomDictionary extends Atom implements Map<String, Atom>, Ser
      */
     @Override
     public final boolean containsValue(final Object atom) {
-        return this.value.containsValue(Objects.requireNonNull(atom));
+        return value.containsValue(Objects.requireNonNull(atom));
     }
 
     /**
@@ -149,7 +165,12 @@ public final class AtomDictionary extends Atom implements Map<String, Atom>, Ser
     @Override
     public final String encode() {
         final StringBuilder encoded = new StringBuilder("d");
-        value.keySet().forEach(key -> encoded.append(new AtomString(key).encode()).append(get(key).encode()));
+        synchronized (mutex) {
+            value.keySet().stream()
+                    .forEachOrdered(key -> encoded
+                    .append(new AtomString(key).encode())
+                    .append(get(key).encode()));
+        }
         return encoded.append("e").toString();
     }
 
@@ -284,7 +305,11 @@ public final class AtomDictionary extends Atom implements Map<String, Atom>, Ser
      */
     @Override
     public final void putAll(final Map<? extends String, ? extends Atom> map) {
-        map.entrySet().stream().forEach(entry -> put(entry.getKey(), entry.getValue()));
+        final Map<? extends String, ? extends Atom> syncMap = Collections.synchronizedMap(map);
+        synchronized (syncMap) {
+            syncMap.entrySet().stream()
+                    .forEachOrdered(entry -> put(entry.getKey(), entry.getValue()));
+        }
     }
 
     /**

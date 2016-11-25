@@ -32,6 +32,10 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.Objects;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
+import static se.suka.baldr.jbencode.Utils.randInt;
 
 /**
  * A list of values is encoded as l&lt;contents&gt;e . The contents consist of
@@ -44,7 +48,15 @@ import java.util.Objects;
  */
 public final class AtomList extends Atom implements List<Atom>, Serializable {
 
+    /**
+     * Backing List
+     */
     private final List<Atom> value;
+
+    /**
+     * Object on which to synchronize
+     */
+    private final Object mutex;
 
     /**
      *
@@ -56,9 +68,11 @@ public final class AtomList extends Atom implements List<Atom>, Serializable {
     /**
      *
      * @param initialCapacity
+     * @param initialCapacity
      */
-    public AtomList(final int initialCapacity) {
-        value = new ArrayList<>(initialCapacity);
+    public AtomList(int initialCapacity) {
+        value = Collections.synchronizedList(new ArrayList<>(initialCapacity));
+        mutex = this;
     }
 
     /**
@@ -66,21 +80,22 @@ public final class AtomList extends Atom implements List<Atom>, Serializable {
      * @param atomList
      */
     public AtomList(final AtomList atomList) {
-        this();
-        atomList.stream().forEach(atom -> {
-            final Class<?> atomClass = atom.getClass();
-            if (atom instanceof AtomInteger) {
-                add(new AtomInteger((AtomInteger) atom));
-            } else if (atom instanceof AtomString) {
-                add(new AtomString((AtomString) atom));
-            } else if (atom instanceof AtomList) {
-                add(new AtomList((AtomList) atom));
-            } else if (atom instanceof AtomDictionary) {
-                add(new AtomDictionary((AtomDictionary) atom));
-            } else {
-                System.err.println("AtomList: unknown Atom type");
-            }
-        });
+        this(atomList.size());
+        synchronized (atomList) {
+            atomList.stream().forEachOrdered(atom -> {
+                if (atom instanceof AtomInteger) {
+                    add(new AtomInteger((AtomInteger) atom));
+                } else if (atom instanceof AtomString) {
+                    add(new AtomString((AtomString) atom));
+                } else if (atom instanceof AtomList) {
+                    add(new AtomList((AtomList) atom));
+                } else if (atom instanceof AtomDictionary) {
+                    add(new AtomDictionary((AtomDictionary) atom));
+                } else {
+                    System.err.println("AtomList: unknown Atom type");
+                }
+            });
+        }
     }
 
     /**
@@ -135,6 +150,19 @@ public final class AtomList extends Atom implements List<Atom>, Serializable {
     }
 
     /**
+     * For private use with addAll
+     *
+     * @param index
+     * @param syncCol
+     * @return
+     */
+    private boolean addAllBase(final int index, final Collection<? extends Atom> syncCol) {
+        final AtomicInteger count = new AtomicInteger(index);
+        syncCol.stream().forEachOrdered(atom -> add(count.getAndAdd(1), atom));
+        return !syncCol.isEmpty();
+    }
+
+    /**
      * Appends all of the elements in the specified collection to the end of
      * this list, in the order that they are returned by the specified
      * collection's iterator (optional operation). The behavior of this
@@ -157,8 +185,10 @@ public final class AtomList extends Atom implements List<Atom>, Serializable {
      */
     @Override
     public final boolean addAll(final Collection<? extends Atom> c) {
-        c.stream().forEachOrdered(atom -> add(atom));
-        return !c.isEmpty();
+        final Collection<? extends Atom> syncCol = Collections.synchronizedCollection(c);
+        synchronized (syncCol) {
+            return addAllBase(syncCol.size(), syncCol);
+        }
     }
 
     /**
@@ -188,11 +218,11 @@ public final class AtomList extends Atom implements List<Atom>, Serializable {
      * &lt; 0 || index &gt; size()</tt>)
      */
     @Override
-    public final boolean addAll(int index, final Collection<? extends Atom> c) {
-        for (Atom atom : c) {
-            add(index++, atom);
+    public final boolean addAll(final int index, final Collection<? extends Atom> c) {
+        final Collection<? extends Atom> syncCol = Collections.synchronizedCollection(c);
+        synchronized (syncCol) {
+            return addAllBase(index, syncCol);
         }
-        return !c.isEmpty();
     }
 
     /**
@@ -201,7 +231,9 @@ public final class AtomList extends Atom implements List<Atom>, Serializable {
      */
     @Override
     public final int bLength() {
-        return value.stream().map(atom -> atom.bLength()).reduce(2, Integer::sum);
+        synchronized (mutex) {
+            return value.stream().map(atom -> atom.bLength()).reduce(2, Integer::sum);
+        }
     }
 
     /**
@@ -253,7 +285,7 @@ public final class AtomList extends Atom implements List<Atom>, Serializable {
      */
     @Override
     public final boolean containsAll(final Collection<?> c) {
-        return value.containsAll(c);
+        return value.containsAll(Collections.synchronizedCollection(c));
     }
 
     /**
@@ -262,9 +294,11 @@ public final class AtomList extends Atom implements List<Atom>, Serializable {
      */
     @Override
     public final String encode() {
-        final StringBuilder str = new StringBuilder("l");
-        value.stream().forEach(atom -> str.append(atom.encode()));
-        return str.append("e").toString();
+        final StringBuilder encoded = new StringBuilder("l");
+        synchronized (mutex) {
+            value.stream().forEachOrdered(atom -> encoded.append(atom.encode()));
+        }
+        return encoded.append("e").toString();
     }
 
     /**
@@ -389,12 +423,14 @@ public final class AtomList extends Atom implements List<Atom>, Serializable {
      * @return
      */
     public final AtomList getRandomSlice(final int howMany) {
-        int index = Utils.clampInt(howMany, 0, value.size());
-        final AtomList slice = new AtomList(index);
-        while (index-- > 0) {
-            slice.add(value.get(index));
+        final List<Atom> randomSlice;
+        synchronized (mutex) {
+            final int size = value.size();
+            randomSlice = IntStream.range(0, Utils.clampInt(howMany, 0, size))
+                    .mapToObj(i -> value.get(randInt(0, size)))
+                    .collect(Collectors.toList());
         }
-        return slice;
+        return (AtomList) randomSlice;
     }
 
     /**
@@ -459,14 +495,7 @@ public final class AtomList extends Atom implements List<Atom>, Serializable {
      */
     @Override
     public final boolean removeAll(final Collection<?> c) {
-        boolean removed = false;
-        for (final Object obj : c) {
-            // TODO: look at this?
-            if (remove(obj)) {
-                removed = true;
-            }
-        }
-        return removed;
+        return value.removeAll(Collections.synchronizedCollection(c));
     }
 
     /**
@@ -491,16 +520,7 @@ public final class AtomList extends Atom implements List<Atom>, Serializable {
      */
     @Override
     public final boolean retainAll(final Collection<?> c) {
-        boolean removed = false;
-        for (final Object obj : c) {
-            if (!c.contains(obj)) {
-                // TODO: look at this?
-                if (remove(obj)) {
-                    removed = true;
-                }
-            }
-        }
-        return removed;
+        return value.retainAll(Collections.synchronizedCollection(c));
     }
 
     /**

@@ -84,7 +84,7 @@ public final class AtomInteger extends Atom implements Serializable, Comparable<
      * Returns the value of this {@code AtomInteger} as a {@code byte} after a
      * narrowing primitive conversion.
      *
-     * @return 
+     * @return
      */
     public final byte byteValue() {
         return (byte) value;
@@ -94,7 +94,7 @@ public final class AtomInteger extends Atom implements Serializable, Comparable<
      * Returns the value of this {@code AtomInteger} as a {@code short} after a
      * narrowing primitive conversion.
      *
-     * @return 
+     * @return
      */
     public final short shortValue() {
         return (short) value;
@@ -102,7 +102,8 @@ public final class AtomInteger extends Atom implements Serializable, Comparable<
 
     /**
      * Returns the value of this {@code AtomInteger} as an {@code int}.
-     * @return 
+     *
+     * @return
      */
     public final int intValue() {
         return value;
@@ -112,7 +113,7 @@ public final class AtomInteger extends Atom implements Serializable, Comparable<
      * Returns the value of this {@code AtomInteger} as a {@code long} after a
      * widening primitive conversion.
      *
-     * @return 
+     * @return
      * @see Integer#toUnsignedLong(int)
      */
     public final long longValue() {
@@ -123,7 +124,7 @@ public final class AtomInteger extends Atom implements Serializable, Comparable<
      * Returns the value of this {@code AtomInteger} as a {@code float} after a
      * widening primitive conversion.
      *
-     * @return 
+     * @return
      */
     public final float floatValue() {
         return (float) value;
@@ -133,7 +134,7 @@ public final class AtomInteger extends Atom implements Serializable, Comparable<
      * Returns the value of this {@code AtomInteger} as a {@code double} after a
      * widening primitive conversion.
      *
-     * @return 
+     * @return
      */
     public final double doubleValue() {
         return (double) value;
@@ -143,7 +144,6 @@ public final class AtomInteger extends Atom implements Serializable, Comparable<
      * Compares two {@code AtomInteger} objects numerically.
      *
      * @param anotherAtomInteger
-     * @param anotherAtomInteger the {@code AtomInteger} to be compared.
      * @throws NullPointerException if the specified anotherAtomInteger is null
      * @return the value {@code 0} if this {@code AtomInteger} is equal to the
      * argument {@code AtomInteger}; a value less than {@code 0} if this

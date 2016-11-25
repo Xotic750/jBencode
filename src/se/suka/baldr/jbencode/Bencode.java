@@ -140,8 +140,7 @@ public abstract class Bencode {
      */
     public static Atom decodeFile(String fileName) {
         String s = Utils.readFileBytesToString(fileName, "windows-1252");
-        Atom atom = Bencode.decode(s);
-        return atom;
+        return Bencode.decode(s);
     }
 
     /**
