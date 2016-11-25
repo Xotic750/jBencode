@@ -43,7 +43,7 @@ import java.util.regex.Pattern;
  */
 public class Utilities {
 
-    private static final Logger LOGGER = Logger.getLogger(Utilities.class.getName());
+    private static final Logger LOGGER = Logger.getLogger(Utilities.class.getSimpleName());
     private static final Random RAND = new Random();
 
     /**
@@ -139,21 +139,21 @@ public class Utilities {
         try {
             path = Paths.get(absolutePathToAFile);
         } catch (final InvalidPathException | NullPointerException ioex) {
-            LOGGER.log(Level.WARNING, "readFileBytesToString: {0}: {1}", makeParam(ioex));
+            LOGGER.log(Level.WARNING, "{0}: {1}", makeParam(ioex));
             return null;
         }
         final Charset charset;
         try {
             charset = Charset.forName(charsetName);
         } catch (final IllegalArgumentException iaex) {
-            LOGGER.log(Level.WARNING, "readFileBytesToString: {0}: {1}", makeParam(iaex));
+            LOGGER.log(Level.WARNING, "{0}: {1}", makeParam(iaex));
             return null;
         }
         final byte[] arrayOfBytes;
         try {
             arrayOfBytes = Files.readAllBytes(path);
         } catch (final IOException | NullPointerException | OutOfMemoryError | SecurityException ioex) {
-            LOGGER.log(Level.WARNING, "readFileBytesToString: {0}: {1}", makeParam(ioex));
+            LOGGER.log(Level.WARNING, "{0}: {1}", makeParam(ioex));
             return null;
         }
         return Objects.isNull(charset) ? new String(arrayOfBytes) : new String(arrayOfBytes, charset);
@@ -169,14 +169,14 @@ public class Utilities {
         try {
             path = Paths.get(absolutePathToAFile);
         } catch (final InvalidPathException | NullPointerException ipex) {
-            LOGGER.log(Level.WARNING, "readFileLinesToString: {0}: {1}", makeParam(ipex));
+            LOGGER.log(Level.WARNING, "{0}: {1}", makeParam(ipex));
             return null;
         }
         final List<String> lines;
         try {
             lines = Files.readAllLines(path);
         } catch (final IOException | NullPointerException | OutOfMemoryError | SecurityException ioex) {
-            LOGGER.log(Level.WARNING, "readFileLinesToString: {0}: {1}", makeParam(ioex));
+            LOGGER.log(Level.WARNING, "{0}: {1}", makeParam(ioex));
             return null;
         }
         final StringBuilder stringOfLines = new StringBuilder();

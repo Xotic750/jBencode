@@ -51,7 +51,7 @@ import java.util.logging.Logger;
  */
 public abstract class Bencode {
 
-    private static final Logger LOGGER = Logger.getLogger(Bencode.class.getName());
+    private static final Logger LOGGER = Logger.getLogger(Bencode.class.getSimpleName());
 
     /**
      *
