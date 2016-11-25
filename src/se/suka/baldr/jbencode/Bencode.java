@@ -24,6 +24,8 @@
 package se.suka.baldr.jbencode;
 
 import java.util.Objects;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * Bencode (pronounced like B encode) is the encoding used by the peer-to-peer
@@ -49,12 +51,14 @@ import java.util.Objects;
  */
 public abstract class Bencode {
 
+    private static final Logger LOGGER = Logger.getLogger(Bencode.class.getName());
+
     /**
      *
      * @param x
      * @return
      */
-    public static Atom decode(String x) {
+    public static final Atom decode(final String x) {
         return decode(x, 0);
     }
 
@@ -64,11 +68,11 @@ public abstract class Bencode {
      * @param uiStart
      * @return
      */
-    public static Atom decode(String x, int uiStart) {
+    public static final Atom decode(final String x, final int uiStart) {
         if (!isArgCheckOk(x, uiStart, "decode")) {
             return null;
         }
-        char c = x.charAt(uiStart);
+        final char c = x.charAt(uiStart);
         switch (c) {
             case 'i':
                 return decodeInt(x, uiStart);
@@ -81,7 +85,7 @@ public abstract class Bencode {
                     return decodeStr(x, uiStart);
                 }
         }
-        System.err.println("decode: found unexpected character '" + c + "' at " + uiStart + ", halting decode");
+        LOGGER.log(Level.WARNING, "decode: found unexpected character '{0}' at {1}, halting decode", new Object[]{c, uiStart});
         return null;
     }
 
@@ -90,7 +94,7 @@ public abstract class Bencode {
      * @param x
      * @return
      */
-    public static AtomDictionary decodeDict(String x) {
+    public static final AtomDictionary decodeDict(final String x) {
         return decodeDict(x, 0);
     }
 
@@ -100,27 +104,27 @@ public abstract class Bencode {
      * @param uiStart
      * @return
      */
-    public static AtomDictionary decodeDict(String x, int uiStart) {
+    public static final AtomDictionary decodeDict(final String x, int uiStart) {
         if (!isArgCheckOk(x, uiStart, "decodeDict")) {
             return null;
         }
         if (x.charAt(uiStart) != 'd') {
-            charNotFound("d", "decodeDict");
+            charNotFound("decodeDict", "d");
             return null;
         }
         uiStart++;
-        AtomDictionary dict = new AtomDictionary();
-        int length = x.length();
+        final AtomDictionary dict = new AtomDictionary();
+        final int length = x.length();
         while (isMore(x, uiStart, length)) {
-            Atom key = decode(x, uiStart);
+            final Atom key = decode(x, uiStart);
             if (!(key instanceof AtomString)) {
-                itemError("key", "decodeDict");
+                itemError("decodeDict", "key");
                 return null;
             }
             uiStart += key.bLength();
-            Atom value = decode(x, uiStart);
+            final Atom value = decode(x, uiStart);
             if (!(key instanceof Atom)) {
-                itemError("value", "decodeDict");
+                itemError("decodeDict", "value");
                 return null;
             }
             uiStart += value.bLength();
@@ -129,7 +133,7 @@ public abstract class Bencode {
         if (isComplete(x, uiStart, length)) {
             return dict;
         }
-        charNotFound("e", "decodeDict");
+        charNotFound("decodeDict", "e");
         return null;
     }
 
@@ -138,8 +142,8 @@ public abstract class Bencode {
      * @param fileName
      * @return
      */
-    public static Atom decodeFile(String fileName) {
-        String s = Utils.readFileBytesToString(fileName, "windows-1252");
+    public static final Atom decodeFile(final String fileName) {
+        final String s = Utilities.readFileBytesToString(fileName, "windows-1252");
         return Bencode.decode(s);
     }
 
@@ -148,7 +152,7 @@ public abstract class Bencode {
      * @param x
      * @return
      */
-    public static AtomInteger decodeInt(String x) {
+    public static final AtomInteger decodeInt(final String x) {
         return decodeInt(x, 0);
     }
 
@@ -158,28 +162,28 @@ public abstract class Bencode {
      * @param uiStart
      * @return
      */
-    public static AtomInteger decodeInt(String x, int uiStart) {
+    public static final AtomInteger decodeInt(final String x, final int uiStart) {
         if (!isArgCheckOk(x, uiStart, "decodeInt")) {
             return null;
         }
         if (x.charAt(uiStart) != 'i') {
-            charNotFound("i", "decodeInt");
+            charNotFound("decodeInt", "i");
             return null;
         }
-        int uiEnd = x.indexOf('e', uiStart);
+        final int uiEnd = x.indexOf('e', uiStart);
         if (uiEnd == -1) {
-            charNotFound("c", "decodeInt");
+            charNotFound("decodeInt", "c");
             return null;
         }
-        String s = x.substring(uiStart + 1, uiEnd);
+        final String s = x.substring(uiStart + 1, uiEnd);
         if (s.equals("-0")) {
-            invalidInt(s, "decodeInt");
+            invalidInt("decodeInt", s);
             return null;
         }
         try {
             return new AtomInteger(Integer.parseInt(s, 10));
-        } catch (NumberFormatException nfe) {
-            invalidInt(s, "decodeInt");
+        } catch (final NumberFormatException nfe) {
+            invalidInt("decodeInt", s);
             return null;
         }
     }
@@ -189,7 +193,7 @@ public abstract class Bencode {
      * @param x
      * @return
      */
-    public static AtomList decodeList(String x) {
+    public static final AtomList decodeList(final String x) {
         return decodeList(x, 0);
     }
 
@@ -199,21 +203,21 @@ public abstract class Bencode {
      * @param uiStart
      * @return
      */
-    public static AtomList decodeList(String x, int uiStart) {
+    public static final AtomList decodeList(final String x, int uiStart) {
         if (!isArgCheckOk(x, uiStart, "decodeList")) {
             return null;
         }
         if (x.charAt(uiStart) != 'l') {
-            charNotFound("d", "decodeList");
+            charNotFound("decodeList", "d");
             return null;
         }
         uiStart++;
-        AtomList list = new AtomList();
-        int length = x.length();
+        final AtomList list = new AtomList();
+        final int length = x.length();
         while (isMore(x, uiStart, length)) {
-            Atom value = decode(x, uiStart);
+            final Atom value = decode(x, uiStart);
             if (Objects.isNull(value)) {
-                itemError("value", "decodeList");
+                itemError("decodeList", "value");
                 return null;
             }
             uiStart += value.bLength();
@@ -222,7 +226,7 @@ public abstract class Bencode {
         if (isComplete(x, uiStart, length)) {
             return list;
         }
-        charNotFound("e", "decodeList");
+        charNotFound("decodeList", "e");
         return null;
     }
 
@@ -231,7 +235,7 @@ public abstract class Bencode {
      * @param x
      * @return
      */
-    public static AtomString decodeStr(String x) {
+    public static final AtomString decodeStr(final String x) {
         return decodeStr(x, 0);
     }
 
@@ -241,25 +245,25 @@ public abstract class Bencode {
      * @param uiStart
      * @return
      */
-    public static AtomString decodeStr(String x, int uiStart) {
+    public static final AtomString decodeStr(final String x, int uiStart) {
         if (!isArgCheckOk(x, uiStart, "decodeStr")) {
             return null;
         }
         if (!Character.isDigit(x.charAt(uiStart))) {
-            charNotFound("1234567890", "decodeStr");
+            charNotFound("decodeStr", "1234567890");
             return null;
         }
-        int uiSplit = Utils.findFirstNotOf(x, "1234567890", uiStart);
+        final int uiSplit = Utilities.findFirstNotOf(x, "1234567890", uiStart);
         if (uiSplit == -1 || x.charAt(uiSplit) != ':') {
-            charNotFound(":", "decodeString");
+            charNotFound("decodeString", ":");
             return null;
         }
-        String length = x.substring(uiStart, uiSplit);
-        int uiLength;
+        final String length = x.substring(uiStart, uiSplit);
+        final int uiLength;
         try {
             uiLength = Integer.parseInt(length, 10);
         } catch (NumberFormatException nfe) {
-            invalidInt(length, "decodeStr");
+            invalidInt("decodeStr", length);
             return null;
         }
         String contents = x.substring(uiSplit + 1, uiSplit + uiLength + 1);
@@ -271,48 +275,48 @@ public abstract class Bencode {
      * @param atom
      * @return
      */
-    public static String encode(Atom atom) {
+    public static final String encode(final Atom atom) {
         if (Objects.nonNull(atom)) {
             return atom.encode();
         }
-        System.err.println("encode: error encoding, halting encode");
+        LOGGER.log(Level.WARNING, "encode: error encoding, halting encode");
         return null;
     }
 
-    private static void charNotFound(String string, String methodName) {
-        System.err.println(methodName + ": did not find '" + string + "', halting decode");
+    private static void charNotFound(final Object... params) {
+        LOGGER.log(Level.WARNING, "{0}: did not find \"{1}\", halting decode", params);
     }
 
-    private static void invalidInt(String s, String methodName) {
-        System.err.println(methodName + ": invalid integer '" + s + "', halting decode");
+    private static void invalidInt(final Object... params) {
+        LOGGER.log(Level.WARNING, "{0}: invalid integer \"{1}\", halting decode", params);
     }
 
-    private static boolean isArgCheckOk(String x, int uiStart, String methodName) {
+    private static boolean isArgCheckOk(final String x, final int uiStart, final String methodName) {
         if (Objects.isNull(x)) {
-            System.err.println(methodName + ": null string, halting decode");
+            LOGGER.log(Level.WARNING, "{0}: null string, halting decode", methodName);
             return false;
         }
         if (x.isEmpty() || x.substring(uiStart + 1).isEmpty()) {
-            System.err.println(methodName + ": empty string, halting decode");
+            LOGGER.log(Level.WARNING, "{0}: empty string, halting decode", methodName);
             return false;
         }
         if (uiStart < 0 || uiStart >= x.length()) {
-            System.err.println(methodName + ": out of range, halting decode");
+            LOGGER.log(Level.WARNING, "{0}: out of range, halting decode", methodName);
             return false;
         }
         return true;
     }
 
-    private static boolean isComplete(String x, int uiStart, int length) {
+    private static boolean isComplete(final String x, final int uiStart, final int length) {
         return uiStart < length && x.charAt(uiStart) == 'e';
     }
 
-    private static boolean isMore(String x, int uiStart, int length) {
+    private static boolean isMore(final String x, final int uiStart, final int length) {
         return uiStart < length && x.charAt(uiStart) != 'e';
     }
 
-    private static void itemError(String type, String methodName) {
-        System.err.println(methodName + ": error decoding " + type + ", halting decode");
+    private static void itemError(final Object... params) {
+        LOGGER.log(Level.WARNING, "{0}: error decoding \"{1}\", halting decode", params);
     }
 
     private Bencode() {

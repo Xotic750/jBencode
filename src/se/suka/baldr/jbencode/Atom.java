@@ -29,9 +29,6 @@ import java.io.Serializable;
  * The smallest abstract class that is extended by all other types Bencoded atom
  * Object.
  *
- * The object uses Generics to allow a type or method to operate on objects of
- * various types while providing compile-time type safety.
- *
  * @author Graham Fairweather
  */
 public abstract class Atom implements Serializable {

@@ -56,7 +56,15 @@ public final class AtomDictionary extends Atom implements Map<String, Atom>, Ser
     private final Object mutex;
 
     /**
-     *
+     * Constructs a new, empty tree map, using the natural ordering of its keys.
+     * All keys inserted into the map must implement the {@link
+     * Comparable} interface. Furthermore, all such keys must be
+     * <em>mutually comparable</em>: {@code k1.compareTo(k2)} must not throw a
+     * {@code ClassCastException} for any keys {@code k1} and {@code k2} in the
+     * map. If the user attempts to put a key into the map that violates this
+     * constraint (for example, the user attempts to put a string key into a map
+     * whose keys are integers), the {@code put(Object key, Object value)} call
+     * will throw a {@code ClassCastException}.
      */
     public AtomDictionary() {
         value = Collections.synchronizedSortedMap(new TreeMap<>());
@@ -64,13 +72,23 @@ public final class AtomDictionary extends Atom implements Map<String, Atom>, Ser
     }
 
     /**
+     * Constructs a new tree map containing a copy of the mappings as the given
+     * map, ordered according to the <em>natural ordering</em> of its keys. All
+     * keys inserted into the new map must implement the {@link
+     * Comparable} interface. Furthermore, all such keys must be
+     * <em>mutually comparable</em>: {@code k1.compareTo(k2)} must not throw a
+     * {@code ClassCastException} for any keys {@code k1} and {@code k2} in the
+     * map. This method runs in n*log(n) time.
      *
-     * @param atomDictionary
+     * @param m the map whose mappings are to be copied and placed in this map
+     * @throws ClassCastException if the keys in m are not {@link Comparable},
+     * or are not mutually comparable
+     * @throws NullPointerException if the specified map is null
      */
-    public AtomDictionary(final AtomDictionary atomDictionary) {
+    public AtomDictionary(Map<? extends String, ? extends Atom> m) {
         this();
-        synchronized (atomDictionary) {
-            atomDictionary.entrySet().stream().forEachOrdered(entry -> {
+        synchronized (m) {
+            m.entrySet().stream().forEachOrdered(entry -> {
                 final String key = entry.getKey();
                 final Atom atom = entry.getValue();
                 if (atom instanceof AtomInteger) {
@@ -82,7 +100,7 @@ public final class AtomDictionary extends Atom implements Map<String, Atom>, Ser
                 } else if (atom instanceof AtomDictionary) {
                     put(key, new AtomDictionary((AtomDictionary) atom));
                 } else {
-                    System.err.println("AtomDictionary: unknown Atom type");
+                    throw new IllegalArgumentException("unknown Atom type");
                 }
             });
         }
@@ -292,7 +310,7 @@ public final class AtomDictionary extends Atom implements Map<String, Atom>, Ser
      * behaviour of this operation is undefined if the specified map is modified
      * while the operation is in progress.
      *
-     * @param map mappings to be stored in this map
+     * @param m mappings to be stored in this map
      * @throws UnsupportedOperationException if the <tt>putAll</tt> operation is
      * not supported by this map
      * @throws ClassCastException if the class of a key or value in the
@@ -304,10 +322,9 @@ public final class AtomDictionary extends Atom implements Map<String, Atom>, Ser
      * the specified map prevents it from being stored in this map
      */
     @Override
-    public final void putAll(final Map<? extends String, ? extends Atom> map) {
-        final Map<? extends String, ? extends Atom> syncMap = Collections.synchronizedMap(map);
-        synchronized (syncMap) {
-            syncMap.entrySet().stream()
+    public final void putAll(final Map<? extends String, ? extends Atom> m) {
+        synchronized (m) {
+            m.entrySet().stream()
                     .forEachOrdered(entry -> put(entry.getKey(), entry.getValue()));
         }
     }

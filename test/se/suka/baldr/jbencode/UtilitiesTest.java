@@ -25,20 +25,20 @@ package se.suka.baldr.jbencode;
 
 import org.junit.After;
 import org.junit.AfterClass;
+import static org.junit.Assert.*;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import static org.junit.Assert.*;
-import static se.suka.baldr.jbencode.Utils.findFirstNotOf;
-import static se.suka.baldr.jbencode.Utils.findFirstOf;
-import static se.suka.baldr.jbencode.Utils.readFileBytesToString;
-import static se.suka.baldr.jbencode.Utils.readFileLinesToString;
+import static se.suka.baldr.jbencode.Utilities.findFirstNotOf;
+import static se.suka.baldr.jbencode.Utilities.findFirstOf;
+import static se.suka.baldr.jbencode.Utilities.readFileBytesToString;
+import static se.suka.baldr.jbencode.Utilities.readFileLinesToString;
 
 /**
  *
  * @author graham
  */
-public class UtilsTest {
+public class UtilitiesTest {
 
     /**
      *
@@ -57,7 +57,7 @@ public class UtilsTest {
     /**
      *
      */
-    public UtilsTest() {
+    public UtilitiesTest() {
     }
 
     /**
@@ -184,7 +184,7 @@ public class UtilsTest {
      */
     @Test
     public void testReadFileLinesToStringSample2() {
-        String f = readFileLinesToString("bin/sample2.torrent");
+        String f = readFileLinesToString("samples/sample2.torrent");
         assertNull(f);
     }
 

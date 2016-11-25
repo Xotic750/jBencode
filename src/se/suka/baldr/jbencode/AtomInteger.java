@@ -37,26 +37,35 @@ import java.io.Serializable;
  */
 public final class AtomInteger extends Atom implements Serializable, Comparable<AtomInteger> {
 
+    /**
+     * Backing {@link int}
+     */
     private final int value;
 
     /**
-     *
+     * Constructs a newly allocated {@code AtomInteger} object that represents
+     * the {@code int} value of 0.
      */
     public AtomInteger() {
         this(0);
     }
 
     /**
+     * Constructs a newly allocated {@code AtomInteger} object that represents
+     * the specified {@code AtomInteger} value.
      *
-     * @param atomInteger
+     * @param anotherAtomInteger the value to be represented by the
+     * {@code AtomInteger} object.
      */
-    public AtomInteger(final AtomInteger atomInteger) {
-        this(atomInteger.intValue());
+    public AtomInteger(final AtomInteger anotherAtomInteger) {
+        this(anotherAtomInteger.intValue());
     }
 
     /**
+     * Constructs a newly allocated {@code AtomInteger} object that represents
+     * the specified {@code int} value.
      *
-     * @param value
+     * @param value the value to be represented by the {@code Integer} object.
      */
     public AtomInteger(final int value) {
         this.value = value;

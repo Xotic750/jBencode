@@ -43,6 +43,9 @@ import java.util.Objects;
  */
 public final class AtomString extends Atom implements Serializable, Comparable<AtomString> {
 
+    /**
+     * Backing {@link String}
+     */
     private final String value;
 
     /**
@@ -55,20 +58,21 @@ public final class AtomString extends Atom implements Serializable, Comparable<A
 
     /**
      * Initialises a newly created {@code AtomString} object so that it
-     * represents the same sequence of characters as the argument AtomString; in
-     * other words, the newly created AtomString is a copy of the argument
-     * AtomString.
+     * represents the same sequence of characters as the argument
+     * {@code AtomString}; in other words, the newly created {@code AtomString}
+     * is a copy of the argument {@code AtomString}.
      *
-     * @param atom A {@code AtomString}
+     * @param anotherAtomstring A {@code AtomString}
      */
-    public AtomString(final AtomString atom) {
-        this(atom.toString());
+    public AtomString(final AtomString anotherAtomstring) {
+        this(anotherAtomstring.toString());
     }
 
     /**
      * Initialises a newly created {@code AtomString} object so that it
      * represents the same sequence of characters as the argument; in other
-     * words, the newly created AtomString is a copy of the argument string.
+     * words, the newly created {@code AtomString} is a copy of the argument
+     * string.
      *
      * @param value A {@code String}
      */
