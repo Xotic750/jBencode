@@ -69,7 +69,7 @@ public final class AtomDictionaryTest {
     @Test
     public void testAtomDictionaryConstructorAtom() {
         AtomDictionary ai = new AtomDictionary();
-        AtomDictionary atomDictionary = new AtomDictionary(ai);
+        Atom atomDictionary = new AtomDictionary(ai);
         assertEquals(ai, atomDictionary);
     }
 
@@ -79,7 +79,7 @@ public final class AtomDictionaryTest {
     @Test
     public void testAtomDictionaryConstructorAtomSet() {
         AtomDictionary ai = new AtomDictionary();
-        AtomDictionary ai1 = new AtomDictionary(ai);
+        Atom ai1 = new AtomDictionary(ai);
         assertEquals(ai, ai1);
     }
 
@@ -89,7 +89,7 @@ public final class AtomDictionaryTest {
     @Test
     public void testAtomDictionaryConstructorAtomValue() {
         AtomDictionary ai = new AtomDictionary();
-        AtomDictionary ai1 = new AtomDictionary(ai);
+        Atom ai1 = new AtomDictionary(ai);
         assertEquals(ai, ai1);
     }
 
@@ -98,7 +98,7 @@ public final class AtomDictionaryTest {
      */
     @Test
     public void testAtomDictionaryConstructorEmpty() {
-        AtomDictionary atomDictionary = new AtomDictionary();
+        Atom atomDictionary = new AtomDictionary();
         assertEquals(new AtomDictionary(), atomDictionary);
     }
 
@@ -108,9 +108,9 @@ public final class AtomDictionaryTest {
     @Test
     public void testAtomDictionaryConstructorEmptyBLength() {
         AtomDictionary ai = new AtomDictionary();
-        AtomInteger i = new AtomInteger(1);
+        Atom i = new AtomInteger(1);
         ai.put("foo", i);
-        AtomString s = new AtomString("Hello");
+        Atom s = new AtomString("Hello");
         ai.put("bar", s);
         assertEquals(ai.bLength(), 22);
     }
@@ -121,9 +121,9 @@ public final class AtomDictionaryTest {
     @Test
     public void testAtomDictionaryConstructorEmptyEncode() {
         AtomDictionary ai = new AtomDictionary();
-        AtomInteger i = new AtomInteger(1);
+        Atom i = new AtomInteger(1);
         ai.put("foo", i);
-        AtomString s = new AtomString("Hello");
+        Atom s = new AtomString("Hello");
         ai.put("bar", s);
         assertEquals(ai.encode(), "d3:bar5:Hello3:fooi1ee");
     }
@@ -134,15 +134,15 @@ public final class AtomDictionaryTest {
     @Test
     public void testAtomDictionaryConstructorEmptyEquals() {
         AtomDictionary ai = new AtomDictionary();
-        AtomInteger i = new AtomInteger(1);
+        Atom i = new AtomInteger(1);
         ai.put("foo", i);
-        AtomString s = new AtomString("Hello");
+        Atom s = new AtomString("Hello");
         ai.put("bar", s);
 
         AtomDictionary ai1 = new AtomDictionary();
-        AtomInteger i1 = new AtomInteger(1);
+        Atom i1 = new AtomInteger(1);
         ai1.put("foo", i1);
-        AtomString s1 = new AtomString("Hello");
+        Atom s1 = new AtomString("Hello");
         ai1.put("bar", s1);
 
         assertEquals(ai, ai1);
@@ -154,9 +154,9 @@ public final class AtomDictionaryTest {
     @Test
     public void testAtomDictionaryConstructorEmptyLength() {
         AtomDictionary ai = new AtomDictionary();
-        AtomInteger i = new AtomInteger(1);
+        Atom i = new AtomInteger(1);
         ai.put("foo", i);
-        AtomString s = new AtomString("Hello");
+        Atom s = new AtomString("Hello");
         ai.put("bar", s);
         assertEquals(ai.size(), 2);
     }
@@ -167,9 +167,9 @@ public final class AtomDictionaryTest {
     @Test
     public void testAtomDictionaryConstructorEmptyString() {
         AtomDictionary ai = new AtomDictionary();
-        AtomInteger i = new AtomInteger(1);
+        Atom i = new AtomInteger(1);
         ai.put("foo", i);
-        AtomString s = new AtomString("Hello");
+        Atom s = new AtomString("Hello");
         ai.put("bar", s);
         assertEquals(ai.toString(), "{bar=Hello, foo=1}");
     }
@@ -179,7 +179,7 @@ public final class AtomDictionaryTest {
      */
     @Test
     public void testAtomDictionaryConstructorEmptyValue() {
-        AtomDictionary ai = new AtomDictionary();
+        Atom ai = new AtomDictionary();
         assertEquals(ai, new AtomDictionary());
     }
 
@@ -188,7 +188,7 @@ public final class AtomDictionaryTest {
      */
     @Test
     public void testAtomDictionaryConstructorString() {
-        AtomDictionary atomDictionary = new AtomDictionary();
+        Atom atomDictionary = new AtomDictionary();
         assertEquals(new AtomDictionary(), atomDictionary);
     }
 
@@ -197,8 +197,8 @@ public final class AtomDictionaryTest {
      */
     @Test
     public void testAtomDictionaryConstructorStringValue() {
-        AtomDictionary ai = new AtomDictionary();
-        AtomDictionary ai1 = new AtomDictionary();
+        Atom ai = new AtomDictionary();
+        Atom ai1 = new AtomDictionary();
         assertEquals(ai, ai1);
     }
 
@@ -208,13 +208,11 @@ public final class AtomDictionaryTest {
     @Test
     public void testAtomDictionaryIterateKeys() {
         AtomDictionary ai = new AtomDictionary();
-        AtomInteger i = new AtomInteger(1);
+        Atom i = new AtomInteger(1);
         ai.put("foo", i);
-        AtomString s = new AtomString("Hello");
+        Atom s = new AtomString("Hello");
         ai.put("bar", s);
-        ai.keySet().forEach((key) -> {
-            assertTrue(key instanceof String);
-        });
+        ai.keySet().stream().forEach(key -> assertTrue(key instanceof String));
     }
 
     /**
@@ -223,13 +221,11 @@ public final class AtomDictionaryTest {
     @Test
     public void testAtomDictionaryIterateValues() {
         AtomDictionary ai = new AtomDictionary();
-        AtomInteger i = new AtomInteger(1);
+        Atom i = new AtomInteger(1);
         ai.put("foo", i);
-        AtomString s = new AtomString("Hello");
+        Atom s = new AtomString("Hello");
         ai.put("bar", s);
-        ai.values().forEach((value) -> {
-            assertTrue(value instanceof Atom);
-        });
+        ai.values().stream().forEach(value -> assertTrue(value instanceof Atom));
     }
 
     /**
@@ -238,7 +234,7 @@ public final class AtomDictionaryTest {
     @Test
     public void testAtomDictionaryOrder() {
         AtomDictionary ai = new AtomDictionary();
-        AtomInteger i = new AtomInteger(1);
+        Atom i = new AtomInteger(1);
         ai.put("foo", i);
         ai.put("bar", i);
         ai.put("boo", i);
@@ -247,7 +243,7 @@ public final class AtomDictionaryTest {
         ai.put("ABC90", i);
         ai.put("ABC100", i);
         String keysConcat = "";
-        keysConcat = ai.keySet().stream().map((key) -> key).reduce(keysConcat, String::concat);
+        keysConcat = ai.keySet().stream().map(key -> key).reduce(keysConcat, String::concat);
         assertEquals(keysConcat, "10090ABC100ABC90barboofoo");
     }
 

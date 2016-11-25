@@ -76,11 +76,11 @@ public final class AtomListTest {
      *
      */
     @Test
-    public void testAtomListClear() {
+    public void testAtomListAddRemove() {
         AtomList ai = new AtomList();
-        AtomInteger i = new AtomInteger(1);
+        Atom i = new AtomInteger(1);
         ai.add(i);
-        AtomString s = new AtomString("Hello");
+        Atom s = new AtomString("Hello");
         ai.add(s);
         ai.remove(i);
         assertEquals(ai.toString(), "[Hello]");
@@ -92,7 +92,7 @@ public final class AtomListTest {
     @Test
     public void testAtomListConstructorAtom() {
         AtomList ai = new AtomList();
-        AtomList atomList = new AtomList(ai);
+        Atom atomList = new AtomList(ai);
         assertEquals(atomList, ai);
     }
 
@@ -102,7 +102,7 @@ public final class AtomListTest {
     @Test
     public void testAtomListConstructorAtomSet() {
         AtomList ai = new AtomList();
-        AtomList ai1 = new AtomList(ai);
+        Atom ai1 = new AtomList(ai);
         assertEquals(ai, ai1);
     }
 
@@ -112,7 +112,7 @@ public final class AtomListTest {
     @Test
     public void testAtomListConstructorAtomValue() {
         AtomList ai = new AtomList();
-        AtomList ai1 = new AtomList(ai);
+        Atom ai1 = new AtomList(ai);
         assertEquals(ai, ai1);
     }
 
@@ -121,7 +121,7 @@ public final class AtomListTest {
      */
     @Test
     public void testAtomListConstructorEmpty() {
-        AtomList atomList = new AtomList();
+        Atom atomList = new AtomList();
         assertEquals(atomList, new AtomList());
     }
 
@@ -131,9 +131,9 @@ public final class AtomListTest {
     @Test
     public void testAtomListConstructorEmptyBLength() {
         AtomList ai = new AtomList();
-        AtomInteger i = new AtomInteger(1);
+        Atom i = new AtomInteger(1);
         ai.add(i);
-        AtomString s = new AtomString("Hello");
+        Atom s = new AtomString("Hello");
         ai.add(s);
         assertEquals(ai.bLength(), 12);
     }
@@ -144,15 +144,15 @@ public final class AtomListTest {
     @Test
     public void testAtomListConstructorEmptyEquals() {
         AtomList ai = new AtomList();
-        AtomInteger i = new AtomInteger(1);
+        Atom i = new AtomInteger(1);
         ai.add(i);
-        AtomString s = new AtomString("Hello");
+        Atom s = new AtomString("Hello");
         ai.add(s);
 
         AtomList ai1 = new AtomList();
-        AtomInteger i1 = new AtomInteger(1);
+        Atom i1 = new AtomInteger(1);
         ai1.add(i1);
-        AtomString s1 = new AtomString("Hello");
+        Atom s1 = new AtomString("Hello");
         ai1.add(s1);
 
         assertEquals(ai, ai1);
@@ -164,9 +164,9 @@ public final class AtomListTest {
     @Test
     public void testAtomListConstructorEmptyLength() {
         AtomList ai = new AtomList();
-        AtomInteger i = new AtomInteger(1);
+        Atom i = new AtomInteger(1);
         ai.add(i);
-        AtomString s = new AtomString("Hello");
+        Atom s = new AtomString("Hello");
         ai.add(s);
         assertEquals(ai.size(), 2);
     }
@@ -177,9 +177,9 @@ public final class AtomListTest {
     @Test
     public void testAtomListConstructorEmptyString() {
         AtomList ai = new AtomList();
-        AtomInteger i = new AtomInteger(1);
+        Atom i = new AtomInteger(1);
         ai.add(i);
-        AtomString s = new AtomString("Hello");
+        Atom s = new AtomString("Hello");
         ai.add(s);
         assertEquals(ai.toString(), "[1, Hello]");
     }
@@ -190,9 +190,9 @@ public final class AtomListTest {
     @Test
     public void testAtomListConstructorEmptytEncode() {
         AtomList ai = new AtomList();
-        AtomInteger i = new AtomInteger(1);
+        Atom i = new AtomInteger(1);
         ai.add(i);
-        AtomString s = new AtomString("Hello");
+        Atom s = new AtomString("Hello");
         ai.add(s);
         assertEquals(ai.encode(), "li1e5:Helloe");
     }
@@ -202,7 +202,7 @@ public final class AtomListTest {
      */
     @Test
     public void testAtomListConstructorEmptyValue() {
-        AtomList ai = new AtomList();
+        Atom ai = new AtomList();
         assertEquals(ai, new AtomList());
     }
 
@@ -211,7 +211,7 @@ public final class AtomListTest {
      */
     @Test
     public void testAtomListConstructorString() {
-        AtomList atomList = new AtomList();
+        Atom atomList = new AtomList();
         assertEquals(atomList, new AtomList());
     }
 
@@ -220,7 +220,7 @@ public final class AtomListTest {
      */
     @Test
     public void testAtomListConstructorStringSet() {
-        AtomList ai = new AtomList();
+        Atom ai = new AtomList();
         assertEquals(ai, new AtomList());
     }
 
@@ -229,7 +229,7 @@ public final class AtomListTest {
      */
     @Test
     public void testAtomListConstructorStringValue() {
-        AtomList ai = new AtomList();
+        Atom ai = new AtomList();
         assertEquals(ai, new AtomList());
     }
 
@@ -239,15 +239,15 @@ public final class AtomListTest {
     @Test
     public void testAtomListCopyConstructor() {
         AtomList ai = new AtomList();
-        AtomInteger i = new AtomInteger(1);
+        Atom i = new AtomInteger(1);
         ai.add(i);
-        AtomString s = new AtomString("Hello");
+        Atom s = new AtomString("Hello");
         ai.add(s);
 
         AtomList ai1 = new AtomList();
-        AtomInteger i1 = new AtomInteger(1);
+        Atom i1 = new AtomInteger(1);
         ai1.add(i1);
-        AtomString s1 = new AtomString("Hello");
+        Atom s1 = new AtomString("Hello");
         ai1.add(s1);
 
         AtomList ai2 = new AtomList();
@@ -269,9 +269,9 @@ public final class AtomListTest {
     @Test
     public void testAtomListIterate() {
         AtomList ai = new AtomList();
-        AtomInteger i = new AtomInteger(1);
+        Atom i = new AtomInteger(1);
         ai.add(i);
-        AtomString s = new AtomString("Hello");
+        Atom s = new AtomString("Hello");
         ai.add(s);
         for (Atom atom : ai) {
             assertTrue(atom instanceof Atom);
@@ -292,9 +292,7 @@ public final class AtomListTest {
         ai.add(new AtomString("ABC90"));
         ai.add(new AtomString("ABC100"));
         String order = "";
-        for (Atom atom : ai) {
-            order += atom.toString();
-        }
+        order = ai.stream().map(atom -> atom.toString()).reduce(order, String::concat);
         assertEquals(order, "foobarboo90100ABC90ABC100");
     }
 

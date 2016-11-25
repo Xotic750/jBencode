@@ -75,7 +75,7 @@ public final class BencodeTest {
      */
     @Test
     public void testDecodeDictIntStrLst() {
-        AtomDictionary l = Bencode.decodeDict("d3:fooli5e5:Helloe3:barli50000000e11:Hello Worldee");
+        Atom l = Bencode.decodeDict("d3:fooli5e5:Helloe3:barli50000000e11:Hello Worldee");
         AtomDictionary expected = new AtomDictionary();
         AtomList il = new AtomList();
         il.add(new AtomInteger(5));

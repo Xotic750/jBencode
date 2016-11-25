@@ -76,7 +76,7 @@ public final class AtomStringTest {
     @Test
     public void testAtomStringConstructorAtom() {
         AtomString ai = new AtomString("Hello");
-        AtomString atomString = new AtomString(ai);
+        Atom atomString = new AtomString(ai);
         assertEquals(ai, atomString);
     }
 
@@ -85,7 +85,7 @@ public final class AtomStringTest {
      */
     @Test
     public void testAtomStringConstructorAtomSet() {
-        AtomString ai = new AtomString("Hello");
+        Atom ai = new AtomString("Hello");
         assertEquals(ai.toString(), "Hello");
     }
 
@@ -95,7 +95,7 @@ public final class AtomStringTest {
     @Test
     public void testAtomStringConstructorAtomValue() {
         AtomString ai = new AtomString("Hello");
-        AtomString ai1 = new AtomString(ai);
+        Atom ai1 = new AtomString(ai);
         assertEquals(ai1.toString(), "Hello");
     }
 
@@ -104,7 +104,7 @@ public final class AtomStringTest {
      */
     @Test
     public void testAtomStringConstructorEmpty() {
-        AtomString atomString = new AtomString();
+        Atom atomString = new AtomString();
         assertEquals(new AtomString(), atomString);
     }
 
@@ -113,7 +113,7 @@ public final class AtomStringTest {
      */
     @Test
     public void testAtomStringConstructorEmptyBLength() {
-        AtomString ai = new AtomString();
+        Atom ai = new AtomString();
         assertEquals(ai.bLength(), 2);
     }
 
@@ -122,8 +122,8 @@ public final class AtomStringTest {
      */
     @Test
     public void testAtomStringConstructorEmptyEquals() {
-        AtomString ai = new AtomString();
-        AtomString ai1 = new AtomString();
+        Atom ai = new AtomString();
+        Atom ai1 = new AtomString();
         assertEquals(ai, ai1);
     }
 
@@ -132,7 +132,7 @@ public final class AtomStringTest {
      */
     @Test
     public void testAtomStringConstructorEmptyLength() {
-        AtomString ai = new AtomString();
+        Atom ai = new AtomString();
         assertEquals(ai.toString().length(), 0);
     }
 
@@ -141,7 +141,7 @@ public final class AtomStringTest {
      */
     @Test
     public void testAtomStringConstructorEmptyString() {
-        AtomString ai = new AtomString();
+        Atom ai = new AtomString();
         assertEquals(ai.toString(), "");
     }
 
@@ -150,7 +150,7 @@ public final class AtomStringTest {
      */
     @Test
     public void testAtomStringConstructorEmptytEncode() {
-        AtomString ai = new AtomString();
+        Atom ai = new AtomString();
         assertEquals(ai.encode(), "0:");
     }
 
@@ -159,7 +159,7 @@ public final class AtomStringTest {
      */
     @Test
     public void testAtomStringConstructorEmptyValue() {
-        AtomString ai = new AtomString();
+        Atom ai = new AtomString();
         assertEquals(ai.toString(), "");
     }
 
@@ -168,7 +168,7 @@ public final class AtomStringTest {
      */
     @Test
     public void testAtomStringConstructorLongerStringBLength() {
-        AtomString ai = new AtomString("Hello World");
+        Atom ai = new AtomString("Hello World");
         assertEquals(ai.bLength(), 14);
     }
 
@@ -177,7 +177,7 @@ public final class AtomStringTest {
      */
     @Test
     public void testAtomStringConstructorString() {
-        AtomString atomString = new AtomString("Hello");
+        Atom atomString = new AtomString("Hello");
         assertEquals(new AtomString("Hello"), atomString);
     }
 
@@ -186,7 +186,7 @@ public final class AtomStringTest {
      */
     @Test
     public void testAtomStringConstructorStringBLength() {
-        AtomString ai = new AtomString("Hello");
+        Atom ai = new AtomString("Hello");
         assertEquals(ai.bLength(), 7);
     }
 
@@ -195,7 +195,7 @@ public final class AtomStringTest {
      */
     @Test
     public void testAtomStringConstructorStringEncode() {
-        AtomString ai = new AtomString("Hello");
+        Atom ai = new AtomString("Hello");
         assertEquals(ai.encode(), "5:Hello");
     }
 
@@ -204,8 +204,8 @@ public final class AtomStringTest {
      */
     @Test
     public void testAtomStringConstructorStringEquals() {
-        AtomString ai = new AtomString("Hello");
-        AtomString ai1 = new AtomString("Hello");
+        Atom ai = new AtomString("Hello");
+        Atom ai1 = new AtomString("Hello");
         assertEquals(ai, ai1);
     }
 
@@ -214,7 +214,7 @@ public final class AtomStringTest {
      */
     @Test
     public void testAtomStringConstructorStringLength() {
-        AtomString ai = new AtomString("Hello");
+        Atom ai = new AtomString("Hello");
         assertEquals(ai.toString().length(), 5);
     }
 
@@ -223,7 +223,7 @@ public final class AtomStringTest {
      */
     @Test
     public void testAtomStringConstructorStringSet() {
-        AtomString ai = new AtomString("Hello");
+        Atom ai = new AtomString("Hello");
         assertEquals(ai.toString(), "Hello");
     }
 
@@ -232,7 +232,7 @@ public final class AtomStringTest {
      */
     @Test
     public void testAtomStringConstructorStringString() {
-        AtomString ai = new AtomString("Hello");
+        Atom ai = new AtomString("Hello");
         assertEquals(ai.toString(), "Hello");
     }
 
@@ -241,7 +241,7 @@ public final class AtomStringTest {
      */
     @Test
     public void testAtomStringConstructorStringValue() {
-        AtomString ai = new AtomString("Hello");
+        Atom ai = new AtomString("Hello");
         assertEquals(ai.toString(), "Hello");
     }
 
