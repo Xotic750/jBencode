@@ -28,14 +28,19 @@ import java.util.Arrays;
 import java.util.Collection;
 import static java.util.Collections.unmodifiableCollection;
 import static java.util.Collections.unmodifiableList;
+import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.Objects;
 import static java.util.Objects.requireNonNull;
 import java.util.RandomAccess;
+import java.util.Spliterator;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.Consumer;
+import java.util.function.Predicate;
+import java.util.function.UnaryOperator;
 import static java.util.stream.Collectors.joining;
 import static java.util.stream.Collectors.summingInt;
 import static java.util.stream.Collectors.toList;
@@ -49,15 +54,46 @@ import static se.suka.baldr.jbencode.Utilities.randInt;
  * of the string "spam" and the number 42 would be encoded as: l4:spami42ee.
  * Note the absence of separators between elements.
  *
+ * <p>
+ * A thread-safe variant of {@link java.util.ArrayList} in which all mutative
+ * operations ({@code add}, {@code set}, and so on) are implemented by making a
+ * fresh copy of the underlying array.
+ *
+ * <p>
+ * This is ordinarily too costly, but may be <em>more</em> efficient than
+ * alternatives when traversal operations vastly outnumber mutations, and is
+ * useful when you cannot or don't want to synchronize traversals, yet need to
+ * preclude interference among concurrent threads. The "snapshot" style iterator
+ * method uses a reference to the state of the array at the point that the
+ * iterator was created. This array never changes during the lifetime of the
+ * iterator, so interference is impossible and the iterator is guaranteed not to
+ * throw {@code ConcurrentModificationException}. The iterator will not reflect
+ * additions, removals, or changes to the list since the iterator was created.
+ * Element-changing operations on iterators themselves ({@code remove},
+ * {@code set}, and {@code add}) are not supported. These methods throw
+ * {@code UnsupportedOperationException}.
+ *
+ * <p>
+ * All {@link Atom} elements are permitted, excluding {@code null}.
+ *
+ * <p>
+ * Memory consistency effects: As with other concurrent collections, actions in
+ * a thread prior to placing an object into a {@code CopyOnWriteArrayList}
+ * <a href="package-summary.html#MemoryVisibility"><i>happen-before</i></a>
+ * actions subsequent to the access or removal of that element from the
+ * {@code CopyOnWriteArrayList} in another thread.
+ *
+ *
  * @author Graham Fairweather
  * @see <a href="https://en.wikipedia.org/wiki/Bencode">Bencode</a>
+ * @see CopyOnWriteArrayList
  */
 public final class AtomList extends Atom implements List<Atom>, RandomAccess, Cloneable, Serializable {
 
     /**
      * Backing List
      */
-    private List<Atom> value;
+    private CopyOnWriteArrayList<Atom> value;
 
     /**
      * Constructs an empty list.
@@ -196,6 +232,31 @@ public final class AtomList extends Atom implements List<Atom>, RandomAccess, Cl
     }
 
     /**
+     * Appends all of the elements in the specified collection that are not
+     * already contained in this list, to the end of this list, in the order
+     * that they are returned by the specified collection's iterator.
+     *
+     * @param c collection containing elements to be added to this list
+     * @return the number of elements added
+     * @throws NullPointerException if the specified collection is null
+     */
+    public int addAllAbsent(final Collection<? extends Atom> c) {
+        return (int) unmodifiableCollection(requireNonNull(c)).stream()
+                .map(atom -> value.addIfAbsent(requireAtom(atom)))
+                .count();
+    }
+
+    /**
+     * Appends the element, if not present.
+     *
+     * @param atom element to be added to this list, if absent
+     * @return {@code true} if the element was added
+     */
+    public boolean addIfAbsent(final Atom atom) {
+        return value.addIfAbsent(requireAtom(atom));
+    }
+
+    /**
      *
      * @return The length of the encoded string when Bencoded.
      */
@@ -299,6 +360,11 @@ public final class AtomList extends Atom implements List<Atom>, RandomAccess, Cl
                 .collect(joining("", "l", "e"));
     }
 
+    @Override
+    public void forEach(Consumer<? super Atom> action) {
+        value.forEach(action);
+    }
+
     /**
      * Returns the element at the specified position in this list.
      *
@@ -332,6 +398,25 @@ public final class AtomList extends Atom implements List<Atom>, RandomAccess, Cl
     @Override
     public int indexOf(final Object atom) {
         return value.indexOf(requireNonNull(atom));
+    }
+
+    /**
+     * Returns the index of the first occurrence of the specified element in
+     * this list, searching forwards from {@code index}, or returns -1 if the
+     * element is not found. More formally, returns the lowest index {@code i}
+     * such that
+     * <tt>(i&nbsp;&gt;=&nbsp;index&nbsp;&amp;&amp;&nbsp;(e==null&nbsp;?&nbsp;get(i)==null&nbsp;:&nbsp;e.equals(get(i))))</tt>,
+     * or -1 if there is no such index.
+     *
+     * @param atom element to search for
+     * @param startIndex index to start searching from
+     * @return the index of the first occurrence of the element in this list at
+     * position {@code index} or later in the list; {@code -1} if the element is
+     * not found.
+     * @throws IndexOutOfBoundsException if the specified index is negative
+     */
+    public int indexOf(final Atom atom, final int startIndex) {
+        return value.indexOf(requireNonNull(atom), startIndex);
     }
 
     /**
@@ -374,6 +459,26 @@ public final class AtomList extends Atom implements List<Atom>, RandomAccess, Cl
     @Override
     public int lastIndexOf(final Object atom) {
         return value.lastIndexOf(requireNonNull(atom));
+    }
+
+    /**
+     * Returns the index of the last occurrence of the specified element in this
+     * list, searching backwards from {@code index}, or returns -1 if the
+     * element is not found. More formally, returns the highest index {@code i}
+     * such that
+     * <tt>(i&nbsp;&lt;=&nbsp;index&nbsp;&amp;&amp;&nbsp;(e==null&nbsp;?&nbsp;get(i)==null&nbsp;:&nbsp;e.equals(get(i))))</tt>,
+     * or -1 if there is no such index.
+     *
+     * @param atom element to search for
+     * @param startIndex index to start searching backwards from
+     * @return the index of the last occurrence of the element at position less
+     * than or equal to {@code index} in this list; -1 if the element is not
+     * found.
+     * @throws IndexOutOfBoundsException if the specified index is greater than
+     * or equal to the current size of this list
+     */
+    public int lastIndexOf(final Atom atom, final int startIndex) {
+        return value.lastIndexOf(requireAtom(atom), startIndex);
     }
 
     /**
@@ -489,6 +594,54 @@ public final class AtomList extends Atom implements List<Atom>, RandomAccess, Cl
     }
 
     /**
+     * Removes all of the elements of this collection that satisfy the given
+     * predicate. Errors or runtime exceptions thrown during iteration or by the
+     * predicate are relayed to the caller.
+     *
+     * @param filter a predicate which returns {@code true} for elements to be
+     * removed
+     * @return {@code true} if any elements were removed
+     * @throws NullPointerException if the specified filter is null
+     * @throws UnsupportedOperationException if elements cannot be removed from
+     * this collection. Implementations may throw this exception if a matching
+     * element cannot be removed or if, in general, removal is not supported.
+     */
+    @Override
+    public boolean removeIf(Predicate<? super Atom> filter) {
+        return value.removeIf(filter);
+    }
+
+    /**
+     * Replaces each element of this list with the result of applying the
+     * operator to that element. Errors or runtime exceptions thrown by the
+     * operator are relayed to the caller.
+     *
+     * The default implementation is equivalent to, for this {@code list}:
+     * <pre>{@code
+     *     final ListIterator<E> li = list.listIterator();
+     *     while (li.hasNext()) {
+     *         li.set(operator.apply(li.next()));
+     *     }
+     * }</pre>
+     *
+     * If the list's list-iterator does not support the {@code set} operation
+     * then an {@code UnsupportedOperationException} will be thrown when
+     * replacing the first element.
+     *
+     * @param operator the operator to apply to each element
+     * @throws UnsupportedOperationException if this list is unmodifiable.
+     * Implementations may throw this exception if an element cannot be replaced
+     * or if, in general, modification is not supported
+     * @throws NullPointerException if the specified operator is null or if the
+     * operator result is a null value and this list does not permit null
+     * elements (<a href="Collection.html#optional-restrictions">optional</a>)
+     */
+    @Override
+    public void replaceAll(UnaryOperator<Atom> operator) {
+        value.replaceAll(operator);
+    }
+
+    /**
      * Retains only the elements in this list that are contained in the
      * specified collection (optional operation). In other words, removes from
      * this list all of its elements that are not contained in the specified
@@ -546,6 +699,75 @@ public final class AtomList extends Atom implements List<Atom>, RandomAccess, Cl
     @Override
     public int size() {
         return value.size();
+    }
+
+    /**
+     * Sorts this list according to the order induced by the specified
+     * {@link Comparator}.
+     *
+     * <p>
+     * All elements in this list must be <i>mutually comparable</i> using the
+     * specified comparator (that is, {@code c.compare(e1, e2)} must not throw a
+     * {@code ClassCastException} for any elements {@code e1} and {@code e2} in
+     * the list).
+     *
+     * <p>
+     * If the specified comparator is {@code null} then all elements in this
+     * list must implement the {@link Comparable} interface and the elements'
+     * {@linkplain Comparable natural ordering} should be used.
+     *
+     * <p>
+     * This list must be modifiable, but need not be resizable.
+     *
+     * <p>
+     * The implementation takes equal advantage of ascending and descending
+     * order in its input array, and can take advantage of ascending and
+     * descending order in different parts of the same input array. It is
+     * well-suited to merging two or more sorted arrays: simply concatenate the
+     * arrays and sort the resulting array.
+     *
+     * <p>
+     * The implementation was adapted from Tim Peters's list sort for Python
+     * (<a href="http://svn.python.org/projects/python/trunk/Objects/listsort.txt">
+     * TimSort</a>). It uses techniques from Peter McIlroy's "Optimistic Sorting
+     * and Information Theoretic Complexity", in Proceedings of the Fourth
+     * Annual ACM-SIAM Symposium on Discrete Algorithms, pp 467-474, January
+     * 1993.
+     *
+     * @param c the {@code Comparator} used to compare list elements. A
+     * {@code null} value indicates that the elements'
+     * {@linkplain Comparable natural ordering} should be used
+     * @throws ClassCastException if the list contains elements that are not
+     * <i>mutually comparable</i> using the specified comparator
+     * @throws UnsupportedOperationException if the list's list-iterator does
+     * not support the {@code set} operation
+     * @throws IllegalArgumentException
+     * (<a href="Collection.html#optional-restrictions">optional</a>) if the
+     * comparator is found to violate the {@link Comparator} contract
+     */
+    @Override
+    public void sort(Comparator<? super Atom> c) {
+        value.sort(c);
+    }
+
+    /**
+     * Returns a {@link Spliterator} over the elements in this list.
+     *
+     * <p>
+     * The {@code Spliterator} reports {@link Spliterator#IMMUTABLE},
+     * {@link Spliterator#ORDERED}, {@link Spliterator#SIZED}, and
+     * {@link Spliterator#SUBSIZED}.
+     *
+     * <p>
+     * The spliterator provides a snapshot of the state of the list when the
+     * spliterator was constructed. No synchronization is needed while operating
+     * on the spliterator.
+     *
+     * @return a {@code Spliterator} over the elements in this list
+     */
+    @Override
+    public Spliterator<Atom> spliterator() {
+        return value.spliterator();
     }
 
     /**
@@ -651,7 +873,7 @@ public final class AtomList extends Atom implements List<Atom>, RandomAccess, Cl
      */
     @Override
     public <T> T[] toArray(final T[] a) {
-        // TODO: look at this!!!
+        // TODO: Need to look at this!
         return value.toArray(a);
     }
 

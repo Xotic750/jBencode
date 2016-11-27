@@ -258,7 +258,7 @@ public final class AtomDictionaryTest {
         keysConcat = ai.keySet().stream().map(key -> key).reduce(keysConcat, String::concat);
         assertEquals(keysConcat, "10090ABC100ABC90barboofoo");
     }
-    
+
     /**
      *
      */
@@ -278,5 +278,5 @@ public final class AtomDictionaryTest {
         assertTrue(ai.getClass() == aj.getClass());
         assertEquals(ai, aj);
     }
-    
+
 }

@@ -79,6 +79,7 @@ public abstract class Atom implements Serializable {
     /**
      * Returns a deep copy of this {@link Atom}.
      *
+     * @param <T>
      * @return a copy of this {@link Atom}
      */
     public abstract <T> Atom copy();
