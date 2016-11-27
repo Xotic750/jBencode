@@ -39,12 +39,6 @@ public final class AtomDictionaryTest {
     /**
      *
      */
-    public AtomDictionaryTest() {
-    }
-
-    /**
-     *
-     */
     @BeforeClass
     public static void setUpClass() {
     }
@@ -54,6 +48,12 @@ public final class AtomDictionaryTest {
      */
     @AfterClass
     public static void tearDownClass() {
+    }
+
+    /**
+     *
+     */
+    public AtomDictionaryTest() {
     }
 
     /**
@@ -206,6 +206,18 @@ public final class AtomDictionaryTest {
      *
      */
     @Test
+    public void testAtomDictionaryClear() {
+        Atom ai = new AtomDictionary();
+        AtomDictionary atomDictionary = new AtomDictionary();
+        atomDictionary.put("first", ai);
+        atomDictionary.clear();
+        assertEquals(ai, atomDictionary);
+    }
+
+    /**
+     *
+     */
+    @Test
     public void testAtomDictionaryIterateKeys() {
         AtomDictionary ai = new AtomDictionary();
         Atom i = new AtomInteger(1);
@@ -246,5 +258,25 @@ public final class AtomDictionaryTest {
         keysConcat = ai.keySet().stream().map(key -> key).reduce(keysConcat, String::concat);
         assertEquals(keysConcat, "10090ABC100ABC90barboofoo");
     }
-
+    
+    /**
+     *
+     */
+    @Test
+    public void testAtomDictionaryClone() {
+        AtomDictionary ai = new AtomDictionary();
+        Atom i = new AtomInteger(1);
+        ai.put("foo", i);
+        ai.put("bar", i);
+        ai.put("boo", i);
+        ai.put("90", i);
+        ai.put("100", i);
+        ai.put("ABC90", i);
+        ai.put("ABC100", i);
+        AtomDictionary aj = ai.clone();
+        assertTrue(ai != aj);
+        assertTrue(ai.getClass() == aj.getClass());
+        assertEquals(ai, aj);
+    }
+    
 }

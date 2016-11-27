@@ -24,6 +24,7 @@
 package se.suka.baldr.jbencode;
 
 import java.io.Serializable;
+import static java.lang.Integer.compare;
 
 /**
  * An integer is encoded as i&lt;integer encoded in base ten ASCII&gt;e. Leading
@@ -76,7 +77,7 @@ public final class AtomInteger extends Atom implements Serializable, Comparable<
      * @return
      */
     @Override
-    public final int bLength() {
+    public int bLength() {
         return toString().length() + 2;
     }
 
@@ -85,7 +86,7 @@ public final class AtomInteger extends Atom implements Serializable, Comparable<
      * @return
      */
     @Override
-    public final String encode() {
+    public String encode() {
         return "i" + value + "e";
     }
 
@@ -95,7 +96,7 @@ public final class AtomInteger extends Atom implements Serializable, Comparable<
      *
      * @return
      */
-    public final byte byteValue() {
+    public byte byteValue() {
         return (byte) value;
     }
 
@@ -105,7 +106,7 @@ public final class AtomInteger extends Atom implements Serializable, Comparable<
      *
      * @return
      */
-    public final short shortValue() {
+    public short shortValue() {
         return (short) value;
     }
 
@@ -114,7 +115,7 @@ public final class AtomInteger extends Atom implements Serializable, Comparable<
      *
      * @return
      */
-    public final int intValue() {
+    public int intValue() {
         return value;
     }
 
@@ -125,8 +126,8 @@ public final class AtomInteger extends Atom implements Serializable, Comparable<
      * @return
      * @see Integer#toUnsignedLong(int)
      */
-    public final long longValue() {
-        return (long) value;
+    public long longValue() {
+        return value;
     }
 
     /**
@@ -135,8 +136,8 @@ public final class AtomInteger extends Atom implements Serializable, Comparable<
      *
      * @return
      */
-    public final float floatValue() {
-        return (float) value;
+    public float floatValue() {
+        return value;
     }
 
     /**
@@ -145,8 +146,8 @@ public final class AtomInteger extends Atom implements Serializable, Comparable<
      *
      * @return
      */
-    public final double doubleValue() {
-        return (double) value;
+    public double doubleValue() {
+        return value;
     }
 
     /**
@@ -162,19 +163,19 @@ public final class AtomInteger extends Atom implements Serializable, Comparable<
      * {@code AtomInteger} (signed comparison).
      */
     @Override
-    public final int compareTo(final AtomInteger anotherAtomInteger) {
-        return Integer.compare(value, anotherAtomInteger.value);
+    public int compareTo(final AtomInteger anotherAtomInteger) {
+        return compare(value, anotherAtomInteger.value);
     }
 
     @Override
-    public final int hashCode() {
+    public int hashCode() {
         int hash = 3;
         hash = 79 * hash + this.value;
         return hash;
     }
 
     @Override
-    public final boolean equals(final Object obj) {
+    public boolean equals(final Object obj) {
         if (this == obj) {
             return true;
         }
@@ -195,8 +196,13 @@ public final class AtomInteger extends Atom implements Serializable, Comparable<
      * base&nbsp;10.
      */
     @Override
-    public final String toString() {
+    public String toString() {
         return Integer.toString(value);
+    }
+
+    @Override
+    public AtomInteger copy() {
+        return new AtomInteger(value);
     }
 
 }

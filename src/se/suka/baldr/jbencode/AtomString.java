@@ -85,7 +85,7 @@ public final class AtomString extends Atom implements Serializable, Comparable<A
      * @return
      */
     @Override
-    public final int bLength() {
+    public int bLength() {
         final int len = value.length();
         return Integer.toString(len).length() + 1 + len;
     }
@@ -95,24 +95,24 @@ public final class AtomString extends Atom implements Serializable, Comparable<A
      * @return
      */
     @Override
-    public final String encode() {
+    public String encode() {
         return value.length() + ":" + value;
     }
 
     @Override
-    public final int hashCode() {
+    public int hashCode() {
         int hash = 7;
         hash = 61 * hash + Objects.hashCode(this.value);
         return hash;
     }
 
     @Override
-    public final boolean equals(final Object obj) {
+    public boolean equals(final Object obj) {
         if (this == obj) {
             return true;
         }
         if (obj instanceof AtomString) {
-            return value.equals(((AtomString) obj).toString());
+            return value.equals(obj.toString());
         }
         return false;
     }
@@ -123,13 +123,18 @@ public final class AtomString extends Atom implements Serializable, Comparable<A
      * @return the string itself.
      */
     @Override
-    public final String toString() {
+    public String toString() {
         return value;
     }
 
     @Override
-    public final int compareTo(final AtomString atomString) {
+    public int compareTo(final AtomString atomString) {
         return value.compareTo(atomString.toString());
+    }
+
+    @Override
+    public AtomString copy() {
+        return new AtomString(value);
     }
 
 }

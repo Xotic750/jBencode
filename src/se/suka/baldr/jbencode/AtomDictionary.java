@@ -25,11 +25,17 @@ package se.suka.baldr.jbencode;
 
 import java.io.Serializable;
 import java.util.Collection;
-import java.util.Collections;
+import static java.util.Collections.unmodifiableMap;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Objects;
+import static java.util.Objects.requireNonNull;
 import java.util.Set;
-import java.util.TreeMap;
+import java.util.concurrent.ConcurrentSkipListMap;
+import static java.util.stream.Collectors.joining;
+import static java.util.stream.Collectors.summingInt;
+import static java.util.stream.Collectors.toMap;
+import static se.suka.baldr.jbencode.Utilities.requireString;
 
 /**
  * A dictionary is encoded as d&lt;contents&gt;e. The elements of the dictionary
@@ -43,17 +49,12 @@ import java.util.TreeMap;
  * @author Graham Fairweather
  * @see <a href="https://en.wikipedia.org/wiki/Bencode">Bencode</a>
  */
-public final class AtomDictionary extends Atom implements Map<String, Atom>, Serializable {
+public final class AtomDictionary extends Atom implements Map<String, Atom>, Cloneable, Serializable {
 
     /**
-     * Backing Map
+     * Backing {@link ConcurrentSkipListMap}
      */
-    private final Map<String, Atom> value;
-
-    /**
-     * Object on which to synchronize
-     */
-    private final Object mutex;
+    private Map<String, Atom> value;
 
     /**
      * Constructs a new, empty tree map, using the natural ordering of its keys.
@@ -67,8 +68,7 @@ public final class AtomDictionary extends Atom implements Map<String, Atom>, Ser
      * will throw a {@code ClassCastException}.
      */
     public AtomDictionary() {
-        value = Collections.synchronizedSortedMap(new TreeMap<>());
-        mutex = this;
+        value = new ConcurrentSkipListMap<>();
     }
 
     /**
@@ -87,23 +87,7 @@ public final class AtomDictionary extends Atom implements Map<String, Atom>, Ser
      */
     public AtomDictionary(Map<? extends String, ? extends Atom> m) {
         this();
-        synchronized (m) {
-            m.entrySet().stream().forEachOrdered(entry -> {
-                final String key = entry.getKey();
-                final Atom atom = entry.getValue();
-                if (atom instanceof AtomInteger) {
-                    put(key, new AtomInteger((AtomInteger) atom));
-                } else if (atom instanceof AtomString) {
-                    put(key, new AtomString((AtomString) atom));
-                } else if (atom instanceof AtomList) {
-                    put(key, new AtomList((AtomList) atom));
-                } else if (atom instanceof AtomDictionary) {
-                    put(key, new AtomDictionary((AtomDictionary) atom));
-                } else {
-                    throw new IllegalArgumentException("unknown Atom type");
-                }
-            });
-        }
+        putAll(requireNonNull(m));
     }
 
     /**
@@ -111,12 +95,12 @@ public final class AtomDictionary extends Atom implements Map<String, Atom>, Ser
      * @return
      */
     @Override
-    public final int bLength() {
-        synchronized (mutex) {
-            return value.entrySet().stream()
-                    .map(entry -> new AtomString(entry.getKey()).bLength() + entry.getValue().bLength())
-                    .reduce(2, Integer::sum);
-        }
+    public int bLength() {
+        return 2 + value.entrySet().stream().parallel()
+                .collect(summingInt(entry -> {
+                    Atom atom = new AtomString(entry.getKey());
+                    return atom.bLength() + entry.getValue().bLength();
+                }));
     }
 
     /**
@@ -129,6 +113,24 @@ public final class AtomDictionary extends Atom implements Map<String, Atom>, Ser
     @Override
     public void clear() {
         value.clear();
+    }
+
+    /**
+     * Returns a shallow copy of this map. (The keys and values themselves are
+     * not cloned.)
+     *
+     * @return a clone of this map
+     */
+    @Override
+    public AtomDictionary clone() {
+        try {
+            AtomDictionary atomDictionary = (AtomDictionary) super.clone();
+            atomDictionary.value = new ConcurrentSkipListMap<>(value);
+            return atomDictionary;
+        } catch (CloneNotSupportedException e) {
+            // this shouldn't happen, since we are Cloneable
+            throw new InternalError(e);
+        }
     }
 
     /**
@@ -149,8 +151,8 @@ public final class AtomDictionary extends Atom implements Map<String, Atom>, Ser
      * (<a href="{@docRoot}/java/util/Collection.html#optional-restrictions">optional</a>)
      */
     @Override
-    public final boolean containsKey(final Object key) {
-        return value.containsKey(Objects.requireNonNull(key));
+    public boolean containsKey(final Object key) {
+        return value.containsKey(requireString(key));
     }
 
     /**
@@ -172,8 +174,20 @@ public final class AtomDictionary extends Atom implements Map<String, Atom>, Ser
      * (<a href="{@docRoot}/java/util/Collection.html#optional-restrictions">optional</a>)
      */
     @Override
-    public final boolean containsValue(final Object atom) {
-        return value.containsValue(Objects.requireNonNull(atom));
+    public boolean containsValue(final Object atom) {
+        return value.containsValue(requireAtom(atom));
+    }
+
+    /**
+     * Returns a deep copy of this map. (The keys and values themselves are
+     * cloned.)
+     *
+     * @return a copy of this map
+     */
+    @Override
+    public AtomDictionary copy() {
+        return (AtomDictionary) value.entrySet().stream()
+                .collect(toMap(Entry::getKey, e -> (Atom) e.getValue().copy()));
     }
 
     /**
@@ -181,23 +195,18 @@ public final class AtomDictionary extends Atom implements Map<String, Atom>, Ser
      * @return
      */
     @Override
-    public final String encode() {
-        final StringBuilder encoded = new StringBuilder("d");
-        synchronized (mutex) {
-            value.keySet().stream()
-                    .forEachOrdered(key -> encoded
-                    .append(new AtomString(key).encode())
-                    .append(get(key).encode()));
-        }
-        return encoded.append("e").toString();
+    public String encode() {
+        return value.entrySet().stream()
+                .map(entry -> new AtomString(entry.getKey()).encode() + entry.getValue().encode())
+                .collect(joining("", "d", "e"));
     }
 
     /**
      * Returns a {@link Set} view of the mappings contained in this map. The set
      * is backed by the map, so changes to the map are reflected in the set, and
      * vice-versa. If the map is modified while an iteration over the set is in
-     * progress (except through the iterator's own <tt>remove</tt> operation, or
-     * through the
+     * progress (except through the iterator's own
+     * <tt>remove</tt> operation, or through the
      * <tt>setValue</tt> operation on a map entry returned by the iterator) the
      * results of the iteration are undefined. The set supports element removal,
      * which removes the corresponding mapping from the map, via the
@@ -209,7 +218,7 @@ public final class AtomDictionary extends Atom implements Map<String, Atom>, Ser
      * @return a set view of the mappings contained in this map
      */
     @Override
-    public final Set<Entry<String, Atom>> entrySet() {
+    public Set<Entry<String, Atom>> entrySet() {
         return value.entrySet();
     }
 
@@ -241,8 +250,8 @@ public final class AtomDictionary extends Atom implements Map<String, Atom>, Ser
      * (<a href="{@docRoot}/java/util/Collection.html#optional-restrictions">optional</a>)
      */
     @Override
-    public final Atom get(final Object key) {
-        return value.get(Objects.requireNonNull(key));
+    public Atom get(final Object key) {
+        return value.get(requireString(key));
     }
 
     /**
@@ -251,7 +260,7 @@ public final class AtomDictionary extends Atom implements Map<String, Atom>, Ser
      * @return <tt>true</tt> if this map contains no key-value mappings
      */
     @Override
-    public final boolean isEmpty() {
+    public boolean isEmpty() {
         return value.isEmpty();
     }
 
@@ -259,9 +268,10 @@ public final class AtomDictionary extends Atom implements Map<String, Atom>, Ser
      * Returns a {@link Set} view of the keys contained in this map. The set is
      * backed by the map, so changes to the map are reflected in the set, and
      * vice-versa. If the map is modified while an iteration over the set is in
-     * progress (except through the iterator's own <tt>remove</tt> operation),
-     * the results of the iteration are undefined. The set supports element
-     * removal, which removes the corresponding mapping from the map, via the
+     * progress (except through the iterator's own <tt>remove</tt>
+     * operation), the results of the iteration are undefined. The set supports
+     * element removal, which removes the corresponding mapping from the map,
+     * via the
      * <tt>Iterator.remove</tt>, <tt>Set.remove</tt>,
      * <tt>removeAll</tt>, <tt>retainAll</tt>, and <tt>clear</tt>
      * operations. It does not support the <tt>add</tt> or <tt>addAll</tt>
@@ -270,7 +280,7 @@ public final class AtomDictionary extends Atom implements Map<String, Atom>, Ser
      * @return a set view of the keys contained in this map
      */
     @Override
-    public final Set<String> keySet() {
+    public Set<String> keySet() {
         return value.keySet();
     }
 
@@ -285,9 +295,12 @@ public final class AtomDictionary extends Atom implements Map<String, Atom>, Ser
      * @param key key with which the specified value is to be associated
      * @param atom value to be associated with the specified key
      * @return the previous value associated with <tt>key</tt>, or
-     * <tt>null</tt> if there was no mapping for <tt>key</tt>. (A <tt>null</tt>
-     * return can also indicate that the map previously associated <tt>null</tt>
-     * with <tt>key</tt>, if the implementation supports <tt>null</tt> values.)
+     * <tt>null</tt> if there was no mapping for <tt>key</tt>. (A
+     * <tt>null</tt>
+     * return can also indicate that the map previously associated
+     * <tt>null</tt>
+     * with <tt>key</tt>, if the implementation supports <tt>null</tt>
+     * values.)
      * @throws UnsupportedOperationException if the <tt>put</tt> operation is
      * not supported by this map
      * @throws ClassCastException if the class of the specified key or value
@@ -298,8 +311,8 @@ public final class AtomDictionary extends Atom implements Map<String, Atom>, Ser
      * value prevents it from being stored in this map
      */
     @Override
-    public final Atom put(final String key, final Atom atom) {
-        return value.put(Objects.requireNonNull(key), Objects.requireNonNull(atom));
+    public Atom put(final String key, final Atom atom) {
+        return value.put(requireString(key), requireAtom(atom));
     }
 
     /**
@@ -311,8 +324,8 @@ public final class AtomDictionary extends Atom implements Map<String, Atom>, Ser
      * while the operation is in progress.
      *
      * @param m mappings to be stored in this map
-     * @throws UnsupportedOperationException if the <tt>putAll</tt> operation is
-     * not supported by this map
+     * @throws UnsupportedOperationException if the <tt>putAll</tt>
+     * operation is not supported by this map
      * @throws ClassCastException if the class of a key or value in the
      * specified map prevents it from being stored in this map
      * @throws NullPointerException if the specified map is null, or if this map
@@ -322,11 +335,9 @@ public final class AtomDictionary extends Atom implements Map<String, Atom>, Ser
      * the specified map prevents it from being stored in this map
      */
     @Override
-    public final void putAll(final Map<? extends String, ? extends Atom> m) {
-        synchronized (m) {
-            m.entrySet().stream()
-                    .forEachOrdered(entry -> put(entry.getKey(), entry.getValue()));
-        }
+    public void putAll(final Map<? extends String, ? extends Atom> m) {
+        unmodifiableMap(requireNonNull(m)).entrySet().stream()
+                .forEachOrdered(entry -> value.put(requireString(entry.getKey()), requireAtom(entry.getValue())));
     }
 
     /**
@@ -353,8 +364,8 @@ public final class AtomDictionary extends Atom implements Map<String, Atom>, Ser
      * @param key key whose mapping is to be removed from the map
      * @return the previous value associated with <tt>key</tt>, or
      * <tt>null</tt> if there was no mapping for <tt>key</tt>.
-     * @throws UnsupportedOperationException if the <tt>remove</tt> operation is
-     * not supported by this map
+     * @throws UnsupportedOperationException if the <tt>remove</tt>
+     * operation is not supported by this map
      * @throws ClassCastException if the key is of an inappropriate type for
      * this map
      * (<a href="{@docRoot}/java/util/Collection.html#optional-restrictions">optional</a>)
@@ -363,8 +374,8 @@ public final class AtomDictionary extends Atom implements Map<String, Atom>, Ser
      * (<a href="{@docRoot}/java/util/Collection.html#optional-restrictions">optional</a>)
      */
     @Override
-    public final Atom remove(final Object key) {
-        return value.remove(Objects.requireNonNull(key));
+    public Atom remove(final Object key) {
+        return value.remove(requireString(key));
     }
 
     /**
@@ -375,7 +386,7 @@ public final class AtomDictionary extends Atom implements Map<String, Atom>, Ser
      * @return the number of key-value mappings in this map
      */
     @Override
-    public final int size() {
+    public int size() {
         return value.size();
     }
 
@@ -386,7 +397,8 @@ public final class AtomDictionary extends Atom implements Map<String, Atom>, Ser
      * iteration over the collection is in progress (except through the
      * iterator's own <tt>remove</tt> operation), the results of the iteration
      * are undefined. The collection supports element removal, which removes the
-     * corresponding mapping from the map, via the <tt>Iterator.remove</tt>,
+     * corresponding mapping from the map, via the
+     * <tt>Iterator.remove</tt>,
      * <tt>Collection.remove</tt>, <tt>removeAll</tt>,
      * <tt>retainAll</tt> and <tt>clear</tt> operations. It does not support the
      * <tt>add</tt> or <tt>addAll</tt> operations.
@@ -394,19 +406,19 @@ public final class AtomDictionary extends Atom implements Map<String, Atom>, Ser
      * @return a collection view of the values contained in this map
      */
     @Override
-    public final Collection<Atom> values() {
+    public Collection<Atom> values() {
         return value.values();
     }
 
     @Override
-    public final int hashCode() {
+    public int hashCode() {
         int hash = 7;
         hash = 67 * hash + Objects.hashCode(this.value);
         return hash;
     }
 
     @Override
-    public final boolean equals(final Object obj) {
+    public boolean equals(final Object obj) {
         if (this == obj) {
             return true;
         }
@@ -417,7 +429,7 @@ public final class AtomDictionary extends Atom implements Map<String, Atom>, Ser
     }
 
     @Override
-    public final String toString() {
+    public String toString() {
         return value.toString();
     }
 

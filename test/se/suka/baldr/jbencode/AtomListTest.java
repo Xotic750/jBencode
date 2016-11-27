@@ -41,12 +41,6 @@ public final class AtomListTest {
     /**
      *
      */
-    public AtomListTest() {
-    }
-
-    /**
-     *
-     */
     @BeforeClass
     public static void setUpClass() {
     }
@@ -56,6 +50,12 @@ public final class AtomListTest {
      */
     @AfterClass
     public static void tearDownClass() {
+    }
+
+    /**
+     *
+     */
+    public AtomListTest() {
     }
 
     /**
@@ -259,7 +259,7 @@ public final class AtomListTest {
         Atom ai2first = ai2.iterator().next();
         Atom ai3first = ai3.iterator().next();
         assertTrue(ai == ai2first);
-        assertTrue(ai != ai3first);
+        assertTrue(ai == ai3first);
         assertEquals(ai2first, ai3first);
     }
 
@@ -273,16 +273,14 @@ public final class AtomListTest {
         ai.add(i);
         Atom s = new AtomString("Hello");
         ai.add(s);
-        for (Atom atom : ai) {
-            assertTrue(atom instanceof Atom);
-        }
+        ai.forEach(atom -> assertTrue(atom instanceof Atom));
     }
 
     /**
      *
      */
     @Test
-    public void testAtomOrder() {
+    public void testAtomListOrder() {
         AtomList ai = new AtomList();
         ai.add(new AtomString("foo"));
         ai.add(new AtomString("bar"));
@@ -300,20 +298,19 @@ public final class AtomListTest {
      *
      */
     @Test
-    public void testAtomRandomise() {
-        AtomList list1 = new AtomList();
-        list1.add(new AtomString("foo"));
-        list1.add(new AtomString("bar"));
-        list1.add(new AtomString("boo"));
-        list1.add(new AtomString("90"));
-        list1.add(new AtomString("100"));
-        list1.add(new AtomString("ABC90"));
-        list1.add(new AtomString("ABC100"));
-
-        AtomList list2 = new AtomList(list1);
-        list2.randomise();
-        assertEquals(list1.bLength(), list2.bLength());
-        assertEquals(list1.toString(), "[foo, bar, boo, 90, 100, ABC90, ABC100]");
-        assertNotEquals(list1, list2);
+    public void testAtomListClone() {
+        AtomList ai = new AtomList();
+        ai.add(new AtomString("foo"));
+        ai.add(new AtomString("bar"));
+        ai.add(new AtomString("boo"));
+        ai.add(new AtomString("90"));
+        ai.add(new AtomString("100"));
+        ai.add(new AtomString("ABC90"));
+        ai.add(new AtomString("ABC100"));
+        AtomList aj = ai.clone();
+        assertTrue(ai != aj);
+        assertTrue(ai.getClass() == aj.getClass());
+        assertEquals(ai, aj);
     }
+
 }

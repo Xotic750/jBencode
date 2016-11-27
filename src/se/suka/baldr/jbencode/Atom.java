@@ -24,6 +24,7 @@
 package se.suka.baldr.jbencode;
 
 import java.io.Serializable;
+import static java.util.Objects.requireNonNull;
 
 /**
  * The smallest abstract class that is extended by all other types Bencoded atom
@@ -35,13 +36,57 @@ public abstract class Atom implements Serializable {
 
     /**
      *
+     * @param o
      * @return
+     */
+    public static final boolean isAtom(Object o) {
+        return o instanceof Atom;
+    }
+
+    /**
+     *
+     * @param o
+     * @return
+     */
+    public static final Atom requireAtom(Object o) {
+        if (!isAtom(requireNonNull(o))) {
+            throw new IllegalArgumentException();
+        }
+        return (Atom) o;
+    }
+
+    /**
+     *
+     * @param o
+     * @param message
+     * @return
+     */
+    public static final Atom requireAtom(Object o, String message) {
+        if (!isAtom(requireNonNull(o))) {
+            throw new IllegalArgumentException(message);
+        }
+        return (Atom) o;
+    }
+
+    /**
+     * Returns the length of the Bencoded string of this {@link Atom}. This
+     * method is faster than performing an <code>encode().length()</code>.
+     *
+     * @return The length of the Becoded string
      */
     public abstract int bLength();
 
     /**
+     * Returns a deep copy of this {@link Atom}.
      *
-     * @return
+     * @return a copy of this {@link Atom}
+     */
+    public abstract <T> Atom copy();
+
+    /**
+     * Returns the Bencoded string of this {@link Atom}.
+     *
+     * @return The Benoded string
      */
     public abstract String encode();
 

@@ -24,17 +24,23 @@
 package se.suka.baldr.jbencode;
 
 import java.io.Serializable;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Collections;
+import static java.util.Collections.unmodifiableCollection;
+import static java.util.Collections.unmodifiableList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.Objects;
+import static java.util.Objects.requireNonNull;
+import java.util.RandomAccess;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.stream.Collectors;
-import java.util.stream.IntStream;
+import static java.util.stream.Collectors.joining;
+import static java.util.stream.Collectors.summingInt;
+import static java.util.stream.Collectors.toList;
+import static java.util.stream.IntStream.range;
+import static se.suka.baldr.jbencode.Utilities.clampInt;
 import static se.suka.baldr.jbencode.Utilities.randInt;
 
 /**
@@ -46,35 +52,21 @@ import static se.suka.baldr.jbencode.Utilities.randInt;
  * @author Graham Fairweather
  * @see <a href="https://en.wikipedia.org/wiki/Bencode">Bencode</a>
  */
-public final class AtomList extends Atom implements List<Atom>, Serializable {
+public final class AtomList extends Atom implements List<Atom>, RandomAccess, Cloneable, Serializable {
 
     /**
      * Backing List
      */
-    private final List<Atom> value;
+    private List<Atom> value;
 
     /**
-     * Object on which to synchronize
-     */
-    private final Object mutex;
-
-    /**
-     * Constructs an empty list with an initial capacity of ten.
-     */
-    public AtomList() {
-        this(10);
-    }
-
-    /**
-     * Constructs an empty list with the specified initial capacity.
+     * Constructs an empty list.
      *
-     * @param initialCapacity the initial capacity of the list
      * @throws IllegalArgumentException if the specified initial capacity is
      * negative
      */
-    public AtomList(int initialCapacity) {
-        value = Collections.synchronizedList(new ArrayList<>(initialCapacity));
-        mutex = this;
+    public AtomList() {
+        value = new CopyOnWriteArrayList<>();
     }
 
     /**
@@ -86,22 +78,8 @@ public final class AtomList extends Atom implements List<Atom>, Serializable {
      * @throws NullPointerException if the specified collection is null
      */
     public AtomList(final Collection<? extends Atom> c) {
-        this(c.size());
-        synchronized (c) {
-            c.stream().forEachOrdered(atom -> {
-                if (atom instanceof AtomInteger) {
-                    add(new AtomInteger((AtomInteger) atom));
-                } else if (atom instanceof AtomString) {
-                    add(new AtomString((AtomString) atom));
-                } else if (atom instanceof AtomList) {
-                    add(new AtomList((AtomList) atom));
-                } else if (atom instanceof AtomDictionary) {
-                    add(new AtomDictionary((AtomDictionary) atom));
-                } else {
-                    throw new IllegalArgumentException("unknown Atom type");
-                }
-            });
-        }
+        this();
+        addAll(requireNonNull(c));
     }
 
     /**
@@ -127,8 +105,8 @@ public final class AtomList extends Atom implements List<Atom>, Serializable {
      * prevents it from being added to this list
      */
     @Override
-    public final boolean add(final Atom atom) {
-        return value.add(Objects.requireNonNull(atom));
+    public boolean add(final Atom atom) {
+        return value.add(requireAtom(atom));
     }
 
     /**
@@ -151,8 +129,8 @@ public final class AtomList extends Atom implements List<Atom>, Serializable {
      * &lt; 0 || index &gt; size()</tt>)
      */
     @Override
-    public final void add(final int index, final Atom atom) {
-        value.add(index, Objects.requireNonNull(atom));
+    public void add(final int index, final Atom atom) {
+        value.add(requireNonNull(index), requireAtom(atom));
     }
 
     /**
@@ -177,10 +155,10 @@ public final class AtomList extends Atom implements List<Atom>, Serializable {
      * @see #add(Object)
      */
     @Override
-    public final boolean addAll(final Collection<? extends Atom> c) {
-        synchronized (c) {
-            return addAll(c.size(), c);
-        }
+    public boolean addAll(final Collection<? extends Atom> c) {
+        final Collection<? extends Atom> uc = unmodifiableCollection(requireNonNull(c));
+        uc.stream().forEachOrdered(atom -> value.add(requireAtom(atom)));
+        return !uc.isEmpty();
     }
 
     /**
@@ -210,12 +188,11 @@ public final class AtomList extends Atom implements List<Atom>, Serializable {
      * &lt; 0 || index &gt; size()</tt>)
      */
     @Override
-    public final boolean addAll(final int index, final Collection<? extends Atom> c) {
-        final AtomicInteger count = new AtomicInteger(index);
-        synchronized (c) {
-            c.stream().forEachOrdered(atom -> add(count.getAndAdd(1), atom));
-            return !c.isEmpty();
-        }
+    public boolean addAll(final int index, final Collection<? extends Atom> c) {
+        final AtomicInteger count = new AtomicInteger(requireNonNull(index));
+        final Collection<? extends Atom> uc = unmodifiableCollection(requireNonNull(c));
+        uc.stream().forEachOrdered(atom -> value.add(count.getAndAdd(1), requireAtom(atom)));
+        return !uc.isEmpty();
     }
 
     /**
@@ -223,10 +200,9 @@ public final class AtomList extends Atom implements List<Atom>, Serializable {
      * @return The length of the encoded string when Bencoded.
      */
     @Override
-    public final int bLength() {
-        synchronized (mutex) {
-            return value.stream().map(atom -> atom.bLength()).reduce(2, Integer::sum);
-        }
+    public int bLength() {
+        return 2 + value.stream().parallel()
+                .collect(summingInt(atom -> atom.bLength()));
     }
 
     /**
@@ -237,8 +213,26 @@ public final class AtomList extends Atom implements List<Atom>, Serializable {
      * not supported by this list
      */
     @Override
-    public final void clear() {
+    public void clear() {
         value.clear();
+    }
+
+    /**
+     * Returns a shallow copy of this list. (The elements themselves are not
+     * copied.)
+     *
+     * @return a clone of this list
+     */
+    @Override
+    public AtomList clone() {
+        try {
+            AtomList atomList = (AtomList) super.clone();
+            atomList.value = new CopyOnWriteArrayList<>(value);
+            return atomList;
+        } catch (CloneNotSupportedException e) {
+            // this shouldn't happen, since we are Cloneable
+            throw new InternalError(e);
+        }
     }
 
     /**
@@ -247,6 +241,7 @@ public final class AtomList extends Atom implements List<Atom>, Serializable {
      * least one element <tt>e</tt> such that
      * <tt>(o==null&nbsp;?&nbsp;e==null&nbsp;:&nbsp;o.equals(e))</tt>.
      *
+     * @param atom
      * @return <tt>true</tt> if this list contains the specified element
      * @throws ClassCastException if the type of the specified element is
      * incompatible with this list
@@ -256,8 +251,8 @@ public final class AtomList extends Atom implements List<Atom>, Serializable {
      * (<a href="Collection.html#optional-restrictions">optional</a>)
      */
     @Override
-    public final boolean contains(final Object o) {
-        return value.contains(o);
+    public boolean contains(final Object atom) {
+        return value.contains(requireAtom(atom));
     }
 
     /**
@@ -277,8 +272,20 @@ public final class AtomList extends Atom implements List<Atom>, Serializable {
      * @see #contains(Object)
      */
     @Override
-    public final boolean containsAll(final Collection<?> c) {
-        return value.containsAll(Collections.synchronizedCollection(c));
+    public boolean containsAll(final Collection<?> c) {
+        return value.containsAll(unmodifiableCollection(requireNonNull(c)));
+    }
+
+    /**
+     * Returns a deep copy of this list. (The elements themselves not copied.)
+     *
+     * @return a copy of this list
+     */
+    @Override
+    public AtomList copy() {
+        return (AtomList) value.stream()
+                .map(atom -> (Atom) atom.copy())
+                .collect(toList());
     }
 
     /**
@@ -286,12 +293,10 @@ public final class AtomList extends Atom implements List<Atom>, Serializable {
      * @return
      */
     @Override
-    public final String encode() {
-        final StringBuilder encoded = new StringBuilder("l");
-        synchronized (mutex) {
-            value.stream().forEachOrdered(atom -> encoded.append(atom.encode()));
-        }
-        return encoded.append("e").toString();
+    public String encode() {
+        return value.stream()
+                .map(atom -> atom.encode())
+                .collect(joining("", "l", "e"));
     }
 
     /**
@@ -303,8 +308,8 @@ public final class AtomList extends Atom implements List<Atom>, Serializable {
      * &lt; 0 || index &gt;= size()</tt>)
      */
     @Override
-    public final Atom get(final int index) {
-        return value.get(index);
+    public Atom get(final int index) {
+        return value.get(requireNonNull(index));
     }
 
     /**
@@ -314,7 +319,7 @@ public final class AtomList extends Atom implements List<Atom>, Serializable {
      * <tt>(o==null&nbsp;?&nbsp;get(i)==null&nbsp;:&nbsp;o.equals(get(i)))</tt>,
      * or -1 if there is no such index.
      *
-     * @param o element to search for
+     * @param atom
      * @return the index of the first occurrence of the specified element in
      * this list, or -1 if this list does not contain the element
      * @throws ClassCastException if the type of the specified element is
@@ -325,8 +330,8 @@ public final class AtomList extends Atom implements List<Atom>, Serializable {
      * (<a href="Collection.html#optional-restrictions">optional</a>)
      */
     @Override
-    public final int indexOf(final Object o) {
-        return value.indexOf(o);
+    public int indexOf(final Object atom) {
+        return value.indexOf(requireNonNull(atom));
     }
 
     /**
@@ -335,7 +340,7 @@ public final class AtomList extends Atom implements List<Atom>, Serializable {
      * @return <tt>true</tt> if this list contains no elements
      */
     @Override
-    public final boolean isEmpty() {
+    public boolean isEmpty() {
         return value.isEmpty();
     }
 
@@ -345,7 +350,7 @@ public final class AtomList extends Atom implements List<Atom>, Serializable {
      * @return an iterator over the elements in this list in proper sequence
      */
     @Override
-    public final Iterator<Atom> iterator() {
+    public Iterator<Atom> iterator() {
         return value.iterator();
     }
 
@@ -356,7 +361,7 @@ public final class AtomList extends Atom implements List<Atom>, Serializable {
      * <tt>(o==null&nbsp;?&nbsp;get(i)==null&nbsp;:&nbsp;o.equals(get(i)))</tt>,
      * or -1 if there is no such index.
      *
-     * @param o element to search for
+     * @param atom element to search for
      * @return the index of the last occurrence of the specified element in this
      * list, or -1 if this list does not contain the element
      * @throws ClassCastException if the type of the specified element is
@@ -367,8 +372,8 @@ public final class AtomList extends Atom implements List<Atom>, Serializable {
      * (<a href="Collection.html#optional-restrictions">optional</a>)
      */
     @Override
-    public final int lastIndexOf(final Object o) {
-        return value.lastIndexOf(o);
+    public int lastIndexOf(final Object atom) {
+        return value.lastIndexOf(requireNonNull(atom));
     }
 
     /**
@@ -379,7 +384,7 @@ public final class AtomList extends Atom implements List<Atom>, Serializable {
      * sequence)
      */
     @Override
-    public final ListIterator<Atom> listIterator() {
+    public ListIterator<Atom> listIterator() {
         return value.listIterator();
     }
 
@@ -399,15 +404,8 @@ public final class AtomList extends Atom implements List<Atom>, Serializable {
      * ({@code index < 0 || index > size()})
      */
     @Override
-    public final ListIterator<Atom> listIterator(final int index) {
-        return value.listIterator(index);
-    }
-
-    /**
-     *
-     */
-    public final void randomise() {
-        Collections.shuffle(value);
+    public ListIterator<Atom> listIterator(final int index) {
+        return value.listIterator(requireNonNull(index));
     }
 
     /**
@@ -415,15 +413,13 @@ public final class AtomList extends Atom implements List<Atom>, Serializable {
      * @param howMany
      * @return
      */
-    public final AtomList getRandomSlice(final int howMany) {
-        final List<Atom> randomSlice;
-        synchronized (mutex) {
-            final int size = value.size();
-            randomSlice = IntStream.range(0, Utilities.clampInt(howMany, 0, size))
-                    .mapToObj(i -> value.get(randInt(0, size)))
-                    .collect(Collectors.toList());
-        }
-        return (AtomList) randomSlice;
+    public AtomList getRandomSlice(final int howMany) {
+        final List<Atom> ul = unmodifiableList(value);
+        final int size = ul.size();
+        final int hm = clampInt(requireNonNull(howMany), 0, size);
+        return (AtomList) range(0, hm)
+                .mapToObj(i -> ul.get(randInt(0, size)))
+                .collect(toList());
     }
 
     /**
@@ -439,8 +435,8 @@ public final class AtomList extends Atom implements List<Atom>, Serializable {
      * &lt; 0 || index &gt;= size()</tt>)
      */
     @Override
-    public final Atom remove(final int index) {
-        return value.remove(index);
+    public Atom remove(final int index) {
+        return value.remove(requireNonNull(index).intValue());
     }
 
     /**
@@ -453,6 +449,7 @@ public final class AtomList extends Atom implements List<Atom>, Serializable {
      * the specified element (or equivalently, if this list changed as a result
      * of the call).
      *
+     * @param atom
      * @return <tt>true</tt> if this list contained the specified element
      * @throws ClassCastException if the type of the specified element is
      * incompatible with this list
@@ -464,8 +461,8 @@ public final class AtomList extends Atom implements List<Atom>, Serializable {
      * not supported by this list
      */
     @Override
-    public final boolean remove(final Object o) {
-        return value.remove(o);
+    public boolean remove(final Object atom) {
+        return value.remove(requireAtom(atom));
     }
 
     /**
@@ -487,8 +484,8 @@ public final class AtomList extends Atom implements List<Atom>, Serializable {
      * @see #contains(Object)
      */
     @Override
-    public final boolean removeAll(final Collection<?> c) {
-        return value.removeAll(Collections.synchronizedCollection(c));
+    public boolean removeAll(final Collection<?> c) {
+        return value.removeAll(unmodifiableCollection(requireNonNull(c)));
     }
 
     /**
@@ -512,8 +509,8 @@ public final class AtomList extends Atom implements List<Atom>, Serializable {
      * @see #contains(Object)
      */
     @Override
-    public final boolean retainAll(final Collection<?> c) {
-        return value.retainAll(Collections.synchronizedCollection(c));
+    public boolean retainAll(final Collection<?> c) {
+        return value.retainAll(unmodifiableCollection(requireNonNull(c)));
     }
 
     /**
@@ -535,8 +532,8 @@ public final class AtomList extends Atom implements List<Atom>, Serializable {
      * &lt; 0 || index &gt;= size()</tt>)
      */
     @Override
-    public final Atom set(final int index, final Atom atom) {
-        return value.set(index, Objects.requireNonNull(atom));
+    public Atom set(final int index, final Atom atom) {
+        return value.set(requireNonNull(index), requireAtom(atom));
     }
 
     /**
@@ -547,7 +544,7 @@ public final class AtomList extends Atom implements List<Atom>, Serializable {
      * @return the number of elements in this list
      */
     @Override
-    public final int size() {
+    public int size() {
         return value.size();
     }
 
@@ -585,8 +582,8 @@ public final class AtomList extends Atom implements List<Atom>, Serializable {
      * toIndex</tt>)
      */
     @Override
-    public final List<Atom> subList(final int fromIndex, final int toIndex) {
-        return value.subList(fromIndex, toIndex);
+    public List<Atom> subList(final int fromIndex, final int toIndex) {
+        return value.subList(requireNonNull(fromIndex), requireNonNull(toIndex));
     }
 
     /**
@@ -607,7 +604,7 @@ public final class AtomList extends Atom implements List<Atom>, Serializable {
      * @see Arrays#asList(Object[])
      */
     @Override
-    public final Object[] toArray() {
+    public Object[] toArray() {
         return value.toArray();
     }
 
@@ -653,20 +650,20 @@ public final class AtomList extends Atom implements List<Atom>, Serializable {
      * @throws NullPointerException if the specified array is null
      */
     @Override
-    public final <T> T[] toArray(final T[] a) {
-        // TODO: look at this?
+    public <T> T[] toArray(final T[] a) {
+        // TODO: look at this!!!
         return value.toArray(a);
     }
 
     @Override
-    public final int hashCode() {
+    public int hashCode() {
         int hash = 7;
         hash = 17 * hash + Objects.hashCode(this.value);
         return hash;
     }
 
     @Override
-    public final boolean equals(final Object obj) {
+    public boolean equals(final Object obj) {
         if (this == obj) {
             return true;
         }
@@ -677,7 +674,7 @@ public final class AtomList extends Atom implements List<Atom>, Serializable {
     }
 
     @Override
-    public final String toString() {
+    public String toString() {
         return value.toString();
     }
 

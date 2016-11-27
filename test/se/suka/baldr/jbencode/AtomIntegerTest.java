@@ -40,12 +40,6 @@ public final class AtomIntegerTest {
     /**
      *
      */
-    public AtomIntegerTest() {
-    }
-
-    /**
-     *
-     */
     @BeforeClass
     public static void setUpClass() {
     }
@@ -55,6 +49,12 @@ public final class AtomIntegerTest {
      */
     @AfterClass
     public static void tearDownClass() {
+    }
+
+    /**
+     *
+     */
+    public AtomIntegerTest() {
     }
 
     /**

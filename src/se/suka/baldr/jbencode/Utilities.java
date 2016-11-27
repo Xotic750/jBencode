@@ -24,18 +24,24 @@
 package se.suka.baldr.jbencode;
 
 import java.io.IOException;
+import static java.lang.Math.max;
+import static java.lang.Math.min;
 import java.nio.charset.Charset;
-import java.nio.file.Files;
+import static java.nio.charset.Charset.forName;
+import static java.nio.file.Files.readAllBytes;
+import static java.nio.file.Files.readAllLines;
 import java.nio.file.InvalidPathException;
 import java.nio.file.Path;
-import java.nio.file.Paths;
+import static java.nio.file.Paths.get;
 import java.util.List;
-import java.util.Objects;
+import static java.util.Objects.isNull;
+import static java.util.Objects.requireNonNull;
 import java.util.Random;
-import java.util.logging.Level;
+import static java.util.logging.Level.WARNING;
 import java.util.logging.Logger;
+import static java.util.logging.Logger.getLogger;
 import java.util.regex.Matcher;
-import java.util.regex.Pattern;
+import static java.util.regex.Pattern.compile;
 
 /**
  * @author Graham Fairweather
@@ -43,7 +49,7 @@ import java.util.regex.Pattern;
  */
 public class Utilities {
 
-    private static final Logger LOGGER = Logger.getLogger(Utilities.class.getSimpleName());
+    private static final Logger LOGGER = getLogger(Utilities.class.getSimpleName());
     private static final Random RAND = new Random();
 
     /**
@@ -54,7 +60,8 @@ public class Utilities {
      * @return
      */
     public static final int randInt(final int min, final int max) {
-        return RAND.nextInt(max - min) + min;
+        return RAND.nextInt(requireNonNull(max) - requireNonNull(min))
+                + requireNonNull(min);
     }
 
     /**
@@ -65,7 +72,7 @@ public class Utilities {
      * @return
      */
     public static final int randIntClosed(final int min, final int max) {
-        return randInt(min, max + 1);
+        return randInt(requireNonNull(min), requireNonNull(max) + 1);
     }
 
     /**
@@ -76,7 +83,9 @@ public class Utilities {
      * @return
      */
     public static final int clampInt(final int value, final int min, final int max) {
-        return Math.min(Math.max(value, min), max);
+        return min(max(requireNonNull(value),
+                requireNonNull(min)),
+                requireNonNull(max));
     }
 
     /**
@@ -86,7 +95,7 @@ public class Utilities {
      * @return
      */
     public static final int findFirstNotOf(final String pattern, final String chars) {
-        return findFirstNotOf(pattern, chars, 0);
+        return findFirstNotOf(requireNonNull(pattern), requireNonNull(chars), 0);
     }
 
     /**
@@ -97,7 +106,9 @@ public class Utilities {
      * @return
      */
     public static final int findFirstNotOf(final String pattern, final String chars, final int startIndex) {
-        return getPos(pattern, "[^" + chars + "]", startIndex);
+        return getPos(requireNonNull(pattern),
+                "[^" + requireNonNull(chars) + "]",
+                requireNonNull(startIndex));
     }
 
     /**
@@ -107,7 +118,7 @@ public class Utilities {
      * @return
      */
     public static final int findFirstOf(final String pattern, final String chars) {
-        return findFirstOf(pattern, chars, 0);
+        return findFirstOf(requireNonNull(pattern), requireNonNull(chars), 0);
     }
 
     /**
@@ -118,14 +129,19 @@ public class Utilities {
      * @return
      */
     public static final int findFirstOf(final String pattern, final String chars, final int startIndex) {
-        return getPos(pattern, "[" + chars + "]", startIndex);
+        return getPos(requireNonNull(pattern),
+                "[" + requireNonNull(chars) + "]",
+                requireNonNull(startIndex));
     }
 
     /**
      *
      */
     private static Object[] makeParam(final Throwable ex) {
-        return new Object[]{ex.getClass().getName(), ex.getMessage()};
+        return new Object[]{
+            requireNonNull(ex).getClass().getName(),
+            ex.getMessage()
+        };
     }
 
     /**
@@ -137,26 +153,26 @@ public class Utilities {
     public static final String readFileBytesToString(final String absolutePathToAFile, final String charsetName) {
         final Path path;
         try {
-            path = Paths.get(absolutePathToAFile);
+            path = get(absolutePathToAFile);
         } catch (final InvalidPathException | NullPointerException ioex) {
-            LOGGER.log(Level.WARNING, "{0}: {1}", makeParam(ioex));
+            LOGGER.log(WARNING, "{0}: {1}", makeParam(ioex));
             return null;
         }
         final Charset charset;
         try {
-            charset = Charset.forName(charsetName);
+            charset = forName(charsetName);
         } catch (final IllegalArgumentException iaex) {
-            LOGGER.log(Level.WARNING, "{0}: {1}", makeParam(iaex));
+            LOGGER.log(WARNING, "{0}: {1}", makeParam(iaex));
             return null;
         }
         final byte[] arrayOfBytes;
         try {
-            arrayOfBytes = Files.readAllBytes(path);
+            arrayOfBytes = readAllBytes(path);
         } catch (final IOException | NullPointerException | OutOfMemoryError | SecurityException ioex) {
-            LOGGER.log(Level.WARNING, "{0}: {1}", makeParam(ioex));
+            LOGGER.log(WARNING, "{0}: {1}", makeParam(ioex));
             return null;
         }
-        return Objects.isNull(charset) ? new String(arrayOfBytes) : new String(arrayOfBytes, charset);
+        return isNull(charset) ? new String(arrayOfBytes) : new String(arrayOfBytes, charset);
     }
 
     /**
@@ -167,16 +183,16 @@ public class Utilities {
     public static final String readFileLinesToString(final String absolutePathToAFile) {
         final Path path;
         try {
-            path = Paths.get(absolutePathToAFile);
+            path = get(absolutePathToAFile);
         } catch (final InvalidPathException | NullPointerException ipex) {
-            LOGGER.log(Level.WARNING, "{0}: {1}", makeParam(ipex));
+            LOGGER.log(WARNING, "{0}: {1}", makeParam(ipex));
             return null;
         }
         final List<String> lines;
         try {
-            lines = Files.readAllLines(path);
+            lines = readAllLines(path);
         } catch (final IOException | NullPointerException | OutOfMemoryError | SecurityException ioex) {
-            LOGGER.log(Level.WARNING, "{0}: {1}", makeParam(ioex));
+            LOGGER.log(WARNING, "{0}: {1}", makeParam(ioex));
             return null;
         }
         final StringBuilder stringOfLines = new StringBuilder();
@@ -192,8 +208,42 @@ public class Utilities {
      * @return
      */
     public static final int getPos(final String pattern, final String characterSequencce, final int startIndex) {
-        final Matcher matcher = Pattern.compile(characterSequencce).matcher(pattern);
+        final Matcher matcher = compile(characterSequencce).matcher(pattern);
         return matcher.find(startIndex) ? matcher.start() : -1;
+    }
+
+    /**
+     *
+     * @param o
+     * @return
+     */
+    public static final boolean isString(Object o) {
+        return o instanceof String;
+    }
+
+    /**
+     *
+     * @param o
+     * @return
+     */
+    public static final String requireString(Object o) {
+        if (!isString(requireNonNull(o))) {
+            throw new IllegalArgumentException();
+        }
+        return (String) o;
+    }
+
+    /**
+     *
+     * @param o
+     * @param message
+     * @return
+     */
+    public static final String requireString(Object o, String message) {
+        if (!isString(requireNonNull(o))) {
+            throw new IllegalArgumentException(message);
+        }
+        return (String) o;
     }
 
     /**
