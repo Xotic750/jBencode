@@ -55,7 +55,7 @@ import static se.suka.baldr.jbencode.Utilities.requireString;
  * @author Graham Fairweather
  * @see <a href="https://en.wikipedia.org/wiki/Bencode">Bencode</a>
  */
-public final class AtomDictionary extends Atom implements Map<String, Atom>, Cloneable, Serializable {
+public final class AtomDictionary extends Atom implements Map<String, Atom>, Cloneable, Serializable, Comparable<AtomDictionary> {
 
     /**
      * Backing {@link ConcurrentSkipListMap}
@@ -651,6 +651,11 @@ public final class AtomDictionary extends Atom implements Map<String, Atom>, Clo
     @Override
     public String toString() {
         return value.toString();
+    }
+
+    @Override
+    public int compareTo(AtomDictionary anotherAtomDictionary) {
+        return value.toString().compareTo(anotherAtomDictionary.toString());
     }
 
 }

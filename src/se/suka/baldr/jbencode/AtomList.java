@@ -24,8 +24,10 @@
 package se.suka.baldr.jbencode;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import static java.util.Collections.unmodifiableCollection;
 import static java.util.Collections.unmodifiableList;
 import java.util.Comparator;
@@ -88,7 +90,7 @@ import static se.suka.baldr.jbencode.Utilities.randInt;
  * @see <a href="https://en.wikipedia.org/wiki/Bencode">Bencode</a>
  * @see CopyOnWriteArrayList
  */
-public final class AtomList extends Atom implements List<Atom>, RandomAccess, Cloneable, Serializable {
+public final class AtomList extends Atom implements List<Atom>, RandomAccess, Cloneable, Serializable, Comparable<AtomList> {
 
     /**
      * Backing List
@@ -898,6 +900,11 @@ public final class AtomList extends Atom implements List<Atom>, RandomAccess, Cl
     @Override
     public String toString() {
         return value.toString();
+    }
+
+    @Override
+    public int compareTo(AtomList anotherAtomList) {	
+        return value.toString().compareTo(anotherAtomList.toString());
     }
 
 }
