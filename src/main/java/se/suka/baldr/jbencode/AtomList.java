@@ -92,6 +92,8 @@ import static se.suka.baldr.jbencode.Utilities.randInt;
  */
 public final class AtomList extends Atom implements List<Atom>, RandomAccess, Cloneable, Serializable, Comparable<AtomList> {
 
+    private static final long serialVersionUID = -1527286384432951976L;
+
     private static final Logger LOGGER = getLogger(AtomList.class);
 
     /**
@@ -877,7 +879,17 @@ public final class AtomList extends Atom implements List<Atom>, RandomAccess, Cl
      */
     @Override
     public <T> T[] toArray(final T[] a) {
-        // TODO: Need to look at this!
+        /*
+        TODO: 
+            Detects such calls, whose array type parameter does not match the
+            Collection's type parameter. The collection's type parameter should
+            be assignable to the array type. For raw Collections, the hint
+            checks that the array type is actually assignable to the casted-to
+            array type.
+            The hint offers to change the newly created array type, or to change
+            the toArray parameter to new Type[],but the fix is not available if 
+            the collection expression may have some side effects.
+        */
         return value.toArray(a);
     }
 

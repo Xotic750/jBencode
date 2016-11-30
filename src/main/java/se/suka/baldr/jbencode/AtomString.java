@@ -45,6 +45,8 @@ import static org.slf4j.LoggerFactory.getLogger;
  */
 public final class AtomString extends Atom implements Serializable, Comparable<AtomString> {
 
+    private static final long serialVersionUID = 1252496632535400969L;
+
     private static final Logger LOGGER = getLogger(AtomString.class);
 
     /**

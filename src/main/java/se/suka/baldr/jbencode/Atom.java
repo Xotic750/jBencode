@@ -23,7 +23,6 @@
  */
 package se.suka.baldr.jbencode;
 
-import java.io.Serializable;
 import static java.util.Objects.requireNonNull;
 
 /**
@@ -32,7 +31,7 @@ import static java.util.Objects.requireNonNull;
  *
  * @author Graham Fairweather
  */
-public abstract class Atom implements Serializable {
+public abstract class Atom {
 
     /**
      *

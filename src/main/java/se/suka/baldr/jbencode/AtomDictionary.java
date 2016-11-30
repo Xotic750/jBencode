@@ -59,6 +59,8 @@ import static se.suka.baldr.jbencode.Utilities.requireString;
  */
 public final class AtomDictionary extends Atom implements Map<String, Atom>, Cloneable, Serializable, Comparable<AtomDictionary> {
 
+    private static final long serialVersionUID = -7602783133044374261L;
+
     private static final Logger LOGGER = getLogger(AtomDictionary.class);
 
     /**

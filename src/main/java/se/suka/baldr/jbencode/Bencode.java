@@ -129,7 +129,7 @@ public abstract class Bencode {
             }
             uiStart += key.bLength();
             final Atom value = decode(x, uiStart);
-            if (!(key instanceof Atom)) {
+            if (isNull(value)) {
                 itemError("decodeDict", "value");
                 return null;
             }
