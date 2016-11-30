@@ -26,7 +26,6 @@ package se.suka.baldr.jbencode;
 import java.io.Serializable;
 import static java.lang.Integer.compare;
 import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import static org.slf4j.LoggerFactory.getLogger;
 
 /**

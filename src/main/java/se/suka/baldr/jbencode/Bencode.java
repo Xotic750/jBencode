@@ -25,12 +25,10 @@ package se.suka.baldr.jbencode;
 
 import static java.lang.Character.isDigit;
 import static java.lang.Integer.parseInt;
-import java.text.MessageFormat;
 import static java.text.MessageFormat.format;
 import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
 import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import static org.slf4j.LoggerFactory.getLogger;
 import static se.suka.baldr.jbencode.Utilities.findFirstNotOf;
 import static se.suka.baldr.jbencode.Utilities.readFileBytesToString;

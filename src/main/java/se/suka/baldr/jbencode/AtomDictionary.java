@@ -42,7 +42,6 @@ import static java.util.stream.Collectors.joining;
 import static java.util.stream.Collectors.summingInt;
 import static java.util.stream.Collectors.toMap;
 import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import static org.slf4j.LoggerFactory.getLogger;
 import static se.suka.baldr.jbencode.Utilities.requireString;
 
