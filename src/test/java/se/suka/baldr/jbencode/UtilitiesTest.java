@@ -30,9 +30,7 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import static se.suka.baldr.jbencode.Utilities.findFirstNotOf;
-import static se.suka.baldr.jbencode.Utilities.findFirstOf;
-import static se.suka.baldr.jbencode.Utilities.readFileBytesToString;
-import static se.suka.baldr.jbencode.Utilities.readFileLinesToString;
+import static se.suka.baldr.jbencode.Utilities.readTorrentFile;
 
 /**
  *
@@ -78,16 +76,6 @@ public class UtilitiesTest {
      *
      */
     @Test
-    public void testFindFirstNotOfABC() {
-        String s = "abc123def456";
-        int i = findFirstNotOf(s, "abc");
-        assertEquals(i, 3);
-    }
-
-    /**
-     *
-     */
-    @Test
     public void testFindFirstNotOfABCStartindex() {
         String s = "abc123abc123";
         int i = findFirstNotOf(s, "abc", 6);
@@ -108,18 +96,8 @@ public class UtilitiesTest {
      *
      */
     @Test
-    public void testFindFirstOfDEF() {
-        String s = "abc123def456";
-        int i = findFirstOf(s, "def");
-        assertEquals(i, 6);
-    }
-
-    /**
-     *
-     */
-    @Test
-    public void testreadFileBytesToStringEmptyEmpty() {
-        String s = readFileBytesToString("", "");
+    public void testreadFileBytesToStringEmpty() {
+        String s = readTorrentFile("");
         assertNull(s);
     }
 
@@ -127,8 +105,26 @@ public class UtilitiesTest {
      *
      */
     @Test
-    public void testreadFileBytesToStringEmptyNull() {
-        String s = readFileBytesToString("", null);
+    public void testreadFileBytesToStringNull() {
+        String s = readTorrentFile(null);
+        assertNull(s);
+    }
+
+    /**
+     *
+     */
+    @Test
+    public void testreadFileBytesToStringDirectory() {
+        String s = readTorrentFile("samples");
+        assertNull(s);
+    }
+
+    /**
+     *
+     */
+    @Test
+    public void testreadFileBytesToStringNotExist() {
+        String s = readTorrentFile("wibble");
         assertNull(s);
     }
 
@@ -137,7 +133,7 @@ public class UtilitiesTest {
      */
     @Test
     public void testReadFileBytesToStringSample1() {
-        String f = readFileBytesToString("samples/sample1.torrent", "windows-1252");
+        String f = readTorrentFile("samples/sample1.torrent");
         String s = "d8:announce35:udp://tracker.openbittorrent.com:8013:creation datei1327049827e4:infod6:lengthi20e4:name10:sample.txt12:piece lengthi65536e6:pieces0:7:privatei1eee\r";
         assertEquals(f, s);
     }
@@ -147,45 +143,8 @@ public class UtilitiesTest {
      */
     @Test
     public void testReadFileBytesToStringSample2() {
-        String f = readFileBytesToString("samples/sample2.torrent", "windows-1252");
+        String f = readTorrentFile("samples/sample2.torrent");
         assertNotNull(f);
-    }
-
-    /**
-     *
-     */
-    @Test
-    public void testreadFileLinesToStringEmpty() {
-        String s = readFileLinesToString("");
-        assertNull(s);
-    }
-
-    /**
-     *
-     */
-    @Test
-    public void testreadFileLinesToStringNull() {
-        String s = readFileLinesToString(null);
-        assertNull(s);
-    }
-
-    /**
-     *
-     */
-    @Test
-    public void testReadFileLinesToStringSample1() {
-        String f = readFileLinesToString("samples/sample1.torrent");
-        String s = "d8:announce35:udp://tracker.openbittorrent.com:8013:creation datei1327049827e4:infod6:lengthi20e4:name10:sample.txt12:piece lengthi65536e6:pieces0:7:privatei1eee";
-        assertEquals(f, s);
-    }
-
-    /**
-     *
-     */
-    @Test
-    public void testReadFileLinesToStringSample2() {
-        String f = readFileLinesToString("samples/sample2.torrent");
-        assertNull(f);
     }
 
 }

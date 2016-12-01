@@ -23,23 +23,16 @@
  */
 package se.suka.baldr.jbencode;
 
+import static com.google.common.base.CharMatcher.anyOf;
+import static com.google.common.io.Files.toByteArray;
+import java.io.File;
 import java.io.IOException;
 import static java.lang.Math.max;
 import static java.lang.Math.min;
-import java.nio.charset.Charset;
-import static java.nio.charset.Charset.forName;
-import static java.nio.file.Files.readAllBytes;
-import static java.nio.file.Files.readAllLines;
-import java.nio.file.InvalidPathException;
-import java.nio.file.Path;
-import static java.nio.file.Paths.get;
+import static java.nio.charset.StandardCharsets.US_ASCII;
 import static java.text.MessageFormat.format;
-import java.util.List;
-import static java.util.Objects.isNull;
 import static java.util.Objects.requireNonNull;
 import java.util.Random;
-import java.util.regex.Matcher;
-import static java.util.regex.Pattern.compile;
 import org.slf4j.Logger;
 import static org.slf4j.LoggerFactory.getLogger;
 
@@ -89,42 +82,14 @@ public class Utilities {
      *
      * @param pattern
      * @param chars
-     * @return
-     */
-    public static final int findFirstNotOf(final String pattern, final String chars) {
-        return findFirstNotOf(requireNonNull(pattern), requireNonNull(chars), 0);
-    }
-
-    /**
-     *
-     * @param pattern
-     * @param chars
      * @param startIndex
      * @return
      */
     public static final int findFirstNotOf(final String pattern, final String chars, final int startIndex) {
-        return getPos(requireNonNull(pattern), "[^" + requireNonNull(chars) + "]", startIndex);
-    }
-
-    /**
-     *
-     * @param pattern
-     * @param chars
-     * @return
-     */
-    public static final int findFirstOf(final String pattern, final String chars) {
-        return findFirstOf(requireNonNull(pattern), requireNonNull(chars), 0);
-    }
-
-    /**
-     *
-     * @param pattern
-     * @param chars
-     * @param startIndex
-     * @return
-     */
-    public static final int findFirstOf(final String pattern, final String chars, final int startIndex) {
-        return getPos(requireNonNull(pattern), "[" + requireNonNull(chars) + "]", startIndex);
+        if (startIndex > requireNonNull(pattern).length()) {
+            return -1;
+        }
+        return anyOf(requireNonNull(chars)).negate().indexIn(pattern, startIndex);
     }
 
     /**
@@ -139,78 +104,25 @@ public class Utilities {
 
     /**
      *
-     * @param absolutePathToAFile
-     * @param charsetName
+     * @param pathToAFile
      * @return
      */
-    public static final String readFileBytesToString(final String absolutePathToAFile, final String charsetName) {
-        final Path path;
+    public static final String readTorrentFile(final String pathToAFile) {
+        final File file;
         try {
-            path = get(absolutePathToAFile);
-        } catch (final InvalidPathException | NullPointerException ioex) {
+            file = new File(pathToAFile);
+        } catch (NullPointerException npex) {
+            LOGGER.warn(format("{0}: {1}", makeParam(npex)));
+            return null;
+        }
+        final byte[] bytes;
+        try {
+            bytes = toByteArray(file);
+        } catch (IOException | IllegalArgumentException ioex) {
             LOGGER.warn(format("{0}: {1}", makeParam(ioex)));
             return null;
         }
-        final Charset charset;
-        try {
-            charset = forName(charsetName);
-        } catch (final IllegalArgumentException iaex) {
-            LOGGER.warn(format("{0}: {1}", makeParam(iaex)));
-            return null;
-        }
-        final byte[] arrayOfBytes;
-        try {
-            arrayOfBytes = readAllBytes(path);
-        } catch (final IOException | NullPointerException | OutOfMemoryError | SecurityException ioex) {
-            LOGGER.warn(format("{0}: {1}", makeParam(ioex)));
-            return null;
-        }
-        /*
-        TODO: 
-            Found a call to a method which will perform a byte to String
-            (or String to byte) conversion, and will assume that the default 
-            platform encoding is suitable. This will cause the application 
-            behaviour to vary between platforms. Use an alternative API and
-            specify a charset name or Charset object explicitly.
-        */
-        return isNull(charset) ? new String(arrayOfBytes) : new String(arrayOfBytes, charset);
-    }
-
-    /**
-     *
-     * @param absolutePathToAFile
-     * @return
-     */
-    public static final String readFileLinesToString(final String absolutePathToAFile) {
-        final Path path;
-        try {
-            path = get(absolutePathToAFile);
-        } catch (final InvalidPathException | NullPointerException ipex) {
-            LOGGER.warn(format("{0}: {1}", makeParam(ipex)));
-            return null;
-        }
-        final List<String> lines;
-        try {
-            lines = readAllLines(path);
-        } catch (final IOException | NullPointerException | OutOfMemoryError | SecurityException ioex) {
-            LOGGER.warn(format("{0}: {1}", makeParam(ioex)));
-            return null;
-        }
-        final StringBuilder stringOfLines = new StringBuilder();
-        lines.stream().forEach(line -> stringOfLines.append(line));
-        return stringOfLines.toString();
-    }
-
-    /**
-     *
-     * @param pattern
-     * @param characterSequencce
-     * @param startIndex
-     * @return
-     */
-    private static int getPos(final String pattern, final String characterSequencce, final int startIndex) {
-        final Matcher matcher = compile(characterSequencce).matcher(pattern);
-        return matcher.find(startIndex) ? matcher.start() : -1;
+        return new String(bytes, US_ASCII);
     }
 
     /**

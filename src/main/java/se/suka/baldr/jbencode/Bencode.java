@@ -31,7 +31,7 @@ import static java.util.Objects.nonNull;
 import org.slf4j.Logger;
 import static org.slf4j.LoggerFactory.getLogger;
 import static se.suka.baldr.jbencode.Utilities.findFirstNotOf;
-import static se.suka.baldr.jbencode.Utilities.readFileBytesToString;
+import static se.suka.baldr.jbencode.Utilities.readTorrentFile;
 
 /**
  * Bencode (pronounced like B encode) is the encoding used by the peer-to-peer
@@ -149,7 +149,7 @@ public abstract class Bencode {
      * @return
      */
     public static final Atom decodeFile(final String fileName) {
-        final String s = readFileBytesToString(fileName, "windows-1252");
+        final String s = readTorrentFile(fileName);
         return decode(s);
     }
 

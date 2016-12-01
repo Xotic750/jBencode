@@ -889,7 +889,7 @@ public final class AtomList extends Atom implements List<Atom>, RandomAccess, Cl
             The hint offers to change the newly created array type, or to change
             the toArray parameter to new Type[],but the fix is not available if 
             the collection expression may have some side effects.
-        */
+         */
         return value.toArray(a);
     }
 
