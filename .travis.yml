@@ -1,8 +1,6 @@
 language: java
 jdk:
   - oraclejdk8
-  - oraclejdk7
-  - oraclejdk6
 sudo: false
 matrix:
   fast_finish: true
