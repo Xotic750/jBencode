@@ -23,6 +23,7 @@
  */
 package se.suka.baldr.jbencode;
 
+import java.util.Map;
 import org.junit.AfterClass;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
@@ -277,6 +278,24 @@ public final class AtomDictionaryTest {
         assertTrue(ai != aj);
         assertTrue(ai.getClass() == aj.getClass());
         assertEquals(ai, aj);
+    }
+
+    /**
+     *
+     */
+    @Test
+    public void testAtomDictionaryCopy() {
+        AtomDictionary ai = new AtomDictionary();
+        ai.put("foo", new AtomInteger(1));
+        ai.put("bar", new AtomString("hello"));
+        ai.put("boo", new AtomList());
+        ai.put("far", new AtomDictionary());
+        AtomDictionary aj = ai.copy();
+        assertTrue(ai != aj);
+        assertTrue(ai.getClass() == aj.getClass());
+        assertEquals(ai, aj);
+        ai.entrySet().stream().
+                forEach(entry -> assertTrue(entry.getValue() != aj.get(entry.getKey())));
     }
 
 }

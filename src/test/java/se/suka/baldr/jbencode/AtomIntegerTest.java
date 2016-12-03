@@ -26,7 +26,9 @@ package se.suka.baldr.jbencode;
 import org.junit.After;
 import org.junit.AfterClass;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotEquals;
+import static org.junit.Assert.assertTrue;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -38,386 +40,347 @@ import org.junit.Test;
 public final class AtomIntegerTest {
 
     /**
+     * Sometimes several tests need to share computationally expensive setup
+     * (like logging into a database). While this can compromise the
+     * independence of tests, sometimes it is a necessary optimization.
+     * Annotating a public static void no-arg method with @BeforeClass causes it
+     * to be run once before any of the test methods in the class. The
      *
+     * @BeforeClass methods of superclasses will be run before those of the
+     * current class, unless they are shadowed in the current class.
      */
     @BeforeClass
     public static void setUpClass() {
     }
 
     /**
+     * If you allocate expensive external resources in a BeforeClass method you
+     * need to release them after all the tests in the class have run.
+     * Annotating a public static void method with @AfterClass causes that
+     * method to be run after all the tests in the class have been run. All
      *
+     * @AfterClass methods are guaranteed to run even if a BeforeClass method
+     * throws an exception. The @AfterClass methods declared in superclasses
+     * will be run after those of the current class, unless they are shadowed in
+     * the current class.
      */
     @AfterClass
     public static void tearDownClass() {
     }
 
     /**
-     *
+     * Test constructor.
      */
     public AtomIntegerTest() {
     }
 
     /**
+     * When writing tests, it is common to find that several tests need similar
+     * objects created before they can run. Annotating a public void method with
      *
+     * @Before causes that method to be run before the Test method. The @Before
+     * methods of superclasses will be run before those of the current class,
+     * unless they are overridden in the current class. No other ordering is
+     * defined.
      */
     @Before
     public void setUp() {
     }
 
     /**
-     *
+     * If you allocate external resources in a Before method you need to release
+     * them after the test runs. Annotating a public void method with @After
+     * causes that method to be run after the Test method. All @After methods
+     * are guaranteed to run even if a Before or Test method throws an
+     * exception. The @After methods declared in superclasses will be run after
+     * those of the current class, unless they are overridden in the current
+     * class.
      */
     @After
     public void tearDown() {
     }
 
     /**
-     *
+     * Test the Constructor, of class AtomInteger.
      */
     @Test
-    public void testAtomIntegerConstructorEmpty() {
-        Atom atomInteger = new AtomInteger();
-        assertEquals(new AtomInteger(), atomInteger);
+    public void testAtomInteger_1() {
+        final AtomInteger actual = new AtomInteger();
+        final AtomInteger expected = new AtomInteger();
+        assertEquals(expected, actual);
     }
 
     /**
-     *
+     * Test the Constructor, of class AtomInteger.
      */
     @Test
-    public void testAtomIntegerConstructorEmptyBLength() {
-        Atom ai = new AtomInteger();
-        assertEquals(ai.bLength(), 3);
+    public void testAtomInteger_2() {
+        final Atom actual = new AtomInteger();
+        final AtomInteger expected = new AtomInteger();
+        assertEquals(expected, actual);
     }
 
     /**
-     *
+     * Test the Constructor, of class AtomInteger.
      */
     @Test
-    public void testAtomIntegerConstructorEmptyEncode() {
-        Atom ai = new AtomInteger();
-        assertEquals(ai.encode(), "i0e");
+    public void testAtomInteger_3() {
+        final AtomInteger actual = new AtomInteger(1);
+        final AtomInteger expected = new AtomInteger(1);
+        assertEquals(expected, actual);
     }
 
     /**
-     *
+     * Test the Constructor, of class AtomInteger.
      */
     @Test
-    public void testAtomIntegerConstructorEmptyLength() {
-        Atom ai = new AtomInteger();
-        assertEquals(ai.toString().length(), 1);
+    public void testAtomInteger_4() {
+        final AtomInteger actual = new AtomInteger(1);
+        final AtomInteger expected = new AtomInteger(2);
+        assertNotEquals(expected, actual);
     }
 
     /**
-     *
+     * Test the Constructor, of class AtomInteger.
      */
     @Test
-    public void testAtomIntegerConstructorEmptyString() {
-        Atom ai = new AtomInteger();
-        assertEquals(ai.toString(), "0");
+    public void testAtomInteger_5() {
+        final AtomInteger one = new AtomInteger(1);
+        final AtomInteger actual = new AtomInteger(one);
+        final AtomInteger expected = new AtomInteger(1);
+        assertEquals(expected, actual);
     }
 
     /**
-     *
+     * Test the Constructor, of class AtomInteger.
      */
     @Test
-    public void testAtomIntegerConstructorEmptyValue() {
-        AtomInteger ai = new AtomInteger();
-        assertEquals(ai.intValue(), 0);
+    public void testAtomInteger_6() {
+        AtomInteger actual = null;
+        final AtomInteger expected = null;
+        boolean caught = false;
+        try {
+            actual = new AtomInteger(null);
+        } catch (final NullPointerException ex) {
+            caught = true;
+        }
+        assertTrue(caught);
+        assertEquals(expected, actual);
     }
 
     /**
-     *
+     * Test of bLength method, of class AtomInteger.
      */
     @Test
-    public void testAtomIntegerConstructorNegativeAtom() {
-        AtomInteger ai = new AtomInteger(-1);
-        Atom atomInteger = new AtomInteger(ai);
-        assertEquals(ai, atomInteger);
+    public void testBLength() {
+        final int actual = new AtomInteger().bLength();
+        final int expected = 3;
+        assertEquals(expected, actual);
     }
 
     /**
-     *
+     * Test of encode method, of class AtomInteger.
      */
     @Test
-    public void testAtomIntegerConstructorNegativeAtomBLength() {
-        AtomInteger ai = new AtomInteger(-1);
-        Atom ai1 = new AtomInteger(ai);
-        assertEquals(ai1.bLength(), 4);
+    public void testEncode() {
+        final String actual = new AtomInteger().encode();
+        final String expected = "i0e";
+        assertEquals(expected, actual);
     }
 
     /**
-     *
+     * Test of byteValue method, of class AtomInteger.
      */
     @Test
-    public void testAtomIntegerConstructorNegativeAtomEncode() {
-        AtomInteger ai = new AtomInteger(-1);
-        Atom ai1 = new AtomInteger(ai);
-        assertEquals(ai1.encode(), "i-1e");
+    public void testByteValue() {
+        final byte actual = new AtomInteger().byteValue();
+        final byte expected = 0;
+        assertEquals(expected, actual);
     }
 
     /**
-     *
+     * Test of shortValue method, of class AtomInteger.
      */
     @Test
-    public void testAtomIntegerConstructorNegativeAtomLength() {
-        AtomInteger ai = new AtomInteger(-1);
-        Atom ai1 = new AtomInteger(ai);
-        assertEquals(ai1.toString().length(), 2);
+    public void testShortValue() {
+        final short actual = new AtomInteger().shortValue();
+        final short expected = 0;
+        assertEquals(expected, actual);
     }
 
     /**
-     *
+     * Test of intValue method, of class AtomInteger.
      */
     @Test
-    public void testAtomIntegerConstructorNegativeAtomSet() {
-        AtomInteger ai = new AtomInteger(-1);
-        assertEquals(ai.intValue(), -1);
+    public void testIntValue() {
+        final int actual = new AtomInteger().intValue();
+        final int expected = 0;
+        assertEquals(expected, actual);
     }
 
     /**
-     *
+     * Test of longValue method, of class AtomInteger.
      */
     @Test
-    public void testAtomIntegerConstructorNegativeAtomString() {
-        AtomInteger ai = new AtomInteger(-1);
-        Atom ai1 = new AtomInteger(ai);
-        assertEquals(ai1.toString(), "-1");
+    public void testLongValue() {
+        final long actual = new AtomInteger().longValue();
+        final long expected = 0;
+        assertEquals(expected, actual);
     }
 
     /**
-     *
+     * Test of floatValue method, of class AtomInteger.
      */
     @Test
-    public void testAtomIntegerConstructorNegativeAtomValue() {
-        AtomInteger ai = new AtomInteger(-1);
-        AtomInteger ai1 = new AtomInteger(ai);
-        assertEquals(ai1.intValue(), -1);
+    public void testFloatValue() {
+        final float actual = new AtomInteger().floatValue();
+        final float expected = 0;
+        final double delta = 0;
+        assertEquals(expected, actual, delta);
     }
 
     /**
-     *
+     * Test of doubleValue method, of class AtomInteger.
      */
     @Test
-    public void testAtomIntegerConstructorNegativeEquals() {
-        Atom ai = new AtomInteger(-1);
-        Atom ai1 = new AtomInteger(-1);
-        assertEquals(ai, ai1);
+    public void testDoubleValue() {
+        final double actual = new AtomInteger().doubleValue();
+        final double expected = 0;
+        final double delta = 0;
+        assertEquals(expected, actual, delta);
     }
 
     /**
-     *
+     * Test of compareTo method, of class AtomInteger.
      */
     @Test
-    public void testAtomIntegerConstructorNegativeInt() {
-        Atom atomInteger = new AtomInteger(-1);
-        assertEquals(new AtomInteger(-1), atomInteger);
+    public void testCompareTo_1() {
+        final AtomInteger atomInteger1 = new AtomInteger();
+        final AtomInteger atomInteger2 = new AtomInteger();
+        final int actual = atomInteger1.compareTo(atomInteger2);
+        final int expected = 0;
+        assertEquals(expected, actual);
     }
 
     /**
-     *
+     * Test of compareTo method, of class AtomInteger.
      */
     @Test
-    public void testAtomIntegerConstructorNegativeIntBLength() {
-        Atom ai = new AtomInteger(-1);
-        assertEquals(ai.bLength(), 4);
+    public void testCompareTo_2() {
+        final AtomInteger atomInteger1 = new AtomInteger();
+        final AtomInteger atomInteger2 = new AtomInteger(10);
+        final int actual = atomInteger1.compareTo(atomInteger2);
+        final int expected = -1;
+        assertEquals(expected, actual);
     }
 
     /**
-     *
+     * Test of compareTo method, of class AtomInteger.
      */
     @Test
-    public void testAtomIntegerConstructorNegativeIntEncode() {
-        Atom ai = new AtomInteger(-1);
-        assertEquals(ai.encode(), "i-1e");
+    public void testCompareTo_3() {
+        final AtomInteger atomInteger1 = new AtomInteger();
+        final AtomInteger atomInteger2 = new AtomInteger(-10);
+        final int actual = atomInteger1.compareTo(atomInteger2);
+        final int expected = 1;
+        assertEquals(expected, actual);
     }
 
     /**
-     *
+     * Test of compareTo method, of class AtomInteger.
      */
     @Test
-    public void testAtomIntegerConstructorNegativeIntLength() {
-        Atom ai = new AtomInteger(-1);
-        assertEquals(ai.toString().length(), 2);
+    public void testCompareTo_4() {
+        final AtomInteger atomInteger1 = new AtomInteger();
+        Integer actual = null;
+        final AtomInteger expected = null;
+        boolean caught = false;
+        try {
+            actual = atomInteger1.compareTo(null);
+        } catch (final NullPointerException ex) {
+            caught = true;
+        }
+        assertTrue(caught);
+        assertEquals(expected, actual);
     }
 
     /**
-     *
+     * Test of hashCode method, of class AtomInteger.
      */
     @Test
-    public void testAtomIntegerConstructorNegativeIntString() {
-        Atom ai = new AtomInteger(-1);
-        assertEquals(ai.toString(), "-1");
+    public void testHashCode() {
+        final long value = 10;
+        final int actual = new AtomInteger(value).hashCode();
+        final int expected = 19 * 7 + (int) (value ^ (value >>> 32));
+        assertEquals(expected, actual);
     }
 
     /**
-     *
+     * Test of equals method, of class AtomInteger.
      */
     @Test
-    public void testAtomIntegerConstructorNegativeIntValue() {
-        AtomInteger ai = new AtomInteger(-1);
-        assertEquals(ai.intValue(), -1);
+    public void testEquals_1() {
+        final AtomInteger atomInteger = new AtomInteger(-10);
+        final Atom atom = new AtomInteger(-10);
+        final boolean actual = atomInteger.equals(atom);
+        assertTrue(actual);
     }
 
     /**
-     *
+     * Test of equals method, of class AtomInteger.
      */
     @Test
-    public void testAtomIntegerConstructorNegativeNotEquals() {
-        Atom ai = new AtomInteger(-1);
-        Atom ai1 = new AtomInteger(-2);
-        assertNotEquals(ai, ai1);
+    public void testEquals_2() {
+        final AtomInteger atomInteger = new AtomInteger(-1);
+        final Atom atom = new AtomInteger(-10);
+        final boolean actual = atomInteger.equals(atom);
+        assertFalse(actual);
     }
 
     /**
-     *
+     * Test of equals method, of class AtomInteger.
      */
     @Test
-    public void testAtomIntegerConstructorPositiveAtom() {
-        AtomInteger ai = new AtomInteger(1);
-        Atom atomInteger = new AtomInteger(ai);
-        assertEquals(ai, atomInteger);
+    public void testEquals_3() {
+        final AtomInteger atomInteger = new AtomInteger(-1);
+        final Atom atom = null;
+        final boolean actual = atomInteger.equals(atom);
+        assertFalse(actual);
     }
 
     /**
-     *
+     * Test of toString method, of class AtomInteger.
      */
     @Test
-    public void testAtomIntegerConstructorPositiveAtomBLength() {
-        AtomInteger ai = new AtomInteger(1);
-        Atom ai1 = new AtomInteger(ai);
-        assertEquals(ai1.bLength(), 3);
+    public void testToString() {
+        final String actual = new AtomInteger().toString();
+        final String expected = "0";
+        assertEquals(expected, actual);
     }
 
     /**
-     *
+     * Test of copy method, of class AtomInteger.
      */
     @Test
-    public void testAtomIntegerConstructorPositiveAtomEncode() {
-        AtomInteger ai = new AtomInteger(1);
-        Atom ai1 = new AtomInteger(ai);
-        assertEquals(ai1.encode(), "i1e");
+    public void testCopy_1() {
+        final AtomInteger actual = new AtomInteger(2);
+        final AtomInteger expected = actual.copy();
+        assertEquals(expected, actual);
     }
 
     /**
-     *
+     * Test of copy method, of class AtomInteger.
      */
     @Test
-    public void testAtomIntegerConstructorPositiveAtomLength() {
-        AtomInteger ai = new AtomInteger(1);
-        Atom ai1 = new AtomInteger(ai);
-        assertEquals(ai1.toString().length(), 1);
-    }
-
-    /**
-     *
-     */
-    @Test
-    public void testAtomIntegerConstructorPositiveAtomSet() {
-        AtomInteger ai = new AtomInteger(1);
-        assertEquals(ai.intValue(), 1);
-    }
-
-    /**
-     *
-     */
-    @Test
-    public void testAtomIntegerConstructorPositiveAtomString() {
-        AtomInteger ai = new AtomInteger(1);
-        Atom ai1 = new AtomInteger(ai);
-        assertEquals(ai1.toString(), "1");
-    }
-
-    /**
-     *
-     */
-    @Test
-    public void testAtomIntegerConstructorPositiveAtomValue() {
-        AtomInteger ai = new AtomInteger(1);
-        AtomInteger ai1 = new AtomInteger(ai);
-        assertEquals(ai1.intValue(), 1);
-    }
-
-    /**
-     *
-     */
-    @Test
-    public void testAtomIntegerConstructorPositiveEquals() {
-        Atom ai = new AtomInteger(1);
-        Atom ai1 = new AtomInteger(1);
-        assertEquals(ai, ai1);
-    }
-
-    /**
-     *
-     */
-    @Test
-    public void testAtomIntegerConstructorPositiveInt() {
-        Atom atomInteger = new AtomInteger(1);
-        assertEquals(new AtomInteger(1), atomInteger);
-    }
-
-    /**
-     *
-     */
-    @Test
-    public void testAtomIntegerConstructorPositiveIntBLength() {
-        Atom ai = new AtomInteger(1);
-        assertEquals(ai.bLength(), 3);
-    }
-
-    /**
-     *
-     */
-    @Test
-    public void testAtomIntegerConstructorPositiveIntEncode() {
-        Atom ai = new AtomInteger(1);
-        assertEquals(ai.encode(), "i1e");
-    }
-
-    /**
-     *
-     */
-    @Test
-    public void testAtomIntegerConstructorPositiveIntLength() {
-        Atom ai = new AtomInteger(1);
-        assertEquals(ai.toString().length(), 1);
-    }
-
-    /**
-     *
-     */
-    @Test
-    public void testAtomIntegerConstructorPositiveIntSet() {
-        AtomInteger ai = new AtomInteger(1);
-        assertEquals(ai.intValue(), 1);
-    }
-
-    /**
-     *
-     */
-    @Test
-    public void testAtomIntegerConstructorPositiveIntString() {
-        Atom ai = new AtomInteger(1);
-        assertEquals(ai.toString(), "1");
-    }
-
-    /**
-     *
-     */
-    @Test
-    public void testAtomIntegerConstructorPositiveIntValue() {
-        AtomInteger ai = new AtomInteger(1);
-        assertEquals(ai.intValue(), 1);
-    }
-
-    /**
-     *
-     */
-    @Test
-    public void testAtomIntegerConstructorPositiveNotEquals() {
-        Atom ai = new AtomInteger(1);
-        Atom ai1 = new AtomInteger(2);
-        assertNotEquals(ai, ai1);
+    public void testCopy_2() {
+        final int value = 2;
+        final AtomInteger atomInteger1 = new AtomInteger(value);
+        final AtomInteger atomInteger2 = atomInteger1.copy();
+        assertTrue(atomInteger1 != atomInteger2);
+        assertEquals(atomInteger1, atomInteger2);
+        final int actual = atomInteger2.intValue();
+        final int expected = value;
+        assertEquals(expected, actual);
     }
 
 }

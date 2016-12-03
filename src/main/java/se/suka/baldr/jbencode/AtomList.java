@@ -23,7 +23,6 @@
  */
 package se.suka.baldr.jbencode;
 
-import java.io.Serializable;
 import java.util.Arrays;
 import java.util.Collection;
 import static java.util.Collections.unmodifiableCollection;
@@ -47,7 +46,7 @@ import static java.util.stream.Collectors.toList;
 import static java.util.stream.IntStream.range;
 import org.slf4j.Logger;
 import static org.slf4j.LoggerFactory.getLogger;
-import static se.suka.baldr.jbencode.Utilities.clampInt;
+import static se.suka.baldr.jbencode.Utilities.clamp;
 import static se.suka.baldr.jbencode.Utilities.randInt;
 
 /**
@@ -90,7 +89,7 @@ import static se.suka.baldr.jbencode.Utilities.randInt;
  * @see <a href="https://en.wikipedia.org/wiki/Bencode">Bencode</a>
  * @see CopyOnWriteArrayList
  */
-public final class AtomList extends Atom implements List<Atom>, RandomAccess, Cloneable, Serializable, Comparable<AtomList> {
+public final class AtomList extends Atom implements List<Atom>, RandomAccess, Cloneable, Comparable<AtomList> {
 
     private static final long serialVersionUID = -1527286384432951976L;
 
@@ -104,8 +103,6 @@ public final class AtomList extends Atom implements List<Atom>, RandomAccess, Cl
     /**
      * Constructs an empty list.
      *
-     * @throws IllegalArgumentException if the specified initial capacity is
-     * negative
      */
     public AtomList() {
         value = new CopyOnWriteArrayList<>();
@@ -137,18 +134,11 @@ public final class AtomList extends Atom implements List<Atom>, RandomAccess, Cl
      *
      * @param atom element to be appended to this list
      * @return <tt>true</tt> (as specified by {@link Collection#add})
-     * @throws UnsupportedOperationException if the <tt>add</tt> operation is
-     * not supported by this list
-     * @throws ClassCastException if the class of the specified element prevents
-     * it from being added to this list
-     * @throws NullPointerException if the specified element is null and this
-     * list does not permit null elements
-     * @throws IllegalArgumentException if some property of this element
-     * prevents it from being added to this list
+     * @throws NullPointerException if the specified element is null
      */
     @Override
     public boolean add(final Atom atom) {
-        return value.add(requireAtom(atom));
+        return value.add(requireNonNull(atom));
     }
 
     /**
@@ -159,20 +149,13 @@ public final class AtomList extends Atom implements List<Atom>, RandomAccess, Cl
      *
      * @param index index at which the specified element is to be inserted
      * @param atom element to be inserted
-     * @throws UnsupportedOperationException if the <tt>add</tt> operation is
-     * not supported by this list
-     * @throws ClassCastException if the class of the specified element prevents
-     * it from being added to this list
-     * @throws NullPointerException if the specified element is null and this
-     * list does not permit null elements
-     * @throws IllegalArgumentException if some property of the specified
-     * element prevents it from being added to this list
+     * @throws NullPointerException if the specified element is null
      * @throws IndexOutOfBoundsException if the index is out of range (<tt>index
      * &lt; 0 || index &gt; size()</tt>)
      */
     @Override
     public void add(final int index, final Atom atom) {
-        value.add(requireNonNull(index), requireAtom(atom));
+        value.add(index, requireNonNull(atom));
     }
 
     /**
@@ -185,21 +168,14 @@ public final class AtomList extends Atom implements List<Atom>, RandomAccess, Cl
      *
      * @param c collection containing elements to be added to this list
      * @return <tt>true</tt> if this list changed as a result of the call
-     * @throws UnsupportedOperationException if the <tt>addAll</tt> operation is
-     * not supported by this list
-     * @throws ClassCastException if the class of an element of the specified
-     * collection prevents it from being added to this list
      * @throws NullPointerException if the specified collection contains one or
-     * more null elements and this list does not permit null elements, or if the
-     * specified collection is null
-     * @throws IllegalArgumentException if some property of an element of the
-     * specified collection prevents it from being added to this list
+     * more null elements, or if the specified collection is null
      * @see #add(Object)
      */
     @Override
     public boolean addAll(final Collection<? extends Atom> c) {
         final Collection<? extends Atom> uc = unmodifiableCollection(requireNonNull(c));
-        uc.stream().forEachOrdered(atom -> value.add(requireAtom(atom)));
+        uc.stream().forEachOrdered(atom -> value.add(requireNonNull(atom)));
         return !uc.isEmpty();
     }
 
@@ -217,23 +193,16 @@ public final class AtomList extends Atom implements List<Atom>, RandomAccess, Cl
      * specified collection
      * @param c collection containing elements to be added to this list
      * @return <tt>true</tt> if this list changed as a result of the call
-     * @throws UnsupportedOperationException if the <tt>addAll</tt> operation is
-     * not supported by this list
-     * @throws ClassCastException if the class of an element of the specified
-     * collection prevents it from being added to this list
      * @throws NullPointerException if the specified collection contains one or
-     * more null elements and this list does not permit null elements, or if the
-     * specified collection is null
-     * @throws IllegalArgumentException if some property of an element of the
-     * specified collection prevents it from being added to this list
+     * more null elements, or if the specified collection is null
      * @throws IndexOutOfBoundsException if the index is out of range (<tt>index
      * &lt; 0 || index &gt; size()</tt>)
      */
     @Override
     public boolean addAll(final int index, final Collection<? extends Atom> c) {
-        final AtomicInteger count = new AtomicInteger(requireNonNull(index));
+        final AtomicInteger count = new AtomicInteger(index);
         final Collection<? extends Atom> uc = unmodifiableCollection(requireNonNull(c));
-        uc.stream().forEachOrdered(atom -> value.add(count.getAndAdd(1), requireAtom(atom)));
+        uc.stream().forEachOrdered(atom -> value.add(count.getAndIncrement(), requireNonNull(atom)));
         return !uc.isEmpty();
     }
 
@@ -244,11 +213,12 @@ public final class AtomList extends Atom implements List<Atom>, RandomAccess, Cl
      *
      * @param c collection containing elements to be added to this list
      * @return the number of elements added
-     * @throws NullPointerException if the specified collection is null
+     * @throws NullPointerException if the specified collection contains one or
+     * more null elements, or if the specified collection is null
      */
     public int addAllAbsent(final Collection<? extends Atom> c) {
         return (int) unmodifiableCollection(requireNonNull(c)).stream()
-                .map(atom -> value.addIfAbsent(requireAtom(atom)))
+                .map(atom -> value.addIfAbsent(requireNonNull(atom)))
                 .count();
     }
 
@@ -259,12 +229,14 @@ public final class AtomList extends Atom implements List<Atom>, RandomAccess, Cl
      * @return {@code true} if the element was added
      */
     public boolean addIfAbsent(final Atom atom) {
-        return value.addIfAbsent(requireAtom(atom));
+        return value.addIfAbsent(requireNonNull(atom));
     }
 
     /**
+     * Returns the length of the Bencoded string of this {@link Atom}. This
+     * method is faster than performing an <code>encode().length()</code>.
      *
-     * @return The length of the encoded string when Bencoded.
+     * @return The length of the Becoded string
      */
     @Override
     public int bLength() {
@@ -275,9 +247,6 @@ public final class AtomList extends Atom implements List<Atom>, RandomAccess, Cl
     /**
      * Removes all of the elements from this list (optional operation). The list
      * will be empty after this call returns.
-     *
-     * @throws UnsupportedOperationException if the <tt>clear</tt> operation is
-     * not supported by this list
      */
     @Override
     public void clear() {
@@ -293,10 +262,10 @@ public final class AtomList extends Atom implements List<Atom>, RandomAccess, Cl
     @Override
     public AtomList clone() {
         try {
-            AtomList atomList = (AtomList) super.clone();
+            final AtomList atomList = (AtomList) super.clone();
             atomList.value = new CopyOnWriteArrayList<>(value);
             return atomList;
-        } catch (CloneNotSupportedException e) {
+        } catch (final CloneNotSupportedException e) {
             // this shouldn't happen, since we are Cloneable
             throw new InternalError(e);
         }
@@ -308,18 +277,15 @@ public final class AtomList extends Atom implements List<Atom>, RandomAccess, Cl
      * least one element <tt>e</tt> such that
      * <tt>(o==null&nbsp;?&nbsp;e==null&nbsp;:&nbsp;o.equals(e))</tt>.
      *
-     * @param atom
+     * @param o
      * @return <tt>true</tt> if this list contains the specified element
      * @throws ClassCastException if the type of the specified element is
      * incompatible with this list
-     * (<a href="Collection.html#optional-restrictions">optional</a>)
-     * @throws NullPointerException if the specified element is null and this
-     * list does not permit null elements
-     * (<a href="Collection.html#optional-restrictions">optional</a>)
+     * @throws NullPointerException if the specified element is null
      */
     @Override
-    public boolean contains(final Object atom) {
-        return value.contains(requireAtom(atom));
+    public boolean contains(final Object o) {
+        return value.contains(requireAtom(requireNonNull(o)));
     }
 
     /**
@@ -331,33 +297,34 @@ public final class AtomList extends Atom implements List<Atom>, RandomAccess, Cl
      * specified collection
      * @throws ClassCastException if the types of one or more elements in the
      * specified collection are incompatible with this list
-     * (<a href="Collection.html#optional-restrictions">optional</a>)
      * @throws NullPointerException if the specified collection contains one or
-     * more null elements and this list does not permit null elements
-     * (<a href="Collection.html#optional-restrictions">optional</a>), or if the
-     * specified collection is null
+     * more null elements
      * @see #contains(Object)
      */
     @Override
     public boolean containsAll(final Collection<?> c) {
-        return value.containsAll(unmodifiableCollection(requireNonNull(c)));
+        return unmodifiableCollection(requireNonNull(c)).stream()
+                .map(o -> (Atom) requireAtom(requireNonNull(o)))
+                .noneMatch((atom) -> (!value.contains(atom)));
     }
 
     /**
-     * Returns a deep copy of this list. (The elements themselves not copied.)
+     * Returns a deep copy of this {@link Atom}.
      *
-     * @return a copy of this list
+     * @return a copy of this {@link Atom}
      */
     @Override
     public AtomList copy() {
-        return (AtomList) value.stream()
-                .map(atom -> (Atom) atom.copy())
+        List<Atom> collect = value.stream()
+                .map(atom -> atom.copy())
                 .collect(toList());
+        return new AtomList(collect);
     }
 
     /**
+     * Returns the Bencoded string of this {@link Atom}.
      *
-     * @return
+     * @return The Benoded string
      */
     @Override
     public String encode() {
@@ -381,44 +348,36 @@ public final class AtomList extends Atom implements List<Atom>, RandomAccess, Cl
      */
     @Override
     public Atom get(final int index) {
-        return value.get(requireNonNull(index));
+        return value.get(index);
     }
 
     /**
      * Returns the index of the first occurrence of the specified element in
-     * this list, or -1 if this list does not contain the element. More
-     * formally, returns the lowest index <tt>i</tt> such that
-     * <tt>(o==null&nbsp;?&nbsp;get(i)==null&nbsp;:&nbsp;o.equals(get(i)))</tt>,
-     * or -1 if there is no such index.
+     * this list, or -1 if this list does not contain the element.
      *
-     * @param atom
+     * @param o
      * @return the index of the first occurrence of the specified element in
      * this list, or -1 if this list does not contain the element
      * @throws ClassCastException if the type of the specified element is
      * incompatible with this list
-     * (<a href="Collection.html#optional-restrictions">optional</a>)
-     * @throws NullPointerException if the specified element is null and this
-     * list does not permit null elements
-     * (<a href="Collection.html#optional-restrictions">optional</a>)
+     * @throws NullPointerException if the specified element is null
      */
     @Override
-    public int indexOf(final Object atom) {
-        return value.indexOf(requireNonNull(atom));
+    public int indexOf(final Object o) {
+        return value.indexOf(requireAtom(requireNonNull(o)));
     }
 
     /**
      * Returns the index of the first occurrence of the specified element in
      * this list, searching forwards from {@code index}, or returns -1 if the
-     * element is not found. More formally, returns the lowest index {@code i}
-     * such that
-     * <tt>(i&nbsp;&gt;=&nbsp;index&nbsp;&amp;&amp;&nbsp;(e==null&nbsp;?&nbsp;get(i)==null&nbsp;:&nbsp;e.equals(get(i))))</tt>,
-     * or -1 if there is no such index.
+     * element is not found.
      *
      * @param atom element to search for
      * @param startIndex index to start searching from
      * @return the index of the first occurrence of the element in this list at
      * position {@code index} or later in the list; {@code -1} if the element is
      * not found.
+     * @throws NullPointerException if the specified element is null
      * @throws IndexOutOfBoundsException if the specified index is negative
      */
     public int indexOf(final Atom atom, final int startIndex) {
@@ -452,19 +411,16 @@ public final class AtomList extends Atom implements List<Atom>, RandomAccess, Cl
      * <tt>(o==null&nbsp;?&nbsp;get(i)==null&nbsp;:&nbsp;o.equals(get(i)))</tt>,
      * or -1 if there is no such index.
      *
-     * @param atom element to search for
+     * @param o element to search for
      * @return the index of the last occurrence of the specified element in this
      * list, or -1 if this list does not contain the element
      * @throws ClassCastException if the type of the specified element is
      * incompatible with this list
-     * (<a href="Collection.html#optional-restrictions">optional</a>)
-     * @throws NullPointerException if the specified element is null and this
-     * list does not permit null elements
-     * (<a href="Collection.html#optional-restrictions">optional</a>)
+     * @throws NullPointerException if the specified element is null
      */
     @Override
-    public int lastIndexOf(final Object atom) {
-        return value.lastIndexOf(requireNonNull(atom));
+    public int lastIndexOf(final Object o) {
+        return value.lastIndexOf(requireAtom(requireNonNull(o)));
     }
 
     /**
@@ -482,9 +438,10 @@ public final class AtomList extends Atom implements List<Atom>, RandomAccess, Cl
      * found.
      * @throws IndexOutOfBoundsException if the specified index is greater than
      * or equal to the current size of this list
+     * @throws NullPointerException if the specified element is null
      */
     public int lastIndexOf(final Atom atom, final int startIndex) {
-        return value.lastIndexOf(requireAtom(atom), startIndex);
+        return value.lastIndexOf(requireNonNull(atom), startIndex);
     }
 
     /**
@@ -516,7 +473,7 @@ public final class AtomList extends Atom implements List<Atom>, RandomAccess, Cl
      */
     @Override
     public ListIterator<Atom> listIterator(final int index) {
-        return value.listIterator(requireNonNull(index));
+        return value.listIterator(index);
     }
 
     /**
@@ -527,10 +484,11 @@ public final class AtomList extends Atom implements List<Atom>, RandomAccess, Cl
     public AtomList getRandomSlice(final int howMany) {
         final List<Atom> ul = unmodifiableList(value);
         final int size = ul.size();
-        final int hm = clampInt(requireNonNull(howMany), 0, size);
-        return (AtomList) range(0, hm)
+        final int hm = clamp(howMany, 0, size);
+        final List<Atom> collect = range(0, hm)
                 .mapToObj(i -> ul.get(randInt(0, size)))
                 .collect(toList());
+        return new AtomList(collect);
     }
 
     /**
@@ -540,14 +498,12 @@ public final class AtomList extends Atom implements List<Atom>, RandomAccess, Cl
      *
      * @param index the index of the element to be removed
      * @return the element previously at the specified position
-     * @throws UnsupportedOperationException if the <tt>remove</tt> operation is
-     * not supported by this list
      * @throws IndexOutOfBoundsException if the index is out of range (<tt>index
      * &lt; 0 || index &gt;= size()</tt>)
      */
     @Override
     public Atom remove(final int index) {
-        return value.remove(requireNonNull(index).intValue());
+        return value.remove(index);
     }
 
     /**
@@ -560,20 +516,15 @@ public final class AtomList extends Atom implements List<Atom>, RandomAccess, Cl
      * the specified element (or equivalently, if this list changed as a result
      * of the call).
      *
-     * @param atom
+     * @param o
      * @return <tt>true</tt> if this list contained the specified element
      * @throws ClassCastException if the type of the specified element is
      * incompatible with this list
-     * (<a href="Collection.html#optional-restrictions">optional</a>)
-     * @throws NullPointerException if the specified element is null and this
-     * list does not permit null elements
-     * (<a href="Collection.html#optional-restrictions">optional</a>)
-     * @throws UnsupportedOperationException if the <tt>remove</tt> operation is
-     * not supported by this list
+     * @throws NullPointerException if the specified element is null
      */
     @Override
-    public boolean remove(final Object atom) {
-        return value.remove(requireAtom(atom));
+    public boolean remove(final Object o) {
+        return value.remove(requireAtom(requireNonNull(o)));
     }
 
     /**
@@ -582,21 +533,18 @@ public final class AtomList extends Atom implements List<Atom>, RandomAccess, Cl
      *
      * @param c collection containing elements to be removed from this list
      * @return <tt>true</tt> if this list changed as a result of the call
-     * @throws UnsupportedOperationException if the <tt>removeAll</tt> operation
-     * is not supported by this list
      * @throws ClassCastException if the class of an element of this list is
      * incompatible with the specified collection
-     * (<a href="Collection.html#optional-restrictions">optional</a>)
-     * @throws NullPointerException if this list contains a null element and the
-     * specified collection does not permit null elements
-     * (<a href="Collection.html#optional-restrictions">optional</a>), or if the
-     * specified collection is null
+     * @throws NullPointerException if this list contains a null element
      * @see #remove(Object)
      * @see #contains(Object)
      */
     @Override
     public boolean removeAll(final Collection<?> c) {
-        return value.removeAll(unmodifiableCollection(requireNonNull(c)));
+        return unmodifiableCollection(requireNonNull(c)).stream()
+                .map(o -> (Atom) requireAtom(requireNonNull(o)))
+                .filter(atom -> value.remove(atom))
+                .count() > 0;
     }
 
     /**
@@ -608,13 +556,10 @@ public final class AtomList extends Atom implements List<Atom>, RandomAccess, Cl
      * removed
      * @return {@code true} if any elements were removed
      * @throws NullPointerException if the specified filter is null
-     * @throws UnsupportedOperationException if elements cannot be removed from
-     * this collection. Implementations may throw this exception if a matching
-     * element cannot be removed or if, in general, removal is not supported.
      */
     @Override
     public boolean removeIf(Predicate<? super Atom> filter) {
-        return value.removeIf(filter);
+        return value.removeIf(requireNonNull(filter));
     }
 
     /**
@@ -635,16 +580,19 @@ public final class AtomList extends Atom implements List<Atom>, RandomAccess, Cl
      * replacing the first element.
      *
      * @param operator the operator to apply to each element
-     * @throws UnsupportedOperationException if this list is unmodifiable.
-     * Implementations may throw this exception if an element cannot be replaced
-     * or if, in general, modification is not supported
+     * @throws ClassCastException if the class of the operators result is
+     * incompatible with the specified collection
      * @throws NullPointerException if the specified operator is null or if the
      * operator result is a null value and this list does not permit null
-     * elements (<a href="Collection.html#optional-restrictions">optional</a>)
+     * elements
      */
     @Override
     public void replaceAll(UnaryOperator<Atom> operator) {
-        value.replaceAll(operator);
+        requireNonNull(operator);
+        final ListIterator<Atom> li = value.listIterator();
+        while (li.hasNext()) {
+            li.set(requireNonNull(operator.apply(li.next())));
+        }
     }
 
     /**
@@ -655,21 +603,22 @@ public final class AtomList extends Atom implements List<Atom>, RandomAccess, Cl
      *
      * @param c collection containing elements to be retained in this list
      * @return <tt>true</tt> if this list changed as a result of the call
-     * @throws UnsupportedOperationException if the <tt>retainAll</tt> operation
-     * is not supported by this list
      * @throws ClassCastException if the class of an element of this list is
      * incompatible with the specified collection
-     * (<a href="Collection.html#optional-restrictions">optional</a>)
      * @throws NullPointerException if this list contains a null element and the
-     * specified collection does not permit null elements
-     * (<a href="Collection.html#optional-restrictions">optional</a>), or if the
-     * specified collection is null
+     * specified collection does not permit null elements, or if the specified
+     * collection is null
      * @see #remove(Object)
      * @see #contains(Object)
      */
     @Override
     public boolean retainAll(final Collection<?> c) {
-        return value.retainAll(unmodifiableCollection(requireNonNull(c)));
+        final Collection<?> uc = unmodifiableCollection(requireNonNull(c));
+        uc.stream().forEach(o -> requireAtom(requireNonNull(o)));
+        return value.stream()
+                .filter(atom -> !uc.contains(atom))
+                .filter(atom -> value.removeIf(a -> a.equals(atom)))
+                .count() > 0;
     }
 
     /**
@@ -679,20 +628,13 @@ public final class AtomList extends Atom implements List<Atom>, RandomAccess, Cl
      * @param index index of the element to replace
      * @param atom element to be stored at the specified position
      * @return the element previously at the specified position
-     * @throws UnsupportedOperationException if the <tt>set</tt> operation is
-     * not supported by this list
-     * @throws ClassCastException if the class of the specified element prevents
-     * it from being added to this list
-     * @throws NullPointerException if the specified element is null and this
-     * list does not permit null elements
-     * @throws IllegalArgumentException if some property of the specified
-     * element prevents it from being added to this list
+     * @throws NullPointerException if the specified element is null
      * @throws IndexOutOfBoundsException if the index is out of range (<tt>index
      * &lt; 0 || index &gt;= size()</tt>)
      */
     @Override
     public Atom set(final int index, final Atom atom) {
-        return value.set(requireNonNull(index), requireAtom(atom));
+        return value.set(index, requireNonNull(atom));
     }
 
     /**
@@ -745,14 +687,13 @@ public final class AtomList extends Atom implements List<Atom>, RandomAccess, Cl
      * {@linkplain Comparable natural ordering} should be used
      * @throws ClassCastException if the list contains elements that are not
      * <i>mutually comparable</i> using the specified comparator
-     * @throws UnsupportedOperationException if the list's list-iterator does
-     * not support the {@code set} operation
      * @throws IllegalArgumentException
      * (<a href="Collection.html#optional-restrictions">optional</a>) if the
      * comparator is found to violate the {@link Comparator} contract
      */
     @Override
     public void sort(Comparator<? super Atom> c) {
+        //TODO:
         value.sort(c);
     }
 
@@ -811,7 +752,7 @@ public final class AtomList extends Atom implements List<Atom>, RandomAccess, Cl
      */
     @Override
     public List<Atom> subList(final int fromIndex, final int toIndex) {
-        return value.subList(requireNonNull(fromIndex), requireNonNull(toIndex));
+        return value.subList(fromIndex, toIndex);
     }
 
     /**
@@ -893,6 +834,40 @@ public final class AtomList extends Atom implements List<Atom>, RandomAccess, Cl
         return value.toArray(a);
     }
 
+    /**
+     * Returns a hash code value for the object. This method is supported for
+     * the benefit of hash tables such as those provided by
+     * {@link java.util.HashMap}.
+     * <p>
+     * The general contract of {@code hashCode} is:
+     * <ul>
+     * <li>Whenever it is invoked on the same object more than once during an
+     * execution of a Java application, the {@code hashCode} method must
+     * consistently return the same integer, provided no information used in
+     * {@code equals} comparisons on the object is modified. This integer need
+     * not remain consistent from one execution of an application to another
+     * execution of the same application.
+     * <li>If two objects are equal according to the {@code equals(Object)}
+     * method, then calling the {@code hashCode} method on each of the two
+     * objects must produce the same integer result.
+     * <li>It is <em>not</em> required that if two objects are unequal according
+     * to the {@link java.lang.Object#equals(java.lang.Object)} method, then
+     * calling the {@code hashCode} method on each of the two objects must
+     * produce distinct integer results. However, the programmer should be aware
+     * that producing distinct integer results for unequal objects may improve
+     * the performance of hash tables.
+     * </ul>
+     * <p>
+     * As much as is reasonably practical, the hashCode method defined by class
+     * {@code Object} does return distinct integers for distinct objects. (This
+     * is typically implemented by converting the internal address of the object
+     * into an integer, but this implementation technique is not required by the
+     * Java&trade; programming language.)
+     *
+     * @return a hash code value for this object.
+     * @see java.lang.Object#equals(java.lang.Object)
+     * @see java.lang.System#identityHashCode
+     */
     @Override
     public int hashCode() {
         int hash = 7;
@@ -900,6 +875,20 @@ public final class AtomList extends Atom implements List<Atom>, RandomAccess, Cl
         return hash;
     }
 
+    /**
+     * Compares the specified object with this list for equality. Returns
+     * {@code true} if the specified object is the same object as this object,
+     * or if it is also a {@link List} and the sequence of elements returned by
+     * an {@linkplain List#iterator() iterator} over the specified list is the
+     * same as the sequence returned by an iterator over this list. The two
+     * sequences are considered to be the same if they have the same length and
+     * corresponding elements at the same position in the sequence are
+     * <em>equal</em>. Two elements {@code e1} and {@code e2} are considered
+     * <em>equal</em> if {@code (e1==null ? e2==null : e1.equals(e2))}.
+     *
+     * @param obj the object to be compared for equality with this list
+     * @return {@code true} if the specified object is equal to this list
+     */
     @Override
     public boolean equals(final Object obj) {
         if (this == obj) {
@@ -911,14 +900,33 @@ public final class AtomList extends Atom implements List<Atom>, RandomAccess, Cl
         return false;
     }
 
+    /**
+     * Returns a {@code String} object representing this {@code AtomList}'s
+     * value.
+     *
+     * @return a string representation of the value of this object
+     */
     @Override
     public String toString() {
         return value.toString();
     }
 
+    /**
+     * Compares two {@code AtomList} objects lexicographically using the
+     * {@code toString} method.
+     *
+     * @param anotherAtomList the {@code AtomList} to be compared.
+     * @throws NullPointerException if the specified {@code anotherAtomList} is
+     * {@code null}
+     * @return the value {@code 0} if the argument {@code AtomList} is equal to
+     * this {@code AtomList}; a value less than {@code 0} if this
+     * {@code AtomString} is lexicographically less than the {@code AtomList}
+     * argument; and a value greater than {@code 0} if this {@code AtomList} is
+     * lexicographically greater than the {@code AtomList} argument.
+     */
     @Override
-    public int compareTo(AtomList anotherAtomList) {
-        return value.toString().compareTo(anotherAtomList.toString());
+    public int compareTo(final AtomList anotherAtomList) {
+        return value.toString().compareTo(requireNonNull(anotherAtomList).toString());
     }
 
 }

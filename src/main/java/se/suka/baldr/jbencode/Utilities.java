@@ -38,9 +38,8 @@ import static org.slf4j.LoggerFactory.getLogger;
 
 /**
  * @author Graham Fairweather
- * @see <a href="https://en.wikipedia.org/wiki/Bencode">Bencode</a>
  */
-public class Utilities {
+class Utilities {
 
     private static final Logger LOGGER = getLogger(Utilities.class);
     private static final Random RAND = new Random();
@@ -48,52 +47,89 @@ public class Utilities {
     /**
      * Returns a random integer between min (included) and max (excluded)
      *
-     * @param min
-     * @param max
-     * @return
+     * @param min The lower bound, inclusive
+     * @param max The upper bound, exclusive
+     * @return Returns the random integer
      */
-    public static final int randInt(final int min, final int max) {
+    static final int randInt(final int min, final int max) {
         return RAND.nextInt(max - min) + min;
     }
 
     /**
      * Returns a random integer between min (included) and max (included)
      *
-     * @param min
-     * @param max
-     * @return
+     * @param min The lower bound, inclusive
+     * @param max The upper bound, inclusive
+     * @return Returns the random integer
      */
-    public static final int randIntClosed(final int min, final int max) {
+    static final int randIntClosed(final int min, final int max) {
         return randInt(min, max + 1);
     }
 
     /**
+     * Clamps an integer within the inclusive lower and upper bounds.
      *
-     * @param value
-     * @param min
-     * @param max
-     * @return
+     * @param value The integer to clamp
+     * @param min The lower bound, inclusive
+     * @param max The upper bound, inclusive
+     * @return Returns the clamped integer
      */
-    public static final int clampInt(final int value, final int min, final int max) {
+    static final int clamp(final int value, final int min, final int max) {
         return min(max(value, min), max);
     }
 
     /**
+     * Find absence of character in string. Searches the string for the first
+     * character that does not match any of the characters specified in its
+     * arguments.
      *
-     * @param pattern
-     * @param chars
-     * @param startIndex
-     * @return
+     * When startIndex is specified, the search only includes characters at or
+     * after position startIndex, ignoring any possible occurrences before that
+     * character.
+     *
+     * @param sequence The character sequence to examine
+     * @param matcherSequence Another sequence with the set of characters to be
+     * used in the search
+     * @param startIndex The first index to examine; must be nonnegative and no
+     * greater than {@code sequence.length()}
+     * @throws NullPointerException if string or chars is {@code null}
+     * @throws IndexOutOfBoundsException if startIndex is negative or greater
+     * than {@code string.length()}
+     * @return The position of the first character that does not match. If no
+     * such characters are found, the function returns -1
      */
-    public static final int findFirstNotOf(final String pattern, final String chars, final int startIndex) {
-        if (startIndex > requireNonNull(pattern).length()) {
-            return -1;
-        }
-        return anyOf(requireNonNull(chars)).negate().indexIn(pattern, startIndex);
+    static final int findFirstNotOf(final String sequence, final String matcherSequence, final int startIndex) {
+        return anyOf(requireNonNull(matcherSequence)).negate().indexIn(requireNonNull(sequence), startIndex);
     }
 
     /**
+     * Find absence of character in string. Searches the string for the first
+     * character that does not match any of the characters specified in its
+     * arguments.
      *
+     * When startIndex is specified, the search only includes characters at or
+     * after position startIndex, ignoring any possible occurrences before that
+     * character.
+     *
+     * @param sequence The character sequence to examine
+     * @param matcherSequence Another sequence with the set of characters to be
+     * used in the search
+     * @throws NullPointerException if string or chars is {@code null}
+     * @throws IndexOutOfBoundsException if startIndex is negative or greater
+     * than {@code string.length()}
+     * @return The position of the first character that does not match. If no
+     * such characters are found, the function returns -1
+     */
+    static final int findFirstNotOf(final String sequence, final String matcherSequence) {
+        return findFirstNotOf(sequence, matcherSequence, 0);
+    }
+
+    /**
+     * For making the warning parameters.
+     *
+     * @param ex The {@link Throwable}
+     * @throws NullPointerException If ex is {@code null}
+     * @return An {@code Object} array of strings
      */
     private static Object[] makeParam(final Throwable ex) {
         return new Object[]{
@@ -103,64 +139,27 @@ public class Utilities {
     }
 
     /**
+     * Reads all bytes from a file into an ASCII {@code String}.
      *
-     * @param pathToAFile
-     * @return
+     * @param pathName A pathName string
+     * @throws NullPointerException If the {@code pathName} argument is
+     * {@code null}
+     * @return A {@code String} containing all the bytes from file
      */
-    public static final String readTorrentFile(final String pathToAFile) {
-        final File file;
-        try {
-            file = new File(pathToAFile);
-        } catch (NullPointerException npex) {
-            LOGGER.warn(format("{0}: {1}", makeParam(npex)));
-            return null;
-        }
+    static final String readTorrentFile(final String pathName) {
+        final File file = new File(requireNonNull(pathName));
         final byte[] bytes;
         try {
             bytes = toByteArray(file);
-        } catch (IOException | IllegalArgumentException ioex) {
-            LOGGER.warn(format("{0}: {1}", makeParam(ioex)));
+        } catch (IOException | IllegalArgumentException ex) {
+            LOGGER.warn(format("{0}: {1}", makeParam(ex)));
             return null;
         }
         return new String(bytes, US_ASCII);
     }
 
     /**
-     *
-     * @param o
-     * @return
-     */
-    public static final boolean isString(Object o) {
-        return o instanceof String;
-    }
-
-    /**
-     *
-     * @param o
-     * @return
-     */
-    public static final String requireString(Object o) {
-        if (!isString(requireNonNull(o))) {
-            throw new IllegalArgumentException();
-        }
-        return (String) o;
-    }
-
-    /**
-     *
-     * @param o
-     * @param message
-     * @return
-     */
-    public static final String requireString(Object o, String message) {
-        if (!isString(requireNonNull(o))) {
-            throw new IllegalArgumentException(message);
-        }
-        return (String) o;
-    }
-
-    /**
-     * No construction allowed
+     * No construction
      */
     private Utilities() {
     }

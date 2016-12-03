@@ -23,7 +23,6 @@
  */
 package se.suka.baldr.jbencode;
 
-import java.io.Serializable;
 import java.util.Collection;
 import static java.util.Collections.unmodifiableMap;
 import java.util.Comparator;
@@ -43,7 +42,6 @@ import static java.util.stream.Collectors.summingInt;
 import static java.util.stream.Collectors.toMap;
 import org.slf4j.Logger;
 import static org.slf4j.LoggerFactory.getLogger;
-import static se.suka.baldr.jbencode.Utilities.requireString;
 
 /**
  * A dictionary is encoded as d&lt;contents&gt;e. The elements of the dictionary
@@ -57,11 +55,52 @@ import static se.suka.baldr.jbencode.Utilities.requireString;
  * @author Graham Fairweather
  * @see <a href="https://en.wikipedia.org/wiki/Bencode">Bencode</a>
  */
-public final class AtomDictionary extends Atom implements Map<String, Atom>, Cloneable, Serializable, Comparable<AtomDictionary> {
+public final class AtomDictionary extends Atom implements Map<String, Atom>, Cloneable, Comparable<AtomDictionary> {
 
     private static final long serialVersionUID = -7602783133044374261L;
 
     private static final Logger LOGGER = getLogger(AtomDictionary.class);
+
+    /**
+     * Tests if the supplied object is an instance of {@code String}.
+     *
+     * @param o The object to test
+     * @return {@code true} if the object is an instance of {@code String},
+     * otherwise {@code false}
+     */
+    private static boolean isString(Object o) {
+        return o instanceof String;
+    }
+
+    /**
+     * Requires that the supplied object is an instance of {@code String}.
+     *
+     * @param <T> The {@code Class} of the test object
+     * @param o The object to test
+     * @throws ClassCastException if the object is not an instance of
+     * {@code String}
+     * @return The string object
+     */
+    private static <T> T requireString(T o) {
+        return requireString(o, "");
+    }
+
+    /**
+     * Requires that the supplied object is an instance of {@code String}.
+     *
+     * @param <T> The {@code Class} of the test object
+     * @param o The object to test
+     * @param message The message to throw with {@link ClassCastException}
+     * @throws ClassCastException if the object is not an instance of
+     * {@code String}
+     * @return The string object
+     */
+    private static <T> T requireString(T o, String message) {
+        if (!isString(o)) {
+            throw new ClassCastException(message);
+        }
+        return o;
+    }
 
     /**
      * Backing {@link ConcurrentSkipListMap}
@@ -69,32 +108,19 @@ public final class AtomDictionary extends Atom implements Map<String, Atom>, Clo
     private ConcurrentSkipListMap<String, Atom> value;
 
     /**
-     * Constructs a new, empty tree map, using the natural ordering of its keys.
-     * All keys inserted into the map must implement the {@link
-     * Comparable} interface. Furthermore, all such keys must be
-     * <em>mutually comparable</em>: {@code k1.compareTo(k2)} must not throw a
-     * {@code ClassCastException} for any keys {@code k1} and {@code k2} in the
-     * map. If the user attempts to put a key into the map that violates this
-     * constraint (for example, the user attempts to put a string key into a map
-     * whose keys are integers), the {@code put(Object key, Object value)} call
-     * will throw a {@code ClassCastException}.
+     * Constructs a new, empty {@code AtomDictionary}, using the natural
+     * ordering of its keys.
      */
     public AtomDictionary() {
         value = new ConcurrentSkipListMap<>();
     }
 
     /**
-     * Constructs a new tree map containing a copy of the mappings as the given
-     * map, ordered according to the <em>natural ordering</em> of its keys. All
-     * keys inserted into the new map must implement the {@link
-     * Comparable} interface. Furthermore, all such keys must be
-     * <em>mutually comparable</em>: {@code k1.compareTo(k2)} must not throw a
-     * {@code ClassCastException} for any keys {@code k1} and {@code k2} in the
-     * map. This method runs in n*log(n) time.
+     * Constructs a new {@code AtomDictionary} containing a copy of the mappings
+     * as the given map, ordered according to the <em>natural ordering</em> of
+     * its keys.
      *
      * @param m the map whose mappings are to be copied and placed in this map
-     * @throws ClassCastException if the keys in m are not {@link Comparable},
-     * or are not mutually comparable
      * @throws NullPointerException if the specified map is null
      */
     public AtomDictionary(Map<? extends String, ? extends Atom> m) {
@@ -103,8 +129,10 @@ public final class AtomDictionary extends Atom implements Map<String, Atom>, Clo
     }
 
     /**
+     * Returns the length of the Bencoded string of this {@link Atom}. This
+     * method is faster than performing an <code>encode().length()</code>.
      *
-     * @return
+     * @return The length of the Becoded string
      */
     @Override
     public int bLength() {
@@ -123,29 +151,24 @@ public final class AtomDictionary extends Atom implements Map<String, Atom>, Clo
      *
      * @param key
      * @return
-     * @throws ClassCastException {@inheritDoc}
-     * @throws NullPointerException if the specified key is null
+     * @throws NullPointerException if the specified key is {@code null}
      */
     public Entry<String, Atom> ceilingEntry(final String key) {
-        return value.ceilingEntry(key);
+        return value.ceilingEntry(requireNonNull(key));
     }
 
     /**
      * @param key
      * @return
-     * @throws ClassCastException {@inheritDoc}
      * @throws NullPointerException if the specified key is null
      */
-    public String ceilingKey(String key) {
-        return value.ceilingKey(key);
+    public String ceilingKey(final String key) {
+        return value.ceilingKey(requireNonNull(key));
     }
 
     /**
      * Removes all of the mappings from this map (optional operation). The map
      * will be empty after this call returns.
-     *
-     * @throws UnsupportedOperationException if the <tt>clear</tt> operation is
-     * not supported by this map
      */
     @Override
     public void clear() {
@@ -161,7 +184,7 @@ public final class AtomDictionary extends Atom implements Map<String, Atom>, Clo
     @Override
     public AtomDictionary clone() {
         try {
-            AtomDictionary atomDictionary = (AtomDictionary) super.clone();
+            final AtomDictionary atomDictionary = (AtomDictionary) super.clone();
             atomDictionary.value = new ConcurrentSkipListMap<>(value);
             return atomDictionary;
         } catch (CloneNotSupportedException e) {
@@ -190,8 +213,8 @@ public final class AtomDictionary extends Atom implements Map<String, Atom>, Clo
      * remappingFunction is null
      */
     @Override
-    public Atom compute(String key, BiFunction<? super String, ? super Atom, ? extends Atom> remappingFunction) {
-        return value.compute(key, remappingFunction);
+    public Atom compute(final String key, final BiFunction<? super String, ? super Atom, ? extends Atom> remappingFunction) {
+        return value.compute(requireNonNull(key), requireNonNull(remappingFunction));
     }
 
     /**
@@ -208,8 +231,8 @@ public final class AtomDictionary extends Atom implements Map<String, Atom>, Clo
      * mappingFunction is null
      */
     @Override
-    public Atom computeIfAbsent(String key, Function<? super String, ? extends Atom> mappingFunction) {
-        return value.computeIfAbsent(key, mappingFunction);
+    public Atom computeIfAbsent(final String key, final Function<? super String, ? extends Atom> mappingFunction) {
+        return value.computeIfAbsent(requireNonNull(key), requireNonNull(mappingFunction));
     }
 
     /**
@@ -224,8 +247,8 @@ public final class AtomDictionary extends Atom implements Map<String, Atom>, Clo
      * remappingFunction is null
      */
     @Override
-    public Atom computeIfPresent(String key, BiFunction<? super String, ? super Atom, ? extends Atom> remappingFunction) {
-        return value.computeIfPresent(key, remappingFunction);
+    public Atom computeIfPresent(final String key, final BiFunction<? super String, ? super Atom, ? extends Atom> remappingFunction) {
+        return value.computeIfPresent(requireNonNull(key), requireNonNull(remappingFunction));
     }
 
     /**
@@ -240,14 +263,12 @@ public final class AtomDictionary extends Atom implements Map<String, Atom>, Clo
      * key
      * @throws ClassCastException if the key is of an inappropriate type for
      * this map
-     * (<a href="{@docRoot}/java/util/Collection.html#optional-restrictions">optional</a>)
      * @throws NullPointerException if the specified key is null and this map
      * does not permit null keys
-     * (<a href="{@docRoot}/java/util/Collection.html#optional-restrictions">optional</a>)
      */
     @Override
     public boolean containsKey(final Object key) {
-        return value.containsKey(requireString(key));
+        return value.containsKey(requireString(requireNonNull(key)));
     }
 
     /**
@@ -258,19 +279,16 @@ public final class AtomDictionary extends Atom implements Map<String, Atom>, Clo
      * probably require time linear in the map size for most implementations of
      * the <tt>Map</tt> interface.
      *
-     * @param atom value whose presence in this map is to be tested
+     * @param o value whose presence in this map is to be tested
      * @return <tt>true</tt> if this map maps one or more keys to the specified
      * value
      * @throws ClassCastException if the value is of an inappropriate type for
      * this map
-     * (<a href="{@docRoot}/java/util/Collection.html#optional-restrictions">optional</a>)
-     * @throws NullPointerException if the specified value is null and this map
-     * does not permit null values
-     * (<a href="{@docRoot}/java/util/Collection.html#optional-restrictions">optional</a>)
+     * @throws NullPointerException if the specified value is null
      */
     @Override
-    public boolean containsValue(final Object atom) {
-        return value.containsValue(requireAtom(atom));
+    public boolean containsValue(final Object o) {
+        return value.containsValue(requireAtom(requireNonNull(o)));
     }
 
     /**
@@ -290,20 +308,21 @@ public final class AtomDictionary extends Atom implements Map<String, Atom>, Clo
     }
 
     /**
-     * Returns a deep copy of this map. (The keys and values themselves are
-     * cloned.)
+     * Returns a deep copy of this {@link Atom}.
      *
-     * @return a copy of this map
+     * @return a copy of this {@link Atom}
      */
     @Override
     public AtomDictionary copy() {
-        return (AtomDictionary) value.entrySet().stream()
-                .collect(toMap(Entry::getKey, e -> (Atom) e.getValue().copy()));
+        Map<String, Atom> collect = value.entrySet().stream()
+                .collect(toMap(Entry::getKey, e -> e.getValue().copy()));
+        return new AtomDictionary(collect);
     }
 
     /**
+     * Returns the Bencoded string of this {@link Atom}.
      *
-     * @return
+     * @return The Benoded string
      */
     @Override
     public String encode() {
@@ -363,26 +382,32 @@ public final class AtomDictionary extends Atom implements Map<String, Atom>, Clo
      *
      * @param key the key
      * @return
-     * @throws ClassCastException {@inheritDoc}
      * @throws NullPointerException if the specified key is null
      */
-    public Entry<String, Atom> floorEntry(String key) {
-        return value.floorEntry(key);
+    public Entry<String, Atom> floorEntry(final String key) {
+        return value.floorEntry(requireNonNull(key));
     }
 
     /**
      * @param key the key
      * @return
-     * @throws ClassCastException {@inheritDoc}
      * @throws NullPointerException if the specified key is null
      */
-    public String floorKey(String key) {
+    public String floorKey(final String key) {
+        return value.floorKey(requireNonNull(key));
+    }
+
+    /**
+     *
+     * @return
+     */
+    public String firstKey() {
         return value.firstKey();
     }
 
     @Override
     public void forEach(BiConsumer<? super String, ? super Atom> action) {
-        value.forEach(action);
+        value.forEach(requireNonNull(action));
     }
 
     /**
@@ -407,14 +432,11 @@ public final class AtomDictionary extends Atom implements Map<String, Atom>, Clo
      * if this map contains no mapping for the key
      * @throws ClassCastException if the key is of an inappropriate type for
      * this map
-     * (<a href="{@docRoot}/java/util/Collection.html#optional-restrictions">optional</a>)
-     * @throws NullPointerException if the specified key is null and this map
-     * does not permit null keys
-     * (<a href="{@docRoot}/java/util/Collection.html#optional-restrictions">optional</a>)
+     * @throws NullPointerException if the specified key is null
      */
     @Override
     public Atom get(final Object key) {
-        return value.get(requireString(key));
+        return value.get(requireString(requireNonNull(key)));
     }
 
     /**
@@ -425,34 +447,32 @@ public final class AtomDictionary extends Atom implements Map<String, Atom>, Clo
      * @param defaultValue the value to return if this map contains no mapping
      * for the given key
      * @return the mapping for the key, if present; else the defaultValue
+     * @throws ClassCastException if the key is of an inappropriate type for
+     * this map
      * @throws NullPointerException if the specified key is null
      */
     @Override
-    public Atom getOrDefault(Object key, Atom defaultValue) {
-        return value.getOrDefault(key, defaultValue);
+    public Atom getOrDefault(final Object key, final Atom defaultValue) {
+        return value.getOrDefault(requireString(requireNonNull(key)), defaultValue);
     }
 
     /**
      * @param toKey
      * @return
-     * @throws ClassCastException {@inheritDoc}
      * @throws NullPointerException if {@code toKey} is null
-     * @throws IllegalArgumentException {@inheritDoc}
      */
-    public ConcurrentNavigableMap<String, Atom> headMap(String toKey) {
-        return value.headMap(toKey);
+    public ConcurrentNavigableMap<String, Atom> headMap(final String toKey) {
+        return value.headMap(requireNonNull(toKey));
     }
 
     /**
      * @param toKey
      * @param inclusive
      * @return
-     * @throws ClassCastException {@inheritDoc}
      * @throws NullPointerException if {@code toKey} is null
-     * @throws IllegalArgumentException {@inheritDoc}
      */
-    public ConcurrentNavigableMap<String, Atom> headMap(String toKey, boolean inclusive) {
-        return value.headMap(toKey, inclusive);
+    public ConcurrentNavigableMap<String, Atom> headMap(final String toKey, final boolean inclusive) {
+        return value.headMap(requireNonNull(toKey), inclusive);
     }
 
     /**
@@ -463,21 +483,19 @@ public final class AtomDictionary extends Atom implements Map<String, Atom>, Clo
      *
      * @param key the key
      * @return
-     * @throws ClassCastException {@inheritDoc}
      * @throws NullPointerException if the specified key is null
      */
-    public Entry<String, Atom> higherEntry(String key) {
-        return value.higherEntry(key);
+    public Entry<String, Atom> higherEntry(final String key) {
+        return value.higherEntry(requireNonNull(key));
     }
 
     /**
      * @param key the key
      * @return
-     * @throws ClassCastException {@inheritDoc}
      * @throws NullPointerException if the specified key is null
      */
-    public String higherKey(String key) {
-        return value.higherKey(key);
+    public String higherKey(final String key) {
+        return value.higherKey(requireNonNull(key));
     }
 
     /**
@@ -527,18 +545,11 @@ public final class AtomDictionary extends Atom implements Map<String, Atom>, Clo
      * <tt>null</tt>
      * with <tt>key</tt>, if the implementation supports <tt>null</tt>
      * values.)
-     * @throws UnsupportedOperationException if the <tt>put</tt> operation is
-     * not supported by this map
-     * @throws ClassCastException if the class of the specified key or value
-     * prevents it from being stored in this map
-     * @throws NullPointerException if the specified key or value is null and
-     * this map does not permit null keys or values
-     * @throws IllegalArgumentException if some property of the specified key or
-     * value prevents it from being stored in this map
+     * @throws NullPointerException if the specified key or value is null
      */
     @Override
     public Atom put(final String key, final Atom atom) {
-        return value.put(requireString(key), requireAtom(atom));
+        return value.put(requireNonNull(key), requireNonNull(atom));
     }
 
     /**
@@ -550,20 +561,17 @@ public final class AtomDictionary extends Atom implements Map<String, Atom>, Clo
      * while the operation is in progress.
      *
      * @param m mappings to be stored in this map
-     * @throws UnsupportedOperationException if the <tt>putAll</tt>
-     * operation is not supported by this map
-     * @throws ClassCastException if the class of a key or value in the
-     * specified map prevents it from being stored in this map
-     * @throws NullPointerException if the specified map is null, or if this map
-     * does not permit null keys or values, and the specified map contains null
-     * keys or values
-     * @throws IllegalArgumentException if some property of a key or value in
-     * the specified map prevents it from being stored in this map
+     * @throws NullPointerException if the specified map is null, or if the
+     * specified map contains null keys or values
      */
     @Override
     public void putAll(final Map<? extends String, ? extends Atom> m) {
         unmodifiableMap(requireNonNull(m)).entrySet().stream()
-                .forEachOrdered(entry -> value.put(requireString(entry.getKey()), requireAtom(entry.getValue())));
+                .forEachOrdered(entry -> {
+                    final String key = requireNonNull(entry.getKey());
+                    final Atom atom = requireNonNull(entry.getValue());
+                    value.put(key, atom);
+                });
     }
 
     /**
@@ -590,18 +598,13 @@ public final class AtomDictionary extends Atom implements Map<String, Atom>, Clo
      * @param key key whose mapping is to be removed from the map
      * @return the previous value associated with <tt>key</tt>, or
      * <tt>null</tt> if there was no mapping for <tt>key</tt>.
-     * @throws UnsupportedOperationException if the <tt>remove</tt>
-     * operation is not supported by this map
      * @throws ClassCastException if the key is of an inappropriate type for
      * this map
-     * (<a href="{@docRoot}/java/util/Collection.html#optional-restrictions">optional</a>)
-     * @throws NullPointerException if the specified key is null and this map
-     * does not permit null keys
-     * (<a href="{@docRoot}/java/util/Collection.html#optional-restrictions">optional</a>)
+     * @throws NullPointerException if the specified key is null
      */
     @Override
     public Atom remove(final Object key) {
-        return value.remove(requireString(key));
+        return value.remove(requireString(requireNonNull(key)));
     }
 
     /**
@@ -636,6 +639,40 @@ public final class AtomDictionary extends Atom implements Map<String, Atom>, Clo
         return value.values();
     }
 
+    /**
+     * Returns a hash code value for the object. This method is supported for
+     * the benefit of hash tables such as those provided by
+     * {@link java.util.HashMap}.
+     * <p>
+     * The general contract of {@code hashCode} is:
+     * <ul>
+     * <li>Whenever it is invoked on the same object more than once during an
+     * execution of a Java application, the {@code hashCode} method must
+     * consistently return the same integer, provided no information used in
+     * {@code equals} comparisons on the object is modified. This integer need
+     * not remain consistent from one execution of an application to another
+     * execution of the same application.
+     * <li>If two objects are equal according to the {@code equals(Object)}
+     * method, then calling the {@code hashCode} method on each of the two
+     * objects must produce the same integer result.
+     * <li>It is <em>not</em> required that if two objects are unequal according
+     * to the {@link java.lang.Object#equals(java.lang.Object)} method, then
+     * calling the {@code hashCode} method on each of the two objects must
+     * produce distinct integer results. However, the programmer should be aware
+     * that producing distinct integer results for unequal objects may improve
+     * the performance of hash tables.
+     * </ul>
+     * <p>
+     * As much as is reasonably practical, the hashCode method defined by class
+     * {@code Object} does return distinct integers for distinct objects. (This
+     * is typically implemented by converting the internal address of the object
+     * into an integer, but this implementation technique is not required by the
+     * Java&trade; programming language.)
+     *
+     * @return a hash code value for this object.
+     * @see java.lang.Object#equals(java.lang.Object)
+     * @see java.lang.System#identityHashCode
+     */
     @Override
     public int hashCode() {
         int hash = 7;
@@ -643,6 +680,18 @@ public final class AtomDictionary extends Atom implements Map<String, Atom>, Clo
         return hash;
     }
 
+    /**
+     * Compares the specified object with this map for equality. Returns
+     * {@code true} if the given object is also a map and the two maps represent
+     * the same mappings. More formally, two maps {@code m1} and {@code m2}
+     * represent the same mappings if
+     * {@code m1.entrySet().equals(m2.entrySet())}. This operation may return
+     * misleading results if either map is concurrently modified during
+     * execution of this method.
+     *
+     * @param obj object to be compared for equality with this map
+     * @return {@code true} if the specified object is equal to this map
+     */
     @Override
     public boolean equals(final Object obj) {
         if (this == obj) {
@@ -654,14 +703,34 @@ public final class AtomDictionary extends Atom implements Map<String, Atom>, Clo
         return false;
     }
 
+    /**
+     * Returns a {@code String} object representing this
+     * {@code AtomDictionary}'s value.
+     *
+     * @return a string representation of the value of this object
+     */
     @Override
     public String toString() {
         return value.toString();
     }
 
+    /**
+     * Compares two {@code AtomDictionary} objects lexicographically using the
+     * {@code toString} method.
+     *
+     * @param anotherAtomDictionary the {@code AtomDictionary} to be compared.
+     * @throws NullPointerException if the specified
+     * {@code anotherAtomDictionary} is {@code null}
+     * @return the value {@code 0} if the argument {@code AtomDictionary} is
+     * equal to this {@code AtomDictionary}; a value less than {@code 0} if this
+     * {@code AtomString} is lexicographically less than the
+     * {@code AtomDictionary} argument; and a value greater than {@code 0} if
+     * this {@code AtomDictionary} is lexicographically greater than the
+     * {@code AtomDictionary} argument.
+     */
     @Override
-    public int compareTo(AtomDictionary anotherAtomDictionary) {
-        return value.toString().compareTo(anotherAtomDictionary.toString());
+    public int compareTo(final AtomDictionary anotherAtomDictionary) {
+        return value.toString().compareTo(requireNonNull(anotherAtomDictionary).toString());
     }
 
 }

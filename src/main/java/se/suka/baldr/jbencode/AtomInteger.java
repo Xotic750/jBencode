@@ -23,8 +23,8 @@
  */
 package se.suka.baldr.jbencode;
 
-import java.io.Serializable;
-import static java.lang.Integer.compare;
+import static java.lang.Double.compare;
+import static java.util.Objects.requireNonNull;
 import org.slf4j.Logger;
 import static org.slf4j.LoggerFactory.getLogger;
 
@@ -38,16 +38,16 @@ import static org.slf4j.LoggerFactory.getLogger;
  * @author Graham Fairweather
  * @see <a href="https://en.wikipedia.org/wiki/Bencode">Bencode</a>
  */
-public final class AtomInteger extends Atom implements Serializable, Comparable<AtomInteger> {
+public final class AtomInteger extends Atom implements Comparable<AtomInteger> {
 
     private static final long serialVersionUID = 8464216577156678961L;
 
     private static final Logger LOGGER = getLogger(AtomInteger.class);
 
     /**
-     * Backing {@link int}
+     * Backing {@link long}
      */
-    private final int value;
+    private final long value;
 
     /**
      * Constructs a newly allocated {@code AtomInteger} object that represents
@@ -55,6 +55,7 @@ public final class AtomInteger extends Atom implements Serializable, Comparable<
      */
     public AtomInteger() {
         this(0);
+        LOGGER.info("AtomInteger constructed without an argument is assumed zero");
     }
 
     /**
@@ -63,24 +64,28 @@ public final class AtomInteger extends Atom implements Serializable, Comparable<
      *
      * @param anotherAtomInteger the value to be represented by the
      * {@code AtomInteger} object.
+     * @throws NullPointerException If anotherAtomInteger is {@code null}
      */
     public AtomInteger(final AtomInteger anotherAtomInteger) {
-        this(anotherAtomInteger.intValue());
+        this(requireNonNull(anotherAtomInteger).longValue());
     }
 
     /**
      * Constructs a newly allocated {@code AtomInteger} object that represents
-     * the specified {@code int} value.
+     * the specified {@code long} value.
      *
-     * @param value the value to be represented by the {@code Integer} object.
+     * @param value the value to be represented by the {@code AtomInteger}
+     * object.
      */
-    public AtomInteger(final int value) {
+    public AtomInteger(final long value) {
         this.value = value;
     }
 
     /**
+     * Returns the length of the Bencoded string of this {@link Atom}. This
+     * method is faster than performing an <code>encode().length()</code>.
      *
-     * @return
+     * @return The length of the Becoded string
      */
     @Override
     public int bLength() {
@@ -88,8 +93,9 @@ public final class AtomInteger extends Atom implements Serializable, Comparable<
     }
 
     /**
+     * Returns the Bencoded string of this {@link Atom}.
      *
-     * @return
+     * @return The Benoded string
      */
     @Override
     public String encode() {
@@ -100,7 +106,7 @@ public final class AtomInteger extends Atom implements Serializable, Comparable<
      * Returns the value of this {@code AtomInteger} as a {@code byte} after a
      * narrowing primitive conversion.
      *
-     * @return
+     * @return the byte value
      */
     public byte byteValue() {
         return (byte) value;
@@ -110,27 +116,26 @@ public final class AtomInteger extends Atom implements Serializable, Comparable<
      * Returns the value of this {@code AtomInteger} as a {@code short} after a
      * narrowing primitive conversion.
      *
-     * @return
+     * @return the short value
      */
     public short shortValue() {
         return (short) value;
     }
 
     /**
-     * Returns the value of this {@code AtomInteger} as an {@code int}.
+     * Returns the value of this {@code AtomInteger} as an {@code int} after a
+     * narrowing primitive conversion.
      *
-     * @return
+     * @return the int value
      */
     public int intValue() {
-        return value;
+        return (int) value;
     }
 
     /**
-     * Returns the value of this {@code AtomInteger} as a {@code long} after a
-     * widening primitive conversion.
+     * Returns the value of this {@code AtomInteger} as a {@code long}.
      *
-     * @return
-     * @see Integer#toUnsignedLong(int)
+     * @return the long value
      */
     public long longValue() {
         return value;
@@ -140,7 +145,7 @@ public final class AtomInteger extends Atom implements Serializable, Comparable<
      * Returns the value of this {@code AtomInteger} as a {@code float} after a
      * widening primitive conversion.
      *
-     * @return
+     * @return the float value
      */
     public float floatValue() {
         return value;
@@ -150,7 +155,7 @@ public final class AtomInteger extends Atom implements Serializable, Comparable<
      * Returns the value of this {@code AtomInteger} as a {@code double} after a
      * widening primitive conversion.
      *
-     * @return
+     * @return the double value
      */
     public double doubleValue() {
         return value;
@@ -159,8 +164,9 @@ public final class AtomInteger extends Atom implements Serializable, Comparable<
     /**
      * Compares two {@code AtomInteger} objects numerically.
      *
-     * @param anotherAtomInteger
-     * @throws NullPointerException if the specified anotherAtomInteger is null
+     * @param anotherAtomInteger the {@code AtomInteger} to be compared.
+     * @throws NullPointerException if the specified {@code anotherAtomInteger}
+     * is {@code null}
      * @return the value {@code 0} if this {@code AtomInteger} is equal to the
      * argument {@code AtomInteger}; a value less than {@code 0} if this
      * {@code AtomInteger} is numerically less than the argument
@@ -170,23 +176,67 @@ public final class AtomInteger extends Atom implements Serializable, Comparable<
      */
     @Override
     public int compareTo(final AtomInteger anotherAtomInteger) {
-        return compare(value, anotherAtomInteger.value);
+        return compare(value, requireNonNull(anotherAtomInteger).value);
     }
 
+    /**
+     * Returns a hash code value for the object. This method is supported for
+     * the benefit of hash tables such as those provided by
+     * {@link java.util.HashMap}.
+     * <p>
+     * The general contract of {@code hashCode} is:
+     * <ul>
+     * <li>Whenever it is invoked on the same object more than once during an
+     * execution of a Java application, the {@code hashCode} method must
+     * consistently return the same integer, provided no information used in
+     * {@code equals} comparisons on the object is modified. This integer need
+     * not remain consistent from one execution of an application to another
+     * execution of the same application.
+     * <li>If two objects are equal according to the {@code equals(Object)}
+     * method, then calling the {@code hashCode} method on each of the two
+     * objects must produce the same integer result.
+     * <li>It is <em>not</em> required that if two objects are unequal according
+     * to the {@link java.lang.Object#equals(java.lang.Object)} method, then
+     * calling the {@code hashCode} method on each of the two objects must
+     * produce distinct integer results. However, the programmer should be aware
+     * that producing distinct integer results for unequal objects may improve
+     * the performance of hash tables.
+     * </ul>
+     * <p>
+     * As much as is reasonably practical, the hashCode method defined by class
+     * {@code Object} does return distinct integers for distinct objects. (This
+     * is typically implemented by converting the internal address of the object
+     * into an integer, but this implementation technique is not required by the
+     * Java&trade; programming language.)
+     *
+     * @return a hash code value for this object.
+     * @see java.lang.Object#equals(java.lang.Object)
+     * @see java.lang.System#identityHashCode
+     */
     @Override
     public int hashCode() {
-        int hash = 3;
-        hash = 79 * hash + this.value;
+        int hash = 7;
+        hash = 19 * hash + (int) (this.value ^ (this.value >>> 32));
         return hash;
     }
 
+    /**
+     * Compares this object to the specified object. The result is {@code true}
+     * if and only if the argument is not {@code null} and is an
+     * {@code AtomInteger} object that contains the same {@code long} value as
+     * this object.
+     *
+     * @param obj the object to compare with.
+     * @return {@code true} if the objects are the same; {@code false}
+     * otherwise.
+     */
     @Override
     public boolean equals(final Object obj) {
         if (this == obj) {
             return true;
         }
         if (obj instanceof AtomInteger) {
-            return value == ((AtomInteger) obj).intValue();
+            return value == ((AtomInteger) obj).longValue();
         }
         return false;
     }
@@ -195,17 +245,21 @@ public final class AtomInteger extends Atom implements Serializable, Comparable<
      * Returns a {@code String} object representing this {@code AtomInteger}'s
      * value. The value is converted to signed decimal representation and
      * returned as a string, exactly as if the integer value were given as an
-     * argument to the {@link
-     * java.lang.Integer#toString(int)} method.
+     * argument to the {@link java.lang.Long#toString(long)} method.
      *
      * @return a string representation of the value of this object in
      * base&nbsp;10.
      */
     @Override
     public String toString() {
-        return Integer.toString(value);
+        return Long.toString(value);
     }
 
+    /**
+     * Returns a deep copy of this {@link Atom}.
+     *
+     * @return a copy of this {@link Atom}
+     */
     @Override
     public AtomInteger copy() {
         return new AtomInteger(value);

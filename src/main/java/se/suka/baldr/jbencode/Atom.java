@@ -23,7 +23,7 @@
  */
 package se.suka.baldr.jbencode;
 
-import static java.util.Objects.requireNonNull;
+import java.io.Serializable;
 
 /**
  * The smallest abstract class that is extended by all other types Bencoded atom
@@ -31,40 +31,54 @@ import static java.util.Objects.requireNonNull;
  *
  * @author Graham Fairweather
  */
-public abstract class Atom {
+public abstract class Atom implements Serializable {
+
+    private static final long serialVersionUID = 8172793379529745181L;
 
     /**
+     * Test if an object reference is an instance of {@code Atom}.
      *
-     * @param o
-     * @return
+     * @param o the object reference to check is instance of {@code Atom}
+     * @return {@code true} if the object is an instance of {@code Atom},
+     * otherwise {@code false}
      */
-    public static final boolean isAtom(Object o) {
+    private static boolean isAtom(Object o) {
         return o instanceof Atom;
     }
 
     /**
+     * Test if an object reference is an instance of {@code Atom}, throw a
+     * {@link ClassCastException} if it is not, otherwise return the reference
+     * object.
      *
-     * @param o
-     * @return
+     * @param <T> the type of the value being boxed
+     * @param o the object reference to check
+     * @throws ClassCastException if {@code obj} is not an instance of
+     * {@code Atom}
+     * @return the object reference
      */
-    public static final Atom requireAtom(Object o) {
-        if (!isAtom(requireNonNull(o))) {
-            throw new IllegalArgumentException();
-        }
-        return (Atom) o;
+    static final <T> T requireAtom(T o) {
+        return requireAtom(o, "");
     }
 
     /**
+     * Test if an object reference is an instance of {@code Atom}, throw a
+     * {@link ClassCastException} if it is not, otherwise return the reference
+     * object.
      *
-     * @param o
-     * @param message
-     * @return
+     * @param <T> the type of the value being boxed
+     * @param o the object reference to check
+     * @param message detail message to be used in the event that a
+     * {@code ClassCastException} is thrown
+     * @throws ClassCastException if {@code obj} is not an instance of
+     * {@code Atom}
+     * @return the object reference
      */
-    public static final Atom requireAtom(Object o, String message) {
-        if (!isAtom(requireNonNull(o))) {
-            throw new IllegalArgumentException(message);
+    static final <T> T requireAtom(T o, String message) {
+        if (!isAtom(o)) {
+            throw new ClassCastException(message);
         }
-        return (Atom) o;
+        return o;
     }
 
     /**
@@ -78,10 +92,9 @@ public abstract class Atom {
     /**
      * Returns a deep copy of this {@link Atom}.
      *
-     * @param <T>
      * @return a copy of this {@link Atom}
      */
-    public abstract <T> Atom copy();
+    public abstract Atom copy();
 
     /**
      * Returns the Bencoded string of this {@link Atom}.
