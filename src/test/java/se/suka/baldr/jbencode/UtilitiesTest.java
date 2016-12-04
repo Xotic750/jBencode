@@ -29,6 +29,8 @@ import static org.junit.Assert.*;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import org.slf4j.Logger;
+import static org.slf4j.LoggerFactory.getLogger;
 import static se.suka.baldr.jbencode.Utilities.clamp;
 import static se.suka.baldr.jbencode.Utilities.findFirstNotOf;
 import static se.suka.baldr.jbencode.Utilities.randInt;
@@ -40,6 +42,8 @@ import static se.suka.baldr.jbencode.Utilities.readTorrentFile;
  * @author Graham Fairweather
  */
 public class UtilitiesTest {
+
+    private static final Logger LOGGER = getLogger(UtilitiesTest.class);
 
     /**
      * Sometimes several tests need to share computationally expensive setup
@@ -103,10 +107,29 @@ public class UtilitiesTest {
     }
 
     /**
+     * Test exception thrown when constructor called.
+     */
+    @Test
+    public void testUtilites() {
+        LOGGER.info("testUtilites");
+        Utilities actual = null;
+        final Utilities expected = null;
+        boolean caught = false;
+        try {
+            actual = new Utilities();
+        } catch (final UnsupportedOperationException ex) {
+            caught = true;
+        }
+        assertTrue(caught);
+        assertEquals(expected, actual);
+    }
+
+    /**
      * Test correct index is found when no startIndex is provided.
      */
     @Test
     public void testFindFirstNotOf_1() {
+        LOGGER.info("testFindFirstNotOf_1");
         final String s = "abc123abc123";
         final int i = findFirstNotOf(s, "cba");
         assertEquals(i, 3);
@@ -117,6 +140,7 @@ public class UtilitiesTest {
      */
     @Test
     public void testFindFirstNotOf_2() {
+        LOGGER.info("testFindFirstNotOf_2");
         final String s = "abc123abc123";
         final int i = findFirstNotOf(s, "a1b2c3");
         assertEquals(i, -1);
@@ -127,6 +151,7 @@ public class UtilitiesTest {
      */
     @Test
     public void testFindFirstNotOf_3() {
+        LOGGER.info("testFindFirstNotOf_3");
         final String s = "abc123abc123";
         final int i = findFirstNotOf(s, "cba", 6);
         assertEquals(i, 9);
@@ -137,6 +162,7 @@ public class UtilitiesTest {
      */
     @Test
     public void testFindFirstNotOf_4() {
+        LOGGER.info("testFindFirstNotOf_4");
         final String s = "abc123abc123";
         final int i = findFirstNotOf(s, "a1b2c3", 6);
         assertEquals(i, -1);
@@ -148,6 +174,7 @@ public class UtilitiesTest {
      */
     @Test
     public void testFindFirstNotOf_5() {
+        LOGGER.info("testFindFirstNotOf_5");
         final String s = "";
         final int i = findFirstNotOf(s, "");
         assertEquals(i, -1);
@@ -158,6 +185,7 @@ public class UtilitiesTest {
      */
     @Test
     public void testFindFirstNotOf_6() {
+        LOGGER.info("testFindFirstNotOf_6");
         boolean caught = false;
         try {
             findFirstNotOf(null, "");
@@ -172,6 +200,7 @@ public class UtilitiesTest {
      */
     @Test
     public void testFindFirstNotOf_7() {
+        LOGGER.info("testFindFirstNotOf_7");
         boolean caught = false;
         try {
             findFirstNotOf("", null);
@@ -186,6 +215,7 @@ public class UtilitiesTest {
      */
     @Test
     public void testFindFirstNotOf_8() {
+        LOGGER.info("testFindFirstNotOf_8");
         boolean caught = false;
         try {
             findFirstNotOf("", "", -1);
@@ -201,6 +231,7 @@ public class UtilitiesTest {
      */
     @Test
     public void testFindFirstNotOf_9() {
+        LOGGER.info("testFindFirstNotOf_9");
         boolean caught = false;
         try {
             findFirstNotOf("", "", 1);
@@ -215,6 +246,7 @@ public class UtilitiesTest {
      */
     @Test
     public void testReadTorrentFile_1() {
+        LOGGER.info("testReadTorrentFile_1");
         String s = readTorrentFile("");
         assertNull(s);
     }
@@ -224,6 +256,7 @@ public class UtilitiesTest {
      */
     @Test
     public void testReadTorrentFile_2() {
+        LOGGER.info("testReadTorrentFile_2");
         boolean nullPointerEx = false;
         try {
             readTorrentFile(null);
@@ -238,6 +271,7 @@ public class UtilitiesTest {
      */
     @Test
     public void testReadTorrentFile_3() {
+        LOGGER.info("testReadTorrentFile_3");
         String s = readTorrentFile("samples");
         assertNull(s);
     }
@@ -247,6 +281,7 @@ public class UtilitiesTest {
      */
     @Test
     public void testReadTorrentFile_4() {
+        LOGGER.info("testReadTorrentFile_4");
         String s = readTorrentFile("wibble");
         assertNull(s);
     }
@@ -256,6 +291,7 @@ public class UtilitiesTest {
      */
     @Test
     public void testReadTorrentFile_5() {
+        LOGGER.info("testReadTorrentFile_5");
         String f = readTorrentFile("samples/sample1.torrent");
         String s = "d8:announce35:udp://tracker.openbittorrent.com:8013:creation datei1327049827e4:infod6:lengthi20e4:name10:sample.txt12:piece lengthi65536e6:pieces0:7:privatei1eee\r";
         assertEquals(f, s);
@@ -266,6 +302,7 @@ public class UtilitiesTest {
      */
     @Test
     public void testReadTorrentFile_6() {
+        LOGGER.info("testReadTorrentFile_6");
         String f = readTorrentFile("samples/sample2.torrent");
         assertNotNull(f);
     }
@@ -275,6 +312,7 @@ public class UtilitiesTest {
      */
     @Test
     public void testRandInt() {
+        LOGGER.info("testRandInt");
         final int min = 1;
         final int max = 3;
         for (int count = 0; count < 100; count++) {
@@ -288,6 +326,7 @@ public class UtilitiesTest {
      */
     @Test
     public void testRandIntClosed() {
+        LOGGER.info("testRandIntClosed");
         final int min = 1;
         final int max = 3;
         for (int count = 0; count < 100; count++) {
@@ -301,6 +340,7 @@ public class UtilitiesTest {
      */
     @Test
     public void testClamp_1() {
+        LOGGER.info("testClamp_1");
         final int value = 25;
         final int min = 0;
         final int max = 50;
@@ -314,6 +354,7 @@ public class UtilitiesTest {
      */
     @Test
     public void testClamp_2() {
+        LOGGER.info("testClamp_2");
         final int value = -10;
         final int min = 0;
         final int max = 50;
@@ -327,6 +368,7 @@ public class UtilitiesTest {
      */
     @Test
     public void testClamp_3() {
+        LOGGER.info("testClamp_3");
         final int value = 100;
         final int min = 0;
         final int max = 50;

@@ -168,7 +168,7 @@ public final class AtomString extends Atom implements Comparable<AtomString> {
             return true;
         }
         if (obj instanceof AtomString) {
-            return value.equals(obj.toString());
+            return value.equals(((AtomString) obj).toString());
         }
         return false;
     }

@@ -23,12 +23,18 @@
  */
 package se.suka.baldr.jbencode;
 
+import java.util.Objects;
 import org.junit.After;
 import org.junit.AfterClass;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotEquals;
+import static org.junit.Assert.assertTrue;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import org.slf4j.Logger;
+import static org.slf4j.LoggerFactory.getLogger;
 
 /**
  * @author Graham Fairweather
@@ -36,213 +42,307 @@ import org.junit.Test;
  */
 public final class AtomStringTest {
 
+    private static final Logger LOGGER = getLogger(AtomStringTest.class);
+
     /**
+     * Sometimes several tests need to share computationally expensive setup
+     * (like logging into a database). While this can compromise the
+     * independence of tests, sometimes it is a necessary optimization.
+     * Annotating a public static void no-arg method with @BeforeClass causes it
+     * to be run once before any of the test methods in the class. The
      *
+     * @BeforeClass methods of superclasses will be run before those of the
+     * current class, unless they are shadowed in the current class.
      */
     @BeforeClass
     public static void setUpClass() {
     }
 
     /**
+     * If you allocate expensive external resources in a BeforeClass method you
+     * need to release them after all the tests in the class have run.
+     * Annotating a public static void method with @AfterClass causes that
+     * method to be run after all the tests in the class have been run. All
      *
+     * @AfterClass methods are guaranteed to run even if a BeforeClass method
+     * throws an exception. The @AfterClass methods declared in superclasses
+     * will be run after those of the current class, unless they are shadowed in
+     * the current class.
      */
     @AfterClass
     public static void tearDownClass() {
     }
 
     /**
-     *
+     * Test constructor.
      */
     public AtomStringTest() {
     }
 
     /**
+     * When writing tests, it is common to find that several tests need similar
+     * objects created before they can run. Annotating a public void method with
      *
+     * @Before causes that method to be run before the Test method. The @Before
+     * methods of superclasses will be run before those of the current class,
+     * unless they are overridden in the current class. No other ordering is
+     * defined.
      */
     @Before
     public void setUp() {
     }
 
     /**
-     *
+     * If you allocate external resources in a Before method you need to release
+     * them after the test runs. Annotating a public void method with @After
+     * causes that method to be run after the Test method. All @After methods
+     * are guaranteed to run even if a Before or Test method throws an
+     * exception. The @After methods declared in superclasses will be run after
+     * those of the current class, unless they are overridden in the current
+     * class.
      */
     @After
     public void tearDown() {
     }
 
     /**
-     *
+     * Test the Constructor, of class AtomString.
      */
     @Test
-    public void testAtomStringConstructorAtom() {
-        AtomString ai = new AtomString("Hello");
-        Atom atomString = new AtomString(ai);
-        assertEquals(ai, atomString);
+    public void testAtomString_1() {
+        LOGGER.info("testAtomString_1");
+        AtomString atomString1 = new AtomString();
+        AtomString atomString2 = new AtomString();
+        assertEquals(atomString1, atomString2);
     }
 
     /**
-     *
+     * Test the Constructor, of class AtomString.
      */
     @Test
-    public void testAtomStringConstructorAtomSet() {
-        Atom ai = new AtomString("Hello");
-        assertEquals(ai.toString(), "Hello");
+    public void testAtomString_2() {
+        LOGGER.info("testAtomString_2");
+        AtomString atomString1 = new AtomString();
+        Atom atom = new AtomString();
+        assertEquals(atomString1, atom);
     }
 
     /**
-     *
+     * Test the Constructor, of class AtomString.
      */
     @Test
-    public void testAtomStringConstructorAtomValue() {
-        AtomString ai = new AtomString("Hello");
-        Atom ai1 = new AtomString(ai);
-        assertEquals(ai1.toString(), "Hello");
+    public void testAtomString_3() {
+        LOGGER.info("testAtomString_3");
+        AtomString atomString1 = new AtomString("Hello");
+        AtomString atomString2 = new AtomString("Hello");
+        assertEquals(atomString1, atomString2);
     }
 
     /**
-     *
+     * Test the Constructor, of class AtomString.
      */
     @Test
-    public void testAtomStringConstructorEmpty() {
-        Atom atomString = new AtomString();
-        assertEquals(new AtomString(), atomString);
+    public void testAtomString_4() {
+        LOGGER.info("testAtomString_4");
+        AtomString atomString1 = new AtomString("Hello");
+        AtomString atomString2 = new AtomString("Hej");
+        assertNotEquals(atomString1, atomString2);
     }
 
     /**
-     *
+     * Test the Constructor, of class AtomString.
      */
     @Test
-    public void testAtomStringConstructorEmptyBLength() {
-        Atom ai = new AtomString();
-        assertEquals(ai.bLength(), 2);
+    public void testAtomString_5() {
+        LOGGER.info("testAtomString_5");
+        final AtomString hej = new AtomString("Hej");
+        final AtomString actual = new AtomString(hej);
+        final AtomString expected = new AtomString("Hej");
+        assertEquals(expected, actual);
     }
 
     /**
-     *
+     * Test the Constructor, of class AtomString.
      */
     @Test
-    public void testAtomStringConstructorEmptyEquals() {
-        Atom ai = new AtomString();
-        Atom ai1 = new AtomString();
-        assertEquals(ai, ai1);
+    public void testAtomString_6() {
+        LOGGER.info("testAtomString_6");
+        AtomString actual = null;
+        final AtomString expected = null;
+        boolean caught = false;
+        try {
+            actual = new AtomString(expected);
+        } catch (final NullPointerException ex) {
+            caught = true;
+        }
+        assertTrue(caught);
+        assertEquals(expected, actual);
     }
 
     /**
-     *
+     * Test of bLength method, of class AtomString.
      */
     @Test
-    public void testAtomStringConstructorEmptyLength() {
-        Atom ai = new AtomString();
-        assertEquals(ai.toString().length(), 0);
+    public void testBLength() {
+        LOGGER.info("testBLength");
+        final int actual = new AtomString().bLength();
+        final int expected = 2;
+        assertEquals(expected, actual);
     }
 
     /**
-     *
+     * Test of encode method, of class AtomString.
      */
     @Test
-    public void testAtomStringConstructorEmptyString() {
-        Atom ai = new AtomString();
-        assertEquals(ai.toString(), "");
+    public void testEncode() {
+        LOGGER.info("testEncode");
+        final String actual = new AtomString().encode();
+        final String expected = "0:";
+        assertEquals(expected, actual);
     }
 
     /**
-     *
+     * Test of hashCode method, of class AtomString.
      */
     @Test
-    public void testAtomStringConstructorEmptytEncode() {
-        Atom ai = new AtomString();
-        assertEquals(ai.encode(), "0:");
+    public void testHashCode() {
+        LOGGER.info("testHashCode");
+        final String value = "Hello";
+        final int actual = new AtomString(value).hashCode();
+        final int expected = 61 * 7 + Objects.hashCode(value);
+        assertEquals(expected, actual);
     }
 
     /**
-     *
+     * Test of equals method, of class AtomString.
      */
     @Test
-    public void testAtomStringConstructorEmptyValue() {
-        Atom ai = new AtomString();
-        assertEquals(ai.toString(), "");
+    public void testEquals_1() {
+        LOGGER.info("testEquals_1");
+        final AtomString atomString = new AtomString("Hello");
+        final Atom atom = new AtomString("Hello");
+        final boolean actual = atomString.equals(atom);
+        assertTrue(actual);
     }
 
     /**
-     *
+     * Test of equals method, of class AtomString.
      */
     @Test
-    public void testAtomStringConstructorLongerStringBLength() {
-        Atom ai = new AtomString("Hello World");
-        assertEquals(ai.bLength(), 14);
+    public void testEquals_2() {
+        LOGGER.info("testEquals_2");
+        final AtomString atomString = new AtomString("Hello");
+        final Atom atom = new AtomString("Hej");
+        final boolean actual = atomString.equals(atom);
+        assertFalse(actual);
     }
 
     /**
-     *
+     * Test of equals method, of class AtomString.
      */
     @Test
-    public void testAtomStringConstructorString() {
-        Atom atomString = new AtomString("Hello");
-        assertEquals(new AtomString("Hello"), atomString);
+    public void testEquals_3() {
+        LOGGER.info("testEquals_3");
+        final AtomString atomString = new AtomString("Hello");
+        final Atom atom = null;
+        final boolean actual = atomString.equals(atom);
+        assertFalse(actual);
     }
 
     /**
-     *
+     * Test of toString method, of class AtomString.
      */
     @Test
-    public void testAtomStringConstructorStringBLength() {
-        Atom ai = new AtomString("Hello");
-        assertEquals(ai.bLength(), 7);
+    public void testToString() {
+        LOGGER.info("testToString");
+        final String actual = new AtomString("Hello").toString();
+        final String expected = "Hello";
+        assertEquals(expected, actual);
     }
 
     /**
-     *
+     * Test of compareTo method, of class AtomString.
      */
     @Test
-    public void testAtomStringConstructorStringEncode() {
-        Atom ai = new AtomString("Hello");
-        assertEquals(ai.encode(), "5:Hello");
+    public void testCompareTo_1() {
+        LOGGER.info("testCompareTo_1");
+        final AtomString atomString1 = new AtomString();
+        final AtomString atomString2 = new AtomString();
+        final int actual = atomString1.compareTo(atomString2);
+        final int expected = 0;
+        assertEquals(expected, actual);
     }
 
     /**
-     *
+     * Test of compareTo method, of class AtomString.
      */
     @Test
-    public void testAtomStringConstructorStringEquals() {
-        Atom ai = new AtomString("Hello");
-        Atom ai1 = new AtomString("Hello");
-        assertEquals(ai, ai1);
+    public void testCompareTo_2() {
+        LOGGER.info("testCompareTo_2");
+        final AtomString atomString1 = new AtomString();
+        final AtomString atomString2 = new AtomString("Hej");
+        final int actual = atomString1.compareTo(atomString2);
+        final int expected = -3;
+        assertEquals(expected, actual);
     }
 
     /**
-     *
+     * Test of compareTo method, of class AtomString.
      */
     @Test
-    public void testAtomStringConstructorStringLength() {
-        Atom ai = new AtomString("Hello");
-        assertEquals(ai.toString().length(), 5);
+    public void testCompareTo_3() {
+        LOGGER.info("testCompareTo_3");
+        final AtomString atomString1 = new AtomString("Hej");
+        final AtomString atomString2 = new AtomString();
+        final int actual = atomString1.compareTo(atomString2);
+        final int expected = 3;
+        assertEquals(expected, actual);
     }
 
     /**
-     *
+     * Test of compareTo method, of class AtomString.
      */
     @Test
-    public void testAtomStringConstructorStringSet() {
-        Atom ai = new AtomString("Hello");
-        assertEquals(ai.toString(), "Hello");
+    public void testCompareTo_4() {
+        LOGGER.info("testCompareTo_4");
+        final AtomString atomString1 = new AtomString();
+        Integer actual = null;
+        final AtomString expected = null;
+        boolean caught = false;
+        try {
+            actual = atomString1.compareTo(null);
+        } catch (final NullPointerException ex) {
+            caught = true;
+        }
+        assertTrue(caught);
+        assertEquals(expected, actual);
     }
 
     /**
-     *
+     * Test of copy method, of class AtomString.
      */
     @Test
-    public void testAtomStringConstructorStringString() {
-        Atom ai = new AtomString("Hello");
-        assertEquals(ai.toString(), "Hello");
+    public void testCopy_1() {
+        LOGGER.info("testCopy_1");
+        final AtomString actual = new AtomString("Hej");
+        final AtomString expected = actual.copy();
+        assertEquals(expected, actual);
     }
 
     /**
-     *
+     * Test of copy method, of class AtomString.
      */
     @Test
-    public void testAtomStringConstructorStringValue() {
-        Atom ai = new AtomString("Hello");
-        assertEquals(ai.toString(), "Hello");
+    public void testCopy_2() {
+        LOGGER.info("testCopy_2");
+        final String value = "Hej";
+        final AtomString atomString1 = new AtomString(value);
+        final AtomString atomString2 = atomString1.copy();
+        assertTrue(atomString1 != atomString2);
+        assertEquals(atomString1, atomString2);
+        final String actual = atomString2.toString();
+        final String expected = value;
+        assertEquals(expected, actual);
     }
 
 }

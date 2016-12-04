@@ -161,7 +161,8 @@ class Utilities {
     /**
      * No construction
      */
-    private Utilities() {
+    Utilities() {
+        throw new UnsupportedOperationException();
     }
 
 }

@@ -32,12 +32,16 @@ import static org.junit.Assert.assertTrue;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import org.slf4j.Logger;
+import static org.slf4j.LoggerFactory.getLogger;
 
 /**
  * @author Graham Fairweather
  * @see <a href="https://en.wikipedia.org/wiki/Bencode">Bencode</a>
  */
 public final class AtomIntegerTest {
+
+    private static final Logger LOGGER = getLogger(AtomIntegerTest.class);
 
     /**
      * Sometimes several tests need to share computationally expensive setup
@@ -105,6 +109,7 @@ public final class AtomIntegerTest {
      */
     @Test
     public void testAtomInteger_1() {
+        LOGGER.info("testAtomInteger_1");
         final AtomInteger actual = new AtomInteger();
         final AtomInteger expected = new AtomInteger();
         assertEquals(expected, actual);
@@ -115,6 +120,7 @@ public final class AtomIntegerTest {
      */
     @Test
     public void testAtomInteger_2() {
+        LOGGER.info("testAtomInteger_2");
         final Atom actual = new AtomInteger();
         final AtomInteger expected = new AtomInteger();
         assertEquals(expected, actual);
@@ -125,6 +131,7 @@ public final class AtomIntegerTest {
      */
     @Test
     public void testAtomInteger_3() {
+        LOGGER.info("testAtomInteger_3");
         final AtomInteger actual = new AtomInteger(1);
         final AtomInteger expected = new AtomInteger(1);
         assertEquals(expected, actual);
@@ -135,6 +142,7 @@ public final class AtomIntegerTest {
      */
     @Test
     public void testAtomInteger_4() {
+        LOGGER.info("testAtomInteger_4");
         final AtomInteger actual = new AtomInteger(1);
         final AtomInteger expected = new AtomInteger(2);
         assertNotEquals(expected, actual);
@@ -145,6 +153,7 @@ public final class AtomIntegerTest {
      */
     @Test
     public void testAtomInteger_5() {
+        LOGGER.info("testAtomInteger_5");
         final AtomInteger one = new AtomInteger(1);
         final AtomInteger actual = new AtomInteger(one);
         final AtomInteger expected = new AtomInteger(1);
@@ -156,6 +165,7 @@ public final class AtomIntegerTest {
      */
     @Test
     public void testAtomInteger_6() {
+        LOGGER.info("testAtomInteger_5");
         AtomInteger actual = null;
         final AtomInteger expected = null;
         boolean caught = false;
@@ -173,6 +183,7 @@ public final class AtomIntegerTest {
      */
     @Test
     public void testBLength() {
+        LOGGER.info("testBLength");
         final int actual = new AtomInteger().bLength();
         final int expected = 3;
         assertEquals(expected, actual);
@@ -183,6 +194,7 @@ public final class AtomIntegerTest {
      */
     @Test
     public void testEncode() {
+        LOGGER.info("testEncode");
         final String actual = new AtomInteger().encode();
         final String expected = "i0e";
         assertEquals(expected, actual);
@@ -193,6 +205,7 @@ public final class AtomIntegerTest {
      */
     @Test
     public void testByteValue() {
+        LOGGER.info("testByteValue");
         final byte actual = new AtomInteger().byteValue();
         final byte expected = 0;
         assertEquals(expected, actual);
@@ -203,6 +216,7 @@ public final class AtomIntegerTest {
      */
     @Test
     public void testShortValue() {
+        LOGGER.info("testShortValue");
         final short actual = new AtomInteger().shortValue();
         final short expected = 0;
         assertEquals(expected, actual);
@@ -213,6 +227,7 @@ public final class AtomIntegerTest {
      */
     @Test
     public void testIntValue() {
+        LOGGER.info("testIntValue");
         final int actual = new AtomInteger().intValue();
         final int expected = 0;
         assertEquals(expected, actual);
@@ -223,6 +238,7 @@ public final class AtomIntegerTest {
      */
     @Test
     public void testLongValue() {
+        LOGGER.info("testLongValue");
         final long actual = new AtomInteger().longValue();
         final long expected = 0;
         assertEquals(expected, actual);
@@ -233,6 +249,7 @@ public final class AtomIntegerTest {
      */
     @Test
     public void testFloatValue() {
+        LOGGER.info("testFloatValue");
         final float actual = new AtomInteger().floatValue();
         final float expected = 0;
         final double delta = 0;
@@ -244,6 +261,7 @@ public final class AtomIntegerTest {
      */
     @Test
     public void testDoubleValue() {
+        LOGGER.info("testDoubleValue");
         final double actual = new AtomInteger().doubleValue();
         final double expected = 0;
         final double delta = 0;
@@ -255,6 +273,7 @@ public final class AtomIntegerTest {
      */
     @Test
     public void testCompareTo_1() {
+        LOGGER.info("testCompareTo_1");
         final AtomInteger atomInteger1 = new AtomInteger();
         final AtomInteger atomInteger2 = new AtomInteger();
         final int actual = atomInteger1.compareTo(atomInteger2);
@@ -267,6 +286,7 @@ public final class AtomIntegerTest {
      */
     @Test
     public void testCompareTo_2() {
+        LOGGER.info("testCompareTo_2");
         final AtomInteger atomInteger1 = new AtomInteger();
         final AtomInteger atomInteger2 = new AtomInteger(10);
         final int actual = atomInteger1.compareTo(atomInteger2);
@@ -279,6 +299,7 @@ public final class AtomIntegerTest {
      */
     @Test
     public void testCompareTo_3() {
+        LOGGER.info("testCompareTo_3");
         final AtomInteger atomInteger1 = new AtomInteger();
         final AtomInteger atomInteger2 = new AtomInteger(-10);
         final int actual = atomInteger1.compareTo(atomInteger2);
@@ -291,6 +312,7 @@ public final class AtomIntegerTest {
      */
     @Test
     public void testCompareTo_4() {
+        LOGGER.info("testCompareTo_4");
         final AtomInteger atomInteger1 = new AtomInteger();
         Integer actual = null;
         final AtomInteger expected = null;
@@ -309,6 +331,7 @@ public final class AtomIntegerTest {
      */
     @Test
     public void testHashCode() {
+        LOGGER.info("testHashCode");
         final long value = 10;
         final int actual = new AtomInteger(value).hashCode();
         final int expected = 19 * 7 + (int) (value ^ (value >>> 32));
@@ -320,6 +343,7 @@ public final class AtomIntegerTest {
      */
     @Test
     public void testEquals_1() {
+        LOGGER.info("testEquals_1");
         final AtomInteger atomInteger = new AtomInteger(-10);
         final Atom atom = new AtomInteger(-10);
         final boolean actual = atomInteger.equals(atom);
@@ -331,6 +355,7 @@ public final class AtomIntegerTest {
      */
     @Test
     public void testEquals_2() {
+        LOGGER.info("testEquals_2");
         final AtomInteger atomInteger = new AtomInteger(-1);
         final Atom atom = new AtomInteger(-10);
         final boolean actual = atomInteger.equals(atom);
@@ -342,6 +367,7 @@ public final class AtomIntegerTest {
      */
     @Test
     public void testEquals_3() {
+        LOGGER.info("testEquals_3");
         final AtomInteger atomInteger = new AtomInteger(-1);
         final Atom atom = null;
         final boolean actual = atomInteger.equals(atom);
@@ -353,6 +379,7 @@ public final class AtomIntegerTest {
      */
     @Test
     public void testToString() {
+        LOGGER.info("testToString");
         final String actual = new AtomInteger().toString();
         final String expected = "0";
         assertEquals(expected, actual);
@@ -363,6 +390,7 @@ public final class AtomIntegerTest {
      */
     @Test
     public void testCopy_1() {
+        LOGGER.info("testCopy_1");
         final AtomInteger actual = new AtomInteger(2);
         final AtomInteger expected = actual.copy();
         assertEquals(expected, actual);
@@ -373,6 +401,7 @@ public final class AtomIntegerTest {
      */
     @Test
     public void testCopy_2() {
+        LOGGER.info("testCopy_2");
         final int value = 2;
         final AtomInteger atomInteger1 = new AtomInteger(value);
         final AtomInteger atomInteger2 = atomInteger1.copy();
