@@ -1,4 +1,5 @@
 [![Build Status](https://travis-ci.org/Xotic750/jBencode.svg?branch=master)](https://travis-ci.org/Xotic750/jBencode)
+[![Coverage Status](https://coveralls.io/repos/github/Xotic750/jBencode/badge.svg?branch=master)](https://coveralls.io/github/Xotic750/jBencode?branch=master)
 
 **Bencode** (pronounced like B encode) is the encoding used by the peer-to-peer file sharing system BitTorrent for storing and transmitting loosely structured data.
 
