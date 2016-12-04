@@ -7,3 +7,5 @@ matrix:
   allow_failures:
     - oraclejdk7
     - oraclejdk6
+after_success:
+  - mvn clean test jacoco:report coveralls:report
