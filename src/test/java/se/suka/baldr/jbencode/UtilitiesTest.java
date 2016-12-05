@@ -35,7 +35,7 @@ import static se.suka.baldr.jbencode.Utilities.clamp;
 import static se.suka.baldr.jbencode.Utilities.findFirstNotOf;
 import static se.suka.baldr.jbencode.Utilities.randInt;
 import static se.suka.baldr.jbencode.Utilities.randIntClosed;
-import static se.suka.baldr.jbencode.Utilities.readTorrentFile;
+import static se.suka.baldr.jbencode.Utilities.readEncodedFile;
 
 /**
  *
@@ -245,9 +245,9 @@ public class UtilitiesTest {
      * Should return null when no pathName is provided.
      */
     @Test
-    public void testReadTorrentFile_1() {
-        LOGGER.info("testReadTorrentFile_1");
-        String s = readTorrentFile("");
+    public void testReadEncodedFile_1() {
+        LOGGER.info("testReadEncodedFile_1");
+        String s = readEncodedFile("");
         assertNull(s);
     }
 
@@ -255,11 +255,11 @@ public class UtilitiesTest {
      * Should throw correct exception when null is provided as pathName.
      */
     @Test
-    public void testReadTorrentFile_2() {
-        LOGGER.info("testReadTorrentFile_2");
+    public void testReadEncodedFile_2() {
+        LOGGER.info("testReadEncodedFile_2");
         boolean nullPointerEx = false;
         try {
-            readTorrentFile(null);
+            readEncodedFile(null);
         } catch (final NullPointerException ex) {
             nullPointerEx = true;
         }
@@ -270,9 +270,9 @@ public class UtilitiesTest {
      * Should return null when pathName is a directory.
      */
     @Test
-    public void testReadTorrentFile_3() {
-        LOGGER.info("testReadTorrentFile_3");
-        String s = readTorrentFile("samples");
+    public void testReadEncodedFile_3() {
+        LOGGER.info("testReadEncodedFile_3");
+        String s = readEncodedFile("samples");
         assertNull(s);
     }
 
@@ -280,9 +280,9 @@ public class UtilitiesTest {
      * Should return null when pathName is non existant file.
      */
     @Test
-    public void testReadTorrentFile_4() {
-        LOGGER.info("testReadTorrentFile_4");
-        String s = readTorrentFile("wibble");
+    public void testReadEncodedFile_4() {
+        LOGGER.info("testReadEncodedFile_4");
+        String s = readEncodedFile("wibble");
         assertNull(s);
     }
 
@@ -290,9 +290,9 @@ public class UtilitiesTest {
      * Test a text only torrent file.
      */
     @Test
-    public void testReadTorrentFile_5() {
-        LOGGER.info("testReadTorrentFile_5");
-        String f = readTorrentFile("samples/sample1.torrent");
+    public void testReadEncodedFile_5() {
+        LOGGER.info("testReadEncodedFile_5");
+        String f = readEncodedFile("samples/sample1.torrent");
         String s = "d8:announce35:udp://tracker.openbittorrent.com:8013:creation datei1327049827e4:infod6:lengthi20e4:name10:sample.txt12:piece lengthi65536e6:pieces0:7:privatei1eee\r";
         assertEquals(f, s);
     }
@@ -301,9 +301,9 @@ public class UtilitiesTest {
      * Test a byte string torrent file.
      */
     @Test
-    public void testReadTorrentFile_6() {
-        LOGGER.info("testReadTorrentFile_6");
-        String f = readTorrentFile("samples/sample2.torrent");
+    public void testReadEncodedFile_6() {
+        LOGGER.info("testReadEncodedFile_6");
+        String f = readEncodedFile("samples/sample2.torrent");
         assertNotNull(f);
     }
 

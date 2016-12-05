@@ -30,6 +30,8 @@ import static org.junit.Assert.assertTrue;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import org.slf4j.Logger;
+import static org.slf4j.LoggerFactory.getLogger;
 import static se.suka.baldr.jbencode.Atom.requireAtom;
 
 /**
@@ -38,6 +40,8 @@ import static se.suka.baldr.jbencode.Atom.requireAtom;
  * @author Graham Fairweather
  */
 public class AtomTest {
+
+    private static final Logger LOGGER = getLogger(AtomTest.class);
 
     /**
      * Sometimes several tests need to share computationally expensive setup
@@ -105,6 +109,7 @@ public class AtomTest {
      */
     @Test
     public void testRequireAtom_GenericType() {
+        LOGGER.info("requireAtom");
         Atom actual = null;
         final Atom expected = null;
         boolean caught = false;
@@ -123,6 +128,7 @@ public class AtomTest {
      */
     @Test
     public void testRequireAtom_GenericType_String() {
+        LOGGER.info("requireAtom with message");
         Atom actual = null;
         final Atom expected = null;
         boolean caught = false;
@@ -141,7 +147,8 @@ public class AtomTest {
      */
     @Test
     public void testBLength() {
-        Atom atom = new AtomImpl();
+        LOGGER.info("bLength");
+        final Atom atom = new AtomImpl();
         final int expected = 0;
         final int actual = atom.bLength();
         assertEquals(expected, actual);
@@ -152,6 +159,7 @@ public class AtomTest {
      */
     @Test
     public void testCopy() {
+        LOGGER.info("copy");
         final Atom atom = new AtomImpl();
         final Atom expected = null;
         final Atom actual = atom.copy();
@@ -163,6 +171,7 @@ public class AtomTest {
      */
     @Test
     public void testEncode() {
+        LOGGER.info("encode");
         final Atom atom = new AtomImpl();
         final String expected = "";
         final String actual = atom.encode();

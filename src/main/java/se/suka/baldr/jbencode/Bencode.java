@@ -31,7 +31,7 @@ import static java.util.Objects.nonNull;
 import org.slf4j.Logger;
 import static org.slf4j.LoggerFactory.getLogger;
 import static se.suka.baldr.jbencode.Utilities.findFirstNotOf;
-import static se.suka.baldr.jbencode.Utilities.readTorrentFile;
+import static se.suka.baldr.jbencode.Utilities.readEncodedFile;
 
 /**
  * Bencode (pronounced like B encode) is the encoding used by the peer-to-peer
@@ -55,7 +55,7 @@ import static se.suka.baldr.jbencode.Utilities.readTorrentFile;
  * @author Graham Fairweather
  * @see <a href="https://en.wikipedia.org/wiki/Bencode">Bencode</a>
  */
-public abstract class Bencode {
+public class Bencode {
 
     private static final Logger LOGGER = getLogger(Bencode.class);
 
@@ -149,7 +149,7 @@ public abstract class Bencode {
      * @return
      */
     public static final Atom decodeFile(final String fileName) {
-        final String s = readTorrentFile(fileName);
+        final String s = readEncodedFile(fileName);
         return decode(s);
     }
 
@@ -178,7 +178,7 @@ public abstract class Bencode {
         }
         final int uiEnd = x.indexOf('e', uiStart);
         if (uiEnd == -1) {
-            charNotFound("decodeInt", "c");
+            charNotFound("decodeInt", "e");
             return null;
         }
         final String s = x.substring(uiStart + 1, uiEnd);
@@ -259,7 +259,7 @@ public abstract class Bencode {
             charNotFound("decodeStr", "1234567890");
             return null;
         }
-        final int uiSplit = findFirstNotOf(x, "1234567890", uiStart);
+        int uiSplit = findFirstNotOf(x, "1234567890", uiStart);
         if (uiSplit == -1 || x.charAt(uiSplit) != ':') {
             charNotFound("decodeString", ":");
             return null;
@@ -272,7 +272,11 @@ public abstract class Bencode {
             invalidInt("decodeStr", length);
             return null;
         }
-        String contents = x.substring(uiSplit + 1, uiSplit + uiLength + 1);
+        if (++uiSplit > x.length() || uiSplit + uiLength > x.length()) {
+            LOGGER.warn("decodeString: out of bounds");
+            return null;
+        }
+        String contents = x.substring(uiSplit, uiSplit + uiLength);
         return new AtomString(contents);
     }
 
@@ -302,11 +306,11 @@ public abstract class Bencode {
             LOGGER.warn(format("{0}: null string, halting decode", methodName));
             return false;
         }
-        if (x.isEmpty() || x.substring(uiStart + 1).isEmpty()) {
+        if (x.isEmpty()) {
             LOGGER.warn(format("{0}: empty string, halting decode", methodName));
             return false;
         }
-        if (uiStart < 0 || uiStart >= x.length()) {
+        if (uiStart < 0 || uiStart > x.length()) {
             LOGGER.warn(format("{0}: out of range, halting decode", methodName));
             return false;
         }
@@ -325,7 +329,11 @@ public abstract class Bencode {
         LOGGER.warn(format("{0}: error decoding \"{1}\", halting decode", params));
     }
 
-    private Bencode() {
+    /**
+     * No construction
+     */
+    Bencode() {
+        throw new UnsupportedOperationException();
     }
 
 }

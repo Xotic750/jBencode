@@ -146,7 +146,7 @@ class Utilities {
      * {@code null}
      * @return A {@code String} containing all the bytes from file
      */
-    static final String readTorrentFile(final String pathName) {
+    static final String readEncodedFile(final String pathName) {
         final File file = new File(requireNonNull(pathName));
         final byte[] bytes;
         try {

@@ -29,6 +29,7 @@ import java.util.Comparator;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.NavigableSet;
+import java.util.NoSuchElementException;
 import java.util.Objects;
 import static java.util.Objects.requireNonNull;
 import java.util.Set;
@@ -364,17 +365,6 @@ public final class AtomDictionary extends Atom implements Map<String, Atom>, Clo
     }
 
     /**
-     * Returns a key-value mapping associated with the greatest key in this map,
-     * or {@code null} if the map is empty. The returned entry does <em>not</em>
-     * support the {@code Entry.setValue} method.
-     *
-     * @return
-     */
-    public Entry<String, Atom> lastEntry() {
-        return value.lastEntry();
-    }
-
-    /**
      * Returns a key-value mapping associated with the greatest key less than or
      * equal to the given key, or {@code null} if there is no such key. The
      * returned entry does <em>not</em> support the {@code Entry.setValue}
@@ -529,6 +519,99 @@ public final class AtomDictionary extends Atom implements Map<String, Atom>, Clo
     }
 
     /**
+     * Returns a key-value mapping associated with the greatest key in this map,
+     * or {@code null} if the map is empty. The returned entry does <em>not</em>
+     * support the {@code Entry.setValue} method.
+     *
+     * @return
+     */
+    public Entry<String, Atom> lastEntry() {
+        return value.lastEntry();
+    }
+
+    /**
+     * @return @throws NoSuchElementException {@inheritDoc}
+     */
+    public String lastKey() {
+        return value.lastKey();
+    }
+
+    /**
+     * Returns a key-value mapping associated with the greatest key strictly
+     * less than the given key, or {@code null} if there is no such key. The
+     * returned entry does <em>not</em> support the {@code Entry.setValue}
+     * method.
+     *
+     * @param key
+     * @return
+     * @throws ClassCastException {@inheritDoc}
+     * @throws NullPointerException if the specified key is null
+     */
+    public Map.Entry<String, Atom> lowerEntry(String key) {
+        return value.lowerEntry(key);
+    }
+
+    /**
+     * @param key
+     * @return
+     * @throws ClassCastException {@inheritDoc}
+     * @throws NullPointerException if the specified key is null
+     */
+    public String lowerKey(String key) {
+        return value.lowerKey(key);
+    }
+
+    /**
+     * If the specified key is not already associated with a value, associates
+     * it with the given value. Otherwise, replaces the value with the results
+     * of the given remapping function, or removes if {@code null}. The function
+     * is <em>NOT</em>
+     * guaranteed to be applied once atomically.
+     *
+     * @param key key with which the specified value is to be associated
+     * @param value the value to use if absent
+     * @param remappingFunction the function to recompute a value if present
+     * @return the new value associated with the specified key, or null if none
+     * @throws NullPointerException if the specified key or value is null or the
+     * remappingFunction is null
+     * @since 1.8
+     */
+    @Override
+    public Atom merge(String key, Atom value, BiFunction<? super Atom, ? super Atom, ? extends Atom> remappingFunction) {
+        return this.value.merge(key, value, remappingFunction);
+    }
+
+    /**
+     *
+     * @return
+     */
+    public NavigableSet<String> navigableKeySet() {
+        return value.navigableKeySet();
+    }
+
+    /**
+     * Removes and returns a key-value mapping associated with the least key in
+     * this map, or {@code null} if the map is empty. The returned entry does
+     * <em>not</em> support the {@code Entry.setValue} method.
+     *
+     * @return
+     */
+    public Map.Entry<String, Atom> pollFirstEntry() {
+        return value.pollFirstEntry();
+    }
+
+    /**
+     * Removes and returns a key-value mapping associated with the greatest key
+     * in this map, or {@code null} if the map is empty. The returned entry does
+     * <em>not</em> support the {@code Entry.setValue} method.
+     *
+     * @return
+     */
+    public Map.Entry<String, Atom> pollLastEntry() {
+        return value.pollLastEntry();
+    }
+
+    /**
      * Associates the specified value with the specified key in this map
      * (optional operation). If the map previously contained a mapping for the
      * key, the old value is replaced by the specified value. (A map
@@ -575,6 +658,20 @@ public final class AtomDictionary extends Atom implements Map<String, Atom>, Clo
     }
 
     /**
+     * {@inheritDoc}
+     *
+     * @return the previous value associated with the specified key, or
+     * {@code null} if there was no mapping for the key
+     * @throws ClassCastException if the specified key cannot be compared with
+     * the keys currently in the map
+     * @throws NullPointerException if the specified key or value is null
+     */
+    @Override
+    public Atom putIfAbsent(String key, Atom value) {
+        return this.value.putIfAbsent(key, value);
+    }
+
+    /**
      * Removes the mapping for a key from this map if it is present (optional
      * operation). More formally, if this map contains a mapping from key
      * <tt>k</tt> to value <tt>v</tt> such that
@@ -607,6 +704,11 @@ public final class AtomDictionary extends Atom implements Map<String, Atom>, Clo
         return value.remove(requireString(requireNonNull(key)));
     }
 
+    @Override
+    public void replaceAll(BiFunction<? super String, ? super Atom, ? extends Atom> function) {
+        value.replaceAll(function);
+    }
+
     /**
      * Returns the number of key-value mappings in this map. If the map contains
      * more than <tt>Integer.MAX_VALUE</tt> elements, returns
@@ -617,6 +719,55 @@ public final class AtomDictionary extends Atom implements Map<String, Atom>, Clo
     @Override
     public int size() {
         return value.size();
+    }
+
+    /**
+     * @param fromKey
+     * @param toKey
+     * @return
+     * @throws ClassCastException {@inheritDoc}
+     * @throws NullPointerException if {@code fromKey} or {@code toKey} is null
+     * @throws IllegalArgumentException {@inheritDoc}
+     */
+    public ConcurrentNavigableMap<String, Atom> subMap(String fromKey, String toKey) {
+        return value.subMap(fromKey, toKey);
+    }
+
+    /**
+     * @param fromKey
+     * @param fromInclusive
+     * @param toKey
+     * @param toInclusive
+     * @return
+     * @throws ClassCastException {@inheritDoc}
+     * @throws NullPointerException if {@code fromKey} or {@code toKey} is null
+     * @throws IllegalArgumentException {@inheritDoc}
+     */
+    public ConcurrentNavigableMap<String, Atom> subMap(String fromKey, boolean fromInclusive, String toKey, boolean toInclusive) {
+        return value.subMap(fromKey, fromInclusive, toKey, toInclusive);
+    }
+
+    /**
+     * @param fromKey
+     * @return
+     * @throws ClassCastException {@inheritDoc}
+     * @throws NullPointerException if {@code fromKey} is null
+     * @throws IllegalArgumentException {@inheritDoc}
+     */
+    public ConcurrentNavigableMap<String, Atom> tailMap(String fromKey) {
+        return value.tailMap(fromKey);
+    }
+
+    /**
+     * @param fromKey
+     * @param inclusive
+     * @return
+     * @throws ClassCastException {@inheritDoc}
+     * @throws NullPointerException if {@code fromKey} is null
+     * @throws IllegalArgumentException {@inheritDoc}
+     */
+    public ConcurrentNavigableMap<String, Atom> tailMap(String fromKey, boolean inclusive) {
+        return value.tailMap(fromKey, inclusive);
     }
 
     /**

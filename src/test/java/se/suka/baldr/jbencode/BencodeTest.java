@@ -25,10 +25,13 @@ package se.suka.baldr.jbencode;
 
 import org.junit.After;
 import org.junit.AfterClass;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import org.slf4j.Logger;
+import static org.slf4j.LoggerFactory.getLogger;
 import static se.suka.baldr.jbencode.Bencode.decode;
 import static se.suka.baldr.jbencode.Bencode.decodeDict;
 import static se.suka.baldr.jbencode.Bencode.decodeFile;
@@ -43,459 +46,536 @@ import static se.suka.baldr.jbencode.Bencode.encode;
  */
 public final class BencodeTest {
 
+    private static final Logger LOGGER = getLogger(BencodeTest.class);
+
     /**
+     * Sometimes several tests need to share computationally expensive setup
+     * (like logging into a database). While this can compromise the
+     * independence of tests, sometimes it is a necessary optimization.
+     * Annotating a public static void no-arg method with @BeforeClass causes it
+     * to be run once before any of the test methods in the class. The
      *
+     * @BeforeClass methods of superclasses will be run before those of the
+     * current class, unless they are shadowed in the current class.
      */
     @BeforeClass
     public static void setUpClass() {
     }
 
     /**
+     * If you allocate expensive external resources in a BeforeClass method you
+     * need to release them after all the tests in the class have run.
+     * Annotating a public static void method with @AfterClass causes that
+     * method to be run after all the tests in the class have been run. All
      *
+     * @AfterClass methods are guaranteed to run even if a BeforeClass method
+     * throws an exception. The @AfterClass methods declared in superclasses
+     * will be run after those of the current class, unless they are shadowed in
+     * the current class.
      */
     @AfterClass
     public static void tearDownClass() {
     }
 
     /**
-     *
+     * Test constructor.
      */
     public BencodeTest() {
     }
 
     /**
+     * When writing tests, it is common to find that several tests need similar
+     * objects created before they can run. Annotating a public void method with
      *
+     * @Before causes that method to be run before the Test method. The @Before
+     * methods of superclasses will be run before those of the current class,
+     * unless they are overridden in the current class. No other ordering is
+     * defined.
      */
     @Before
     public void setUp() {
     }
 
     /**
-     *
+     * If you allocate external resources in a Before method you need to release
+     * them after the test runs. Annotating a public void method with @After
+     * causes that method to be run after the Test method. All @After methods
+     * are guaranteed to run even if a Before or Test method throws an
+     * exception. The @After methods declared in superclasses will be run after
+     * those of the current class, unless they are overridden in the current
+     * class.
      */
     @After
     public void tearDown() {
     }
 
     /**
-     *
+     * Test exception thrown when constructor called.
      */
     @Test
-    public void testDecodeDictIntStrLst() {
-        Atom l = decodeDict("d3:fooli5e5:Helloe3:barli50000000e11:Hello Worldee");
-        AtomDictionary expected = new AtomDictionary();
-        AtomList il = new AtomList();
-        il.add(new AtomInteger(5));
-        il.add(new AtomString("Hello"));
-        AtomList im = new AtomList();
-        im.add(new AtomInteger(50000000));
-        im.add(new AtomString("Hello World"));
-        expected.put("foo", il);
-        expected.put("bar", im);
-        assertEquals(l, expected);
+    public void testBencode() {
+        LOGGER.info("testBencode");
+        Bencode actual = null;
+        final Bencode expected = null;
+        boolean caught = false;
+        try {
+            actual = new Bencode();
+        } catch (final UnsupportedOperationException ex) {
+            caught = true;
+        }
+        assertTrue(caught);
+        assertEquals(expected, actual);
     }
 
     /**
-     *
+     * Test of decode method, of class Bencode.
      */
     @Test
-    public void testDecodeEmptyInt() {
-        Atom atom = decode("ie");
-        assertNull(atom);
+    public void testDecode_String_1() {
+        LOGGER.info("decode");
+        final String x = "d1:a11:Hello World1:ble1:ci0ee";
+        final AtomDictionary expected = new AtomDictionary();
+        expected.put("a", new AtomString("Hello World"));
+        expected.put("b", new AtomList());
+        expected.put("c", new AtomInteger());
+        final Atom actual = decode(x);
+        assertEquals(expected, actual);
     }
 
     /**
-     *
+     * Test of decode method, of class Bencode.
      */
     @Test
-    public void testDecodeEmptyStr() {
-        Atom atom = decodeStr("0:");
-        assertEquals(atom, new AtomString());
+    public void testDecode_String_2() {
+        LOGGER.info("decode");
+        final String x = null;
+        final Atom expected = null;
+        final Atom actual = decode(x);
+        assertEquals(expected, actual);
     }
 
     /**
-     *
+     * Test of decode method, of class Bencode.
      */
     @Test
-    public void testDecodeFileSample1() {
-        Atom atom = decodeFile("samples/sample1.torrent");
-        assertNotNull(atom);
+    public void testDecode_String_3() {
+        LOGGER.info("decode");
+        final String x = "";
+        final Atom expected = null;
+        final Atom actual = decode(x);
+        assertEquals(expected, actual);
     }
 
     /**
-     *
+     * Test of decode method, of class Bencode.
      */
     @Test
-    public void testDecodeFileSample2() {
-        Atom atom = decodeFile("samples/sample2.torrent");
-        assertNotNull(atom);
+    public void testDecode_String_4() {
+        LOGGER.info("decode");
+        final String x = "ae";
+        final Atom expected = null;
+        final Atom actual = decode(x);
+        assertEquals(expected, actual);
     }
 
     /**
-     *
+     * Test of decode method, of class Bencode.
      */
     @Test
-    public void testDecodeIntEmpty() {
-        Atom atom = decodeInt("");
-        assertNull(atom);
+    public void testDecode_String_int_1() {
+        LOGGER.info("decode at start index");
+        final int uiStart = 4;
+        final String x = "d1:a11:Hello Worlde";
+        final Atom expected = new AtomString("Hello World");
+        final Atom actual = decode(x, uiStart);
+        assertEquals(expected, actual);
     }
 
     /**
-     *
+     * Test of decode method, of class Bencode.
      */
     @Test
-    public void testDecodeIntEmptyLE() {
-        Atom atom = decodeInt("ie");
-        assertNull(atom);
+    public void testDecode_String_int_2() {
+        LOGGER.info("decode at start index");
+        final int uiStart = 40;
+        final String x = "d1:a11:Hello Worlde";
+        final Atom expected = null;
+        final Atom actual = decode(x, uiStart);
+        assertEquals(expected, actual);
     }
 
     /**
-     *
+     * Test of decodeDict method, of class Bencode.
      */
     @Test
-    public void testDecodeIntInvalidNegZero() {
-        Atom atom = decodeInt("i-0e");
-        assertNull(atom);
+    public void testDecodeDict_String_1() {
+        LOGGER.info("decodeDict");
+        final String x = "d1:a11:Hello Worlde";
+        final AtomDictionary expected = new AtomDictionary();
+        expected.put("a", new AtomString("Hello World"));
+        final Atom actual = decodeDict(x);
+        assertEquals(expected, actual);
     }
 
     /**
-     *
+     * Test of decodeDict method, of class Bencode.
      */
     @Test
-    public void testDecodeIntNeg() {
-        Atom atom = decodeInt("i-12e");
-        assertEquals(atom, new AtomInteger(-12));
+    public void testDecodeDict_String_2() {
+        LOGGER.info("decodeDict");
+        final String x = null;
+        final AtomDictionary expected = null;
+        final Atom actual = decodeDict(x);
+        assertEquals(expected, actual);
     }
 
     /**
-     *
+     * Test of decodeDict method, of class Bencode.
      */
     @Test
-    public void testDecodeIntNull() {
-        Atom atom = decodeInt(null);
-        assertNull(atom);
+    public void testDecodeDict_String_3() {
+        LOGGER.info("decodeDict");
+        final String x = "1:a11:Hello Worlde";
+        final AtomDictionary expected = null;
+        final Atom actual = decodeDict(x);
+        assertEquals(expected, actual);
     }
 
     /**
-     *
+     * Test of decodeDict method, of class Bencode.
      */
     @Test
-    public void testDecodeIntPos() {
-        Atom atom = decodeInt("i12e");
-        assertEquals(atom, new AtomInteger(12));
+    public void testDecodeDict_String_4() {
+        LOGGER.info("decodeDict");
+        final String x = "d1:a11:Hello World";
+        final AtomDictionary expected = null;
+        final Atom actual = decodeDict(x);
+        assertEquals(expected, actual);
     }
 
     /**
-     *
+     * Test of decodeDict method, of class Bencode.
      */
     @Test
-    public void testDecodeIntPosZero() {
-        Atom atom = decodeInt("i0e");
-        assertEquals(atom, new AtomInteger(0));
+    public void testDecodeDict_String_5() {
+        LOGGER.info("decodeDict");
+        final String x = "di0e11:Hello Worlde";
+        final AtomDictionary expected = null;
+        final Atom actual = decodeDict(x);
+        assertEquals(expected, actual);
     }
 
     /**
-     *
+     * Test of decodeDict method, of class Bencode.
      */
     @Test
-    public void testDecodeIntStrLst() {
-        Atom l = decode("d3:barli50000000e11:Hello Worlde3:fooli5e5:Helloee");
-        AtomDictionary expected = new AtomDictionary();
-        AtomList il = new AtomList();
-        il.add(new AtomInteger(5));
-        il.add(new AtomString("Hello"));
-        AtomList im = new AtomList();
-        im.add(new AtomInteger(50000000));
-        im.add(new AtomString("Hello World"));
-        expected.put("foo", il);
-        expected.put("bar", im);
-        assertEquals(l, expected);
+    public void testDecodeDict_String_6() {
+        LOGGER.info("decodeDict");
+        final String x = "d1:a11:Helloe";
+        final AtomDictionary expected = null;
+        final Atom actual = decodeDict(x);
+        assertEquals(expected, actual);
     }
 
     /**
-     *
+     * Test of decodeDict method, of class Bencode.
      */
     @Test
-    public void testDecodeInvalidNegZeroInt() {
-        Atom atom = decode("i-0e");
-        assertNull(atom);
+    public void testDecodeDict_String_int() {
+        LOGGER.info("decodeDict at start index");
+        final int uiStart = 5;
+        final String x = "li42ed1:a11:Hello Worldee";
+        final AtomDictionary expected = new AtomDictionary();
+        expected.put("a", new AtomString("Hello World"));
+        final Atom actual = decodeDict(x, uiStart);
+        assertEquals(expected, actual);
     }
 
     /**
-     *
+     * Test of decodeFile method, of class Bencode.
      */
     @Test
-    public void testDecodeListEmpty() {
-        Atom atom = decodeList("");
-        assertNull(atom);
+    public void testDecodeFile() {
+        LOGGER.info("decodeFile");
+        final Atom actual = decodeFile("samples/sample1.torrent");
+        final AtomDictionary expected = new AtomDictionary();
+        expected.put("announce", new AtomString("udp://tracker.openbittorrent.com:80"));
+        expected.put("creation date", new AtomInteger(1327049827));
+        final AtomDictionary info = new AtomDictionary();
+        info.put("length", new AtomInteger(20));
+        info.put("name", new AtomString("sample.txt"));
+        info.put("piece length", new AtomInteger(65536));
+        info.put("pieces", new AtomString(""));
+        info.put("private", new AtomInteger(1));
+        expected.put("info", info);
+        assertEquals(expected, actual);
     }
 
     /**
-     *
+     * Test of decodeInt method, of class Bencode.
      */
     @Test
-    public void testDecodeListEmptyLE() {
-        Atom atom = decodeList("le");
-        assertEquals(atom, new AtomList());
+    public void testDecodeInt_String_1() {
+        LOGGER.info("decodeInt");
+        final String x = "i42e";
+        final Atom expected = new AtomInteger(42);
+        final Atom actual = decodeInt(x);
+        assertEquals(expected, actual);
     }
 
     /**
-     *
+     * Test of decodeInt method, of class Bencode.
      */
     @Test
-    public void testDecodeListIntStr() {
-        Atom l = decodeList("li5e5:Helloe");
-        AtomList expected = new AtomList();
-        expected.add(new AtomInteger(5));
-        expected.add(new AtomString("Hello"));
-        assertEquals(l, expected);
+    public void testDecodeInt_String_2() {
+        LOGGER.info("decodeInt");
+        final String x = "";
+        final Atom expected = null;
+        final Atom actual = decodeInt(x);
+        assertEquals(expected, actual);
     }
 
     /**
-     *
+     * Test of decodeInt method, of class Bencode.
      */
     @Test
-    public void testDecodeListIntStrLst() {
-        Atom l = decodeList("lli5e5:Helloeli50000000e11:Hello Worldee");
-        AtomList expected = new AtomList();
-        AtomList il = new AtomList();
-        il.add(new AtomInteger(5));
-        il.add(new AtomString("Hello"));
-        AtomList im = new AtomList();
-        im.add(new AtomInteger(50000000));
-        im.add(new AtomString("Hello World"));
-        expected.add(il);
-        expected.add(im);
-        assertEquals(l, expected);
+    public void testDecodeInt_String_3() {
+        LOGGER.info("decodeInt");
+        final String x = "42e";
+        final Atom expected = null;
+        final Atom actual = decodeInt(x);
+        assertEquals(expected, actual);
     }
 
     /**
-     *
+     * Test of decodeInt method, of class Bencode.
      */
     @Test
-    public void testDecodeListNull() {
-        Atom atom = decodeList(null);
-        assertNull(atom);
+    public void testDecodeInt_String_4() {
+        LOGGER.info("decodeInt");
+        final String x = "i42x";
+        final Atom expected = null;
+        final Atom actual = decodeInt(x);
+        assertEquals(expected, actual);
     }
 
     /**
-     *
+     * Test of decodeInt method, of class Bencode.
      */
     @Test
-    public void testDecodeNegInt() {
-        Atom atom = decode("i-12e");
-        assertEquals(atom, new AtomInteger(-12));
+    public void testDecodeInt_String_5() {
+        LOGGER.info("decodeInt");
+        final String x = "i-0e";
+        final Atom expected = null;
+        final Atom actual = decodeInt(x);
+        assertEquals(expected, actual);
     }
 
     /**
-     *
+     * Test of decodeInt method, of class Bencode.
      */
     @Test
-    public void testDecodeNull() {
-        Atom atom = decode(null);
-        assertNull(atom);
+    public void testDecodeInt_String_6() {
+        LOGGER.info("decodeInt");
+        final String x = "ixe";
+        final Atom expected = null;
+        final Atom actual = decodeInt(x);
+        assertEquals(expected, actual);
     }
 
     /**
-     *
+     * Test of decodeInt method, of class Bencode.
      */
     @Test
-    public void testDecodePartialTorrent1() {
-        String s = "d6:lengthi20e4:name10:sample.txt12:piece lengthi65536e6:pieces0:7:privatei1ee";
-        Atom atom = decodeDict(s);
-        assertNotNull(atom);
-        assertEquals(s.length(), atom.bLength());
+    public void testDecodeInt_String_int() {
+        LOGGER.info("decodeInt at start index");
+        final int uiStart = 1;
+        final String x = "li42ee";
+        final Atom expected = new AtomInteger(42);
+        final Atom actual = decodeInt(x, uiStart);
+        assertEquals(expected, actual);
     }
 
     /**
-     *
+     * Test of decodeList method, of class Bencode.
      */
     @Test
-    public void testDecodePartialTorrent2() {
-        String s = "d8:announce35:udp://tracker.openbittorrent.com:8013:creation datei1327049827e4:infod6:lengthi20e4:name10:sample.txt12:piece lengthi65536e6:pieces0:7:privatei1eee";
-        Atom atom = decodeDict(s);
-        assertNotNull(atom);
-        assertEquals(s.length(), atom.bLength());
+    public void testDecodeList_String_1() {
+        LOGGER.info("decodeList");
+        final String x = "li42ed1:a11:Hello Worldee";
+        final AtomList expected = new AtomList();
+        final AtomDictionary dict = new AtomDictionary();
+        dict.put("a", new AtomString("Hello World"));
+        expected.add(new AtomInteger(42));
+        expected.add(dict);
+        final Atom actual = decodeList(x);
+        assertEquals(expected, actual);
     }
 
     /**
-     *
+     * Test of decodeList method, of class Bencode.
      */
     @Test
-    public void testDecodePosInt() {
-        Atom atom = decode("i12e");
-        assertEquals(atom, new AtomInteger(12));
+    public void testDecodeList_String_2() {
+        LOGGER.info("decodeList");
+        final String x = "";
+        final AtomList expected = null;
+        final Atom actual = decodeList(x);
+        assertEquals(expected, actual);
     }
 
     /**
-     *
+     * Test of decodeList method, of class Bencode.
      */
     @Test
-    public void testDecodePosZeroInt() {
-        Atom atom = decode("i0e");
-        assertEquals(atom, new AtomInteger(0));
+    public void testDecodeList_String_3() {
+        LOGGER.info("decodeList");
+        final String x = "i42ed1:a11:Hello Worldee";
+        final AtomList expected = null;
+        final Atom actual = decodeList(x);
+        assertEquals(expected, actual);
     }
 
     /**
-     *
+     * Test of decodeList method, of class Bencode.
      */
     @Test
-    public void testDecodeSmallStr() {
-        Atom atom = decodeStr("5:Hello");
-        assertEquals(atom, new AtomString("Hello"));
+    public void testDecodeList_String_4() {
+        LOGGER.info("decodeList");
+        final String x = "li42ed1:a11:Hello Worlde";
+        final AtomList expected = null;
+        final Atom actual = decodeList(x);
+        assertEquals(expected, actual);
     }
 
     /**
-     *
+     * Test of decodeList method, of class Bencode.
      */
     @Test
-    public void testDecodeStr() {
-        Atom atom = decodeStr("5:Hello");
-        assertEquals(atom, new AtomString("Hello"));
+    public void testDecodeList_String_5() {
+        LOGGER.info("decodeList");
+        final String x = "li42ed1:a11:Helloe";
+        final AtomList expected = null;
+        final Atom actual = decodeList(x);
+        assertEquals(expected, actual);
     }
 
     /**
-     *
+     * Test of decodeList method, of class Bencode.
      */
     @Test
-    public void testDecodeStrEmpty() {
-        Atom atom = decodeStr("");
-        assertNull(atom);
+    public void testDecodeList_String_int() {
+        LOGGER.info("decodeList at start index");
+        final int uiStart = 4;
+        final String x = "d1:bli42ed1:a11:Hello Worldeee";
+        final AtomList expected = new AtomList();
+        final AtomDictionary dict = new AtomDictionary();
+        dict.put("a", new AtomString("Hello World"));
+        expected.add(new AtomInteger(42));
+        expected.add(dict);
+        final Atom actual = decodeList(x, uiStart);
+        assertEquals(expected, actual);
     }
 
     /**
-     *
+     * Test of decodeStr method, of class Bencode.
      */
     @Test
-    public void testDecodeStrEmpty0() {
-        Atom atom = decodeStr("0:");
-        assertEquals(atom, new AtomString(""));
+    public void testDecodeStr_String_1() {
+        LOGGER.info("decodeStr");
+        final String x = "11:Hello World";
+        final Atom expected = new AtomString("Hello World");
+        final Atom actual = decodeStr(x);
+        assertEquals(expected, actual);
     }
 
     /**
-     *
+     * Test of decodeStr method, of class Bencode.
      */
     @Test
-    public void testDecodeStrInvalidChar() {
-        Atom atom = decodeStr("0a:");
-        assertNull(atom);
+    public void testDecodeStr_String_2() {
+        LOGGER.info("decodeStr");
+        final String x = "";
+        final Atom expected = null;
+        final Atom actual = decodeStr(x);
+        assertEquals(expected, actual);
     }
 
     /**
-     *
+     * Test of decodeStr method, of class Bencode.
      */
     @Test
-    public void testDecodeStrLarge() {
-        Atom atom = decodeStr("11:Hello World");
-        assertEquals(atom, new AtomString("Hello World"));
+    public void testDecodeStr_String_3() {
+        LOGGER.info("decodeStr");
+        final String x = "11:Hello";
+        final Atom expected = null;
+        final Atom actual = decodeStr(x);
+        assertEquals(expected, actual);
     }
 
     /**
-     *
+     * Test of decodeStr method, of class Bencode.
      */
     @Test
-    public void testDecodeStrLargeStr() {
-        Atom atom = decodeStr("11:Hello World");
-        assertEquals(atom, new AtomString("Hello World"));
+    public void testDecodeStr_String_4() {
+        LOGGER.info("decodeStr");
+        final String x = "xx:Hello World";
+        final Atom expected = null;
+        final Atom actual = decodeStr(x);
+        assertEquals(expected, actual);
     }
 
     /**
-     *
+     * Test of decodeStr method, of class Bencode.
      */
     @Test
-    public void testDecodeStrMissing() {
-        Atom s = decodeStr("0");
-        assertNull(s);
+    public void testDecodeStr_String_5() {
+        LOGGER.info("decodeStr");
+        final String x = "11xHello World";
+        final Atom expected = null;
+        final Atom actual = decodeStr(x);
+        assertEquals(expected, actual);
     }
 
     /**
-     *
+     * Test of decodeStr method, of class Bencode.
      */
     @Test
-    public void testDecodeStrMissingNum() {
-        Atom atom = decodeStr("a");
-        assertNull(atom);
+    public void testDecodeStr_String_int() {
+        LOGGER.info("decodeStr at start index");
+        final int uiStart = 4;
+        final String x = "d1:a11:Hello Worlde";
+        final Atom expected = new AtomString("Hello World");
+        final Atom actual = decodeStr(x, uiStart);
+        assertEquals(expected, actual);
     }
 
     /**
-     *
+     * Test of encode method, of class Bencode.
      */
     @Test
-    public void testDecodeStrNull() {
-        Atom atom = decodeStr(null);
-        assertNull(atom);
+    public void testEncode_1() {
+        LOGGER.info("encode");
+        final String expected = "li42ed1:a11:Hello Worldee";
+        final AtomList list = new AtomList();
+        final AtomDictionary dict = new AtomDictionary();
+        dict.put("a", new AtomString("Hello World"));
+        list.add(new AtomInteger(42));
+        list.add(dict);
+        final String actual = encode(list);
+        assertEquals(expected, actual);
     }
 
     /**
-     *
+     * Test of encode method, of class Bencode.
      */
     @Test
-    public void testEncodeAtom() {
-        Atom atom = new AtomInteger(5);
-        String encoded = encode(atom);
-        assertEquals(encoded, "i5e");
-    }
-
-    /**
-     *
-     */
-    @Test
-    public void testEncodeDict() {
-        AtomDictionary atom = new AtomDictionary();
-
-        AtomList il = new AtomList();
-        il.add(new AtomInteger(5));
-        il.add(new AtomString("Hello"));
-        atom.put("foo", il);
-
-        AtomList im = new AtomList();
-        im.add(new AtomInteger(50000000));
-        im.add(new AtomString("Hello World"));
-        atom.put("bar", im);
-
-        String encoded = encode(atom);
-        assertEquals(encoded, "d3:barli50000000e11:Hello Worlde3:fooli5e5:Helloee");
-    }
-
-    /**
-     *
-     */
-    @Test
-    public void testEncodeList() {
-        AtomList atom = new AtomList();
-        atom.add(new AtomInteger(5));
-        atom.add(new AtomString("Hello"));
-        String encoded = encode(atom);
-        assertEquals(encoded, "li5e5:Helloe");
-    }
-
-    /**
-     *
-     */
-    @Test
-    public void testEncodeNull() {
-        String encoded = encode(null);
-        assertNull(encoded);
-    }
-
-    /**
-     *
-     */
-    @Test
-    public void testEncondeInt() {
-        Atom atom = new AtomInteger(1);
-        String encoded = encode(atom);
-        assertEquals(encoded, "i1e");
-    }
-
-    /**
-     *
-     */
-    @Test
-    public void testEncondeStr() {
-        Atom atom = new AtomString("Hello");
-        String encoded = encode(atom);
-        assertEquals(encoded, "5:Hello");
+    public void testEncode_2() {
+        LOGGER.info("encode");
+        final String expected = null;
+        final AtomList list = null;
+        final String actual = encode(list);
+        assertEquals(expected, actual);
     }
 
 }

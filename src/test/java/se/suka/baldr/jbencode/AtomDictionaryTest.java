@@ -23,7 +23,6 @@
  */
 package se.suka.baldr.jbencode;
 
-import java.util.Map;
 import org.junit.AfterClass;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
