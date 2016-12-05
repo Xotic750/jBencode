@@ -730,7 +730,7 @@ public final class AtomDictionary extends Atom implements Map<String, Atom>, Clo
      */
     @Override
     public int compareTo(final AtomDictionary anotherAtomDictionary) {
-        return value.toString().compareTo(requireNonNull(anotherAtomDictionary).toString());
+        return encode().compareTo(requireNonNull(anotherAtomDictionary).encode());
     }
 
 }

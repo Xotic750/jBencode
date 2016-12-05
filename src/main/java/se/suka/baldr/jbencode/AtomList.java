@@ -36,13 +36,12 @@ import static java.util.Objects.requireNonNull;
 import java.util.RandomAccess;
 import java.util.Spliterator;
 import java.util.concurrent.CopyOnWriteArrayList;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
 import java.util.function.UnaryOperator;
 import static java.util.stream.Collectors.joining;
 import static java.util.stream.Collectors.summingInt;
-import static java.util.stream.Collectors.toList;
+import static java.util.stream.Collectors.toCollection;
 import static java.util.stream.IntStream.range;
 import org.slf4j.Logger;
 import static org.slf4j.LoggerFactory.getLogger;
@@ -175,8 +174,8 @@ public final class AtomList extends Atom implements List<Atom>, RandomAccess, Cl
     @Override
     public boolean addAll(final Collection<? extends Atom> c) {
         final Collection<? extends Atom> uc = unmodifiableCollection(requireNonNull(c));
-        uc.stream().forEachOrdered(atom -> value.add(requireNonNull(atom)));
-        return !uc.isEmpty();
+        uc.stream().parallel().forEach(atom -> requireNonNull(atom));
+        return value.addAll(uc);
     }
 
     /**
@@ -200,10 +199,9 @@ public final class AtomList extends Atom implements List<Atom>, RandomAccess, Cl
      */
     @Override
     public boolean addAll(final int index, final Collection<? extends Atom> c) {
-        final AtomicInteger count = new AtomicInteger(index);
         final Collection<? extends Atom> uc = unmodifiableCollection(requireNonNull(c));
-        uc.stream().forEachOrdered(atom -> value.add(count.getAndIncrement(), requireNonNull(atom)));
-        return !uc.isEmpty();
+        uc.stream().parallel().forEach(atom -> requireNonNull(atom));
+        return value.addAll(index, uc);
     }
 
     /**
@@ -217,9 +215,9 @@ public final class AtomList extends Atom implements List<Atom>, RandomAccess, Cl
      * more null elements, or if the specified collection is null
      */
     public int addAllAbsent(final Collection<? extends Atom> c) {
-        return (int) unmodifiableCollection(requireNonNull(c)).stream()
-                .map(atom -> value.addIfAbsent(requireNonNull(atom)))
-                .count();
+        final Collection<? extends Atom> uc = unmodifiableCollection(requireNonNull(c));
+        uc.stream().parallel().forEach(atom -> requireNonNull(atom));
+        return value.addAllAbsent(uc);
     }
 
     /**
@@ -303,9 +301,9 @@ public final class AtomList extends Atom implements List<Atom>, RandomAccess, Cl
      */
     @Override
     public boolean containsAll(final Collection<?> c) {
-        return unmodifiableCollection(requireNonNull(c)).stream()
-                .map(o -> (Atom) requireAtom(requireNonNull(o)))
-                .noneMatch((atom) -> (!value.contains(atom)));
+        final Collection<?> uc = unmodifiableCollection(requireNonNull(c));
+        uc.stream().parallel().forEach(atom -> requireAtom(requireNonNull(atom)));
+        return value.containsAll(uc);
     }
 
     /**
@@ -315,10 +313,9 @@ public final class AtomList extends Atom implements List<Atom>, RandomAccess, Cl
      */
     @Override
     public AtomList copy() {
-        List<Atom> collect = value.stream()
+        return unmodifiableList(value).stream()
                 .map(atom -> atom.copy())
-                .collect(toList());
-        return new AtomList(collect);
+                .collect(toCollection(AtomList::new));
     }
 
     /**
@@ -333,9 +330,19 @@ public final class AtomList extends Atom implements List<Atom>, RandomAccess, Cl
                 .collect(joining("", "l", "e"));
     }
 
+    /**
+     * Performs the given action for each element of the {@code Iterable} until
+     * all elements have been processed or the action throws an exception.
+     * Unless otherwise specified by the implementing class, actions are
+     * performed in the order of iteration (if an iteration order is specified).
+     * Exceptions thrown by the action are relayed to the caller.
+     *
+     * @param action The action to be performed for each element
+     * @throws NullPointerException if the specified action is {@code null}
+     */
     @Override
     public void forEach(Consumer<? super Atom> action) {
-        value.forEach(action);
+        value.forEach(requireNonNull(action));
     }
 
     /**
@@ -448,6 +455,8 @@ public final class AtomList extends Atom implements List<Atom>, RandomAccess, Cl
      * Returns a list iterator over the elements in this list (in proper
      * sequence).
      *
+     * @throws UnsupportedOperationException for unsupported {@code set} or
+     * {@code add}
      * @return a list iterator over the elements in this list (in proper
      * sequence)
      */
@@ -463,6 +472,12 @@ public final class AtomList extends Atom implements List<Atom>, RandomAccess, Cl
      * call to {@link ListIterator#next next}. An initial call to
      * {@link ListIterator#previous previous} would return the element with the
      * specified index minus one.
+     *
+     * <p>
+     * The returned iterator provides a snapshot of the state of the list when
+     * the iterator was constructed. No synchronization is needed while
+     * traversing the iterator. The iterator does <em>NOT</em> support the
+     * {@code remove}, {@code set} or {@code add} methods.
      *
      * @param index index of the first element to be returned from the list
      * iterator (by a call to {@link ListIterator#next next})
@@ -483,12 +498,9 @@ public final class AtomList extends Atom implements List<Atom>, RandomAccess, Cl
      */
     public AtomList getRandomSlice(final int howMany) {
         final List<Atom> ul = unmodifiableList(value);
-        final int size = ul.size();
-        final int hm = clamp(howMany, 0, size);
-        final List<Atom> collect = range(0, hm)
-                .mapToObj(i -> ul.get(randInt(0, size)))
-                .collect(toList());
-        return new AtomList(collect);
+        return range(0, clamp(howMany, 0, ul.size()))
+                .mapToObj(i -> ul.get(randInt(0, ul.size())).copy())
+                .collect(toCollection(AtomList::new));
     }
 
     /**
@@ -541,10 +553,9 @@ public final class AtomList extends Atom implements List<Atom>, RandomAccess, Cl
      */
     @Override
     public boolean removeAll(final Collection<?> c) {
-        return unmodifiableCollection(requireNonNull(c)).stream()
-                .map(o -> (Atom) requireAtom(requireNonNull(o)))
-                .filter(atom -> value.remove(atom))
-                .count() > 0;
+        final Collection<?> uc = unmodifiableCollection(requireNonNull(c));
+        uc.stream().parallel().forEach(atom -> requireAtom(requireNonNull(atom)));
+        return value.removeAll(uc);
     }
 
     /**
@@ -558,7 +569,7 @@ public final class AtomList extends Atom implements List<Atom>, RandomAccess, Cl
      * @throws NullPointerException if the specified filter is null
      */
     @Override
-    public boolean removeIf(Predicate<? super Atom> filter) {
+    public boolean removeIf(final Predicate<? super Atom> filter) {
         return value.removeIf(requireNonNull(filter));
     }
 
@@ -566,18 +577,6 @@ public final class AtomList extends Atom implements List<Atom>, RandomAccess, Cl
      * Replaces each element of this list with the result of applying the
      * operator to that element. Errors or runtime exceptions thrown by the
      * operator are relayed to the caller.
-     *
-     * The default implementation is equivalent to, for this {@code list}:
-     * <pre>{@code
-     *     final ListIterator<E> li = list.listIterator();
-     *     while (li.hasNext()) {
-     *         li.set(operator.apply(li.next()));
-     *     }
-     * }</pre>
-     *
-     * If the list's list-iterator does not support the {@code set} operation
-     * then an {@code UnsupportedOperationException} will be thrown when
-     * replacing the first element.
      *
      * @param operator the operator to apply to each element
      * @throws ClassCastException if the class of the operators result is
@@ -587,19 +586,14 @@ public final class AtomList extends Atom implements List<Atom>, RandomAccess, Cl
      * elements
      */
     @Override
-    public void replaceAll(UnaryOperator<Atom> operator) {
-        requireNonNull(operator);
-        final ListIterator<Atom> li = value.listIterator();
-        while (li.hasNext()) {
-            li.set(requireNonNull(operator.apply(li.next())));
-        }
+    public void replaceAll(final UnaryOperator<Atom> operator) {
+        value.replaceAll(a -> requireAtom(requireNonNull(operator).apply(a)));
     }
 
     /**
      * Retains only the elements in this list that are contained in the
-     * specified collection (optional operation). In other words, removes from
-     * this list all of its elements that are not contained in the specified
-     * collection.
+     * specified collection. In other words, removes from this list all of its
+     * elements that are not contained in the specified collection.
      *
      * @param c collection containing elements to be retained in this list
      * @return <tt>true</tt> if this list changed as a result of the call
@@ -614,16 +608,13 @@ public final class AtomList extends Atom implements List<Atom>, RandomAccess, Cl
     @Override
     public boolean retainAll(final Collection<?> c) {
         final Collection<?> uc = unmodifiableCollection(requireNonNull(c));
-        uc.stream().forEach(o -> requireAtom(requireNonNull(o)));
-        return value.stream()
-                .filter(atom -> !uc.contains(atom))
-                .filter(atom -> value.removeIf(a -> a.equals(atom)))
-                .count() > 0;
+        uc.stream().parallel().forEach(atom -> requireAtom(requireNonNull(atom)));
+        return value.retainAll(uc);
     }
 
     /**
      * Replaces the element at the specified position in this list with the
-     * specified element (optional operation).
+     * specified element.
      *
      * @param index index of the element to replace
      * @param atom element to be stored at the specified position
@@ -687,13 +678,11 @@ public final class AtomList extends Atom implements List<Atom>, RandomAccess, Cl
      * {@linkplain Comparable natural ordering} should be used
      * @throws ClassCastException if the list contains elements that are not
      * <i>mutually comparable</i> using the specified comparator
-     * @throws IllegalArgumentException
-     * (<a href="Collection.html#optional-restrictions">optional</a>) if the
-     * comparator is found to violate the {@link Comparator} contract
+     * @throws IllegalArgumentException if the comparator is found to violate
+     * the {@link Comparator} contract
      */
     @Override
     public void sort(Comparator<? super Atom> c) {
-        //TODO:
         value.sort(c);
     }
 
@@ -913,7 +902,7 @@ public final class AtomList extends Atom implements List<Atom>, RandomAccess, Cl
 
     /**
      * Compares two {@code AtomList} objects lexicographically using the
-     * {@code toString} method.
+     * {@code encode} method.
      *
      * @param anotherAtomList the {@code AtomList} to be compared.
      * @throws NullPointerException if the specified {@code anotherAtomList} is
@@ -926,7 +915,7 @@ public final class AtomList extends Atom implements List<Atom>, RandomAccess, Cl
      */
     @Override
     public int compareTo(final AtomList anotherAtomList) {
-        return value.toString().compareTo(requireNonNull(anotherAtomList).toString());
+        return encode().compareTo(requireNonNull(anotherAtomList).encode());
     }
 
 }
