@@ -23,6 +23,7 @@
  */
 package se.suka.baldr.jbencode;
 
+import static java.nio.charset.StandardCharsets.US_ASCII;
 import org.junit.After;
 import org.junit.AfterClass;
 import static org.junit.Assert.*;
@@ -35,7 +36,7 @@ import static se.suka.baldr.jbencode.Utilities.clamp;
 import static se.suka.baldr.jbencode.Utilities.findFirstNotOf;
 import static se.suka.baldr.jbencode.Utilities.randInt;
 import static se.suka.baldr.jbencode.Utilities.randIntClosed;
-import static se.suka.baldr.jbencode.Utilities.readEncodedFile;
+import static se.suka.baldr.jbencode.Utilities.readFileAsBytes;
 
 /**
  *
@@ -245,21 +246,21 @@ public class UtilitiesTest {
      * Should return null when no pathName is provided.
      */
     @Test
-    public void testReadEncodedFile_1() {
-        LOGGER.info("testReadEncodedFile_1");
-        String s = readEncodedFile("");
-        assertNull(s);
+    public void testReadFileAsBytes_1() {
+        LOGGER.info("testReadFileAsBytes_1");
+        final byte[] b = readFileAsBytes("");
+        assertNull(b);
     }
 
     /**
      * Should throw correct exception when null is provided as pathName.
      */
     @Test
-    public void testReadEncodedFile_2() {
-        LOGGER.info("testReadEncodedFile_2");
+    public void testReadFileAsBytes_2() {
+        LOGGER.info("testReadFileAsBytes_2");
         boolean nullPointerEx = false;
         try {
-            readEncodedFile(null);
+            readFileAsBytes(null);
         } catch (final NullPointerException ex) {
             nullPointerEx = true;
         }
@@ -270,41 +271,42 @@ public class UtilitiesTest {
      * Should return null when pathName is a directory.
      */
     @Test
-    public void testReadEncodedFile_3() {
-        LOGGER.info("testReadEncodedFile_3");
-        String s = readEncodedFile("samples");
-        assertNull(s);
+    public void testReadFileAsBytes_3() {
+        LOGGER.info("testReadFileAsBytes_3");
+        final byte[] b = readFileAsBytes("samples");
+        assertNull(b);
     }
 
     /**
      * Should return null when pathName is non existant file.
      */
     @Test
-    public void testReadEncodedFile_4() {
-        LOGGER.info("testReadEncodedFile_4");
-        String s = readEncodedFile("wibble");
-        assertNull(s);
+    public void testReadFileAsBytes_4() {
+        LOGGER.info("testReadFileAsBytes_4");
+        final byte[] b = readFileAsBytes("wibble");
+        assertNull(b);
     }
 
     /**
      * Test a text only torrent file.
      */
     @Test
-    public void testReadEncodedFile_5() {
-        LOGGER.info("testReadEncodedFile_5");
-        String f = readEncodedFile("samples/sample1.torrent");
-        String s = "d8:announce35:udp://tracker.openbittorrent.com:8013:creation datei1327049827e4:infod6:lengthi20e4:name10:sample.txt12:piece lengthi65536e6:pieces0:7:privatei1eee\r";
-        assertEquals(f, s);
+    public void testReadFileAsBytes_5() {
+        LOGGER.info("testReadFileAsBytes_5");
+        final byte[] f = readFileAsBytes("samples/sample1.torrent");
+        final String s = "d8:announce35:udp://tracker.openbittorrent.com:8013:creation datei1327049827e4:infod6:lengthi20e4:name10:sample.txt12:piece lengthi65536e6:pieces0:7:privatei1eee\r";
+        final byte[] b = s.getBytes(US_ASCII);
+        assertArrayEquals(f, b);
     }
 
     /**
      * Test a byte string torrent file.
      */
     @Test
-    public void testReadEncodedFile_6() {
-        LOGGER.info("testReadEncodedFile_6");
-        String f = readEncodedFile("samples/sample2.torrent");
-        assertNotNull(f);
+    public void testReadFileAsBytes_6() {
+        LOGGER.info("testReadFileAsBytes_6");
+        final byte[] b = readFileAsBytes("samples/sample2.torrent");
+        assertNotNull(b);
     }
 
     /**
@@ -375,6 +377,31 @@ public class UtilitiesTest {
         final int expResult = 50;
         final int result = clamp(value, min, max);
         assertEquals(expResult, result);
+    }
+
+    /**
+     * Test of asciiBytesToString method, of class Utilities.
+     */
+    @Test
+    public void testAsciiBytesToString() {
+        System.out.println("asciiBytesToString");
+        final byte[] x = {0x48, 0x65, 0x6c, 0x6c, 0x6f};
+        final String expected = "Hello";
+        final String actual = Utilities.asciiBytesToString(x);
+
+        assertEquals(expected, actual);
+    }
+
+    /**
+     * Test of stringToAsciiBytes method, of class Utilities.
+     */
+    @Test
+    public void testStringToAsciiBytes() {
+        System.out.println("stringToAsciiBytes");
+        final String x = "Hello";
+        final byte[] expected = {0x48, 0x65, 0x6c, 0x6c, 0x6f};
+        final byte[] actual = Utilities.stringToAsciiBytes(x);
+        assertArrayEquals(expected, actual);
     }
 
 }

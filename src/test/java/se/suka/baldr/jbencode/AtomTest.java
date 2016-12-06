@@ -25,6 +25,7 @@ package se.suka.baldr.jbencode;
 
 import org.junit.After;
 import org.junit.AfterClass;
+import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import org.junit.Before;
@@ -33,6 +34,7 @@ import org.junit.Test;
 import org.slf4j.Logger;
 import static org.slf4j.LoggerFactory.getLogger;
 import static se.suka.baldr.jbencode.Atom.requireAtom;
+import static se.suka.baldr.jbencode.Utilities.stringToAsciiBytes;
 
 /**
  * Test the base abstract Atom class.
@@ -127,6 +129,17 @@ public class AtomTest {
      * Test of requireAtom method, of class Atom.
      */
     @Test
+    public void testRequireAtom_GenericType_1() {
+        LOGGER.info("requireAtom");
+        final Atom actual = new AtomImpl();
+        final Atom expected = requireAtom(actual);
+        assertEquals(expected, actual);
+    }
+
+    /**
+     * Test of requireAtom method, of class Atom.
+     */
+    @Test
     public void testRequireAtom_GenericType_String() {
         LOGGER.info("requireAtom with message");
         Atom actual = null;
@@ -179,6 +192,18 @@ public class AtomTest {
     }
 
     /**
+     * Test of encodeAsBytes method, of class AtomList.
+     */
+    @Test
+    public void testEncodeAsBytes() {
+        LOGGER.info("encodeAsBytes");
+        final Atom atom = new AtomImpl();
+        final byte[] actual = atom.encodeAsBytes();
+        final byte[] expected = {};
+        assertArrayEquals(expected, actual);
+    }
+
+    /**
      * A test class
      */
     static class AtomImpl extends Atom {
@@ -214,6 +239,16 @@ public class AtomTest {
         @Override
         public String encode() {
             return "";
+        }
+
+        /**
+         * Returns the Bencoded ASCII bytes of this {@link AtomString}.
+         *
+         * @return The Benoded ASCII bytes
+         */
+        @Override
+        public byte[] encodeAsBytes() {
+            return stringToAsciiBytes(encode());
         }
     }
 

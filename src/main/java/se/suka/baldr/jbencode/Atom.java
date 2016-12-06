@@ -42,7 +42,7 @@ public abstract class Atom implements Serializable {
      * @return {@code true} if the object is an instance of {@code Atom},
      * otherwise {@code false}
      */
-    private static boolean isAtom(Object o) {
+    public static boolean isAtom(Object o) {
         return o instanceof Atom;
     }
 
@@ -57,7 +57,7 @@ public abstract class Atom implements Serializable {
      * {@code Atom}
      * @return the object reference
      */
-    static final <T> T requireAtom(T o) {
+    public static final <T> T requireAtom(T o) {
         return requireAtom(o, "");
     }
 
@@ -74,7 +74,7 @@ public abstract class Atom implements Serializable {
      * {@code Atom}
      * @return the object reference
      */
-    static final <T> T requireAtom(T o, String message) {
+    public static final <T> T requireAtom(T o, String message) {
         if (!isAtom(o)) {
             throw new ClassCastException(message);
         }
@@ -102,5 +102,12 @@ public abstract class Atom implements Serializable {
      * @return The Benoded string
      */
     public abstract String encode();
+
+    /**
+     * Returns the Bencoded ASCII bytes of this {@link Atom}.
+     *
+     * @return The Benoded ASCII bytes
+     */
+    public abstract byte[] encodeAsBytes();
 
 }

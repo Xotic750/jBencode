@@ -27,6 +27,7 @@ import static java.lang.Double.compare;
 import static java.util.Objects.requireNonNull;
 import org.slf4j.Logger;
 import static org.slf4j.LoggerFactory.getLogger;
+import static se.suka.baldr.jbencode.Utilities.stringToAsciiBytes;
 
 /**
  * An integer is encoded as i&lt;integer encoded in base ten ASCII&gt;e. Leading
@@ -43,6 +44,52 @@ public final class AtomInteger extends Atom implements Comparable<AtomInteger> {
     private static final long serialVersionUID = 8464216577156678961L;
 
     private static final Logger LOGGER = getLogger(AtomInteger.class);
+
+    /**
+     * Test if an object reference is an instance of {@code AtomInteger}.
+     *
+     * @param o the object reference to check is instance of {@code AtomInteger}
+     * @return {@code true} if the object is an instance of {@code AtomInteger},
+     * otherwise {@code false}
+     */
+    public static boolean isAtomInteger(Object o) {
+        return o instanceof AtomInteger;
+    }
+
+    /**
+     * Test if an object reference is an instance of {@code AtomInteger}, throw
+     * a {@link ClassCastException} if it is not, otherwise return the reference
+     * object.
+     *
+     * @param <T> the type of the value being boxed
+     * @param o the object reference to check
+     * @throws ClassCastException if {@code obj} is not an instance of
+     * {@code AtomInteger}
+     * @return the object reference
+     */
+    public static final <T> T requireAtomInteger(T o) {
+        return requireAtom(o, "");
+    }
+
+    /**
+     * Test if an object reference is an instance of {@code AtomInteger}, throw
+     * a {@link ClassCastException} if it is not, otherwise return the reference
+     * object.
+     *
+     * @param <T> the type of the value being boxed
+     * @param o the object reference to check
+     * @param message detail message to be used in the event that a
+     * {@code ClassCastException} is thrown
+     * @throws ClassCastException if {@code obj} is not an instance of
+     * {@code AtomInteger}
+     * @return the object reference
+     */
+    public static final <T> T requireAtomInteger(T o, String message) {
+        if (!isAtomInteger(o)) {
+            throw new ClassCastException(message);
+        }
+        return o;
+    }
 
     /**
      * Backing {@link long}
@@ -100,6 +147,16 @@ public final class AtomInteger extends Atom implements Comparable<AtomInteger> {
     @Override
     public String encode() {
         return "i" + value + "e";
+    }
+
+    /**
+     * Returns the Bencoded ASCII bytes of this {@link Atom}.
+     *
+     * @return The Benoded ASCII bytes
+     */
+    @Override
+    public byte[] encodeAsBytes() {
+        return stringToAsciiBytes(encode());
     }
 
     /**

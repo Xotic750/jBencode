@@ -23,9 +23,11 @@
  */
 package se.suka.baldr.jbencode;
 
+import java.nio.charset.StandardCharsets;
 import java.util.Objects;
 import org.junit.After;
 import org.junit.AfterClass;
+import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotEquals;
@@ -35,6 +37,7 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import org.slf4j.Logger;
 import static org.slf4j.LoggerFactory.getLogger;
+import static se.suka.baldr.jbencode.AtomString.requireAtomString;
 
 /**
  * @author Graham Fairweather
@@ -180,6 +183,19 @@ public final class AtomStringTest {
     }
 
     /**
+     * Test the Constructor, of class AtomString.
+     */
+    @Test
+    public void testAtomString_7() {
+        LOGGER.info("testAtomString_7");
+        final String s = "Hello";
+        final byte[] b = s.getBytes(StandardCharsets.US_ASCII);
+        AtomString atomString1 = new AtomString(b);
+        AtomString atomString2 = new AtomString(s);
+        assertEquals(atomString1, atomString2);
+    }
+
+    /**
      * Test of bLength method, of class AtomString.
      */
     @Test
@@ -199,6 +215,18 @@ public final class AtomStringTest {
         final String actual = new AtomString().encode();
         final String expected = "0:";
         assertEquals(expected, actual);
+    }
+
+    /**
+     * Test of encodeAsBytes method, of class AtomString.
+     */
+    @Test
+    public void testEncodeAsBytes() {
+        LOGGER.info("encodeAsBytes");
+        final AtomString atomString = new AtomString();
+        final byte[] actual = atomString.encodeAsBytes();
+        final byte[] expected = {0x30, 0x3a};
+        assertArrayEquals(expected, actual);
     }
 
     /**
@@ -343,6 +371,79 @@ public final class AtomStringTest {
         final String actual = atomString2.toString();
         final String expected = value;
         assertEquals(expected, actual);
+    }
+
+    /**
+     * Test of requireAtomString method, of class AtomString.
+     */
+    @Test
+    public void testRequireAtomString_GenericType() {
+        LOGGER.info("requireAtomString");
+        Atom actual = null;
+        final Atom expected = null;
+        boolean caught = false;
+        try {
+            actual = requireAtomString(null);
+        } catch (final ClassCastException ex) {
+            caught = true;
+            assertEquals("", ex.getMessage());
+        }
+        assertTrue(caught);
+        assertEquals(expected, actual);
+    }
+
+    /**
+     * Test of requireAtomString method, of class AtomString.
+     */
+    @Test
+    public void testRequireAtomString_GenericType_1() {
+        LOGGER.info("requireAtomString");
+        final AtomString actual = new AtomString();
+        final AtomString expected = requireAtomString(actual);
+        assertEquals(expected, actual);
+    }
+
+    /**
+     * Test of requireAtomInteger method, of class AtomString.
+     */
+    @Test
+    public void testRequireAtomString_GenericType_String_1() {
+        LOGGER.info("requireAtomString with message");
+        Atom actual = null;
+        final Atom expected = null;
+        boolean caught = false;
+        try {
+            actual = requireAtomString(null, "Message");
+        } catch (final ClassCastException ex) {
+            caught = true;
+            assertEquals("Message", ex.getMessage());
+        }
+        assertTrue(caught);
+        assertEquals(expected, actual);
+    }
+
+    /**
+     * Test of requireAtomString method, of class AtomString.
+     */
+    @Test
+    public void testRequireAtomString_GenericType_String_2() {
+        LOGGER.info("requireAtomString");
+        final AtomString actual = new AtomString();
+        final AtomString expected = requireAtomString(actual, "Message");
+        assertEquals(expected, actual);
+    }
+
+    /**
+     * Test the Constructor, of class AtomString.
+     */
+    @Test
+    public void testGetBytes() {
+        LOGGER.info("testGetBytes");
+        final String s = "Hello";
+        final byte[] expected = s.getBytes(StandardCharsets.US_ASCII);
+        final AtomString atomString1 = new AtomString(s);
+        final byte[] actual = atomString1.getBytes();
+        assertArrayEquals(expected, actual);
     }
 
 }

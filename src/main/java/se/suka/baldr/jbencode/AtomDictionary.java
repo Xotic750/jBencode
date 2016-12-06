@@ -43,6 +43,7 @@ import static java.util.stream.Collectors.summingInt;
 import static java.util.stream.Collectors.toMap;
 import org.slf4j.Logger;
 import static org.slf4j.LoggerFactory.getLogger;
+import static se.suka.baldr.jbencode.Utilities.stringToAsciiBytes;
 
 /**
  * A dictionary is encoded as d&lt;contents&gt;e. The elements of the dictionary
@@ -98,6 +99,53 @@ public final class AtomDictionary extends Atom implements Map<String, Atom>, Clo
      */
     private static <T> T requireString(T o, String message) {
         if (!isString(o)) {
+            throw new ClassCastException(message);
+        }
+        return o;
+    }
+
+    /**
+     * Test if an object reference is an instance of {@code AtomDictionary}.
+     *
+     * @param o the object reference to check is instance of
+     * {@code AtomDictionary}
+     * @return {@code true} if the object is an instance of
+     * {@code AtomDictionary}, otherwise {@code false}
+     */
+    public static boolean isAtomDictionary(Object o) {
+        return o instanceof AtomDictionary;
+    }
+
+    /**
+     * Test if an object reference is an instance of {@code AtomDictionary},
+     * throw a {@link ClassCastException} if it is not, otherwise return the
+     * reference object.
+     *
+     * @param <T> the type of the value being boxed
+     * @param o the object reference to check
+     * @throws ClassCastException if {@code obj} is not an instance of
+     * {@code AtomDictionary}
+     * @return the object reference
+     */
+    public static final <T> T requireAtomDictionary(T o) {
+        return requireAtom(o, "");
+    }
+
+    /**
+     * Test if an object reference is an instance of {@code AtomDictionary},
+     * throw a {@link ClassCastException} if it is not, otherwise return the
+     * reference object.
+     *
+     * @param <T> the type of the value being boxed
+     * @param o the object reference to check
+     * @param message detail message to be used in the event that a
+     * {@code ClassCastException} is thrown
+     * @throws ClassCastException if {@code obj} is not an instance of
+     * {@code AtomDictionary}
+     * @return the object reference
+     */
+    public static final <T> T requireAtomDictionary(T o, String message) {
+        if (!isAtomDictionary(o)) {
             throw new ClassCastException(message);
         }
         return o;
@@ -330,6 +378,16 @@ public final class AtomDictionary extends Atom implements Map<String, Atom>, Clo
         return value.entrySet().stream()
                 .map(entry -> new AtomString(entry.getKey()).encode() + entry.getValue().encode())
                 .collect(joining("", "d", "e"));
+    }
+
+    /**
+     * Returns the Bencoded ASCII bytes of this {@link Atom}.
+     *
+     * @return The Benoded ASCII bytes
+     */
+    @Override
+    public byte[] encodeAsBytes() {
+        return stringToAsciiBytes(encode());
     }
 
     /**

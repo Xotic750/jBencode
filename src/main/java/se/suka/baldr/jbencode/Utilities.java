@@ -29,7 +29,7 @@ import java.io.File;
 import java.io.IOException;
 import static java.lang.Math.max;
 import static java.lang.Math.min;
-import static java.nio.charset.StandardCharsets.US_ASCII;
+import java.nio.charset.StandardCharsets;
 import static java.text.MessageFormat.format;
 import static java.util.Objects.requireNonNull;
 import java.util.Random;
@@ -138,15 +138,23 @@ class Utilities {
         };
     }
 
+    static final String asciiBytesToString(final byte[] x) {
+        return new String(x, StandardCharsets.US_ASCII);
+    }
+
+    static final byte[] stringToAsciiBytes(final String x) {
+        return x.getBytes(StandardCharsets.US_ASCII);
+    }
+
     /**
-     * Reads all bytes from a file into an ASCII {@code String}.
+     * Reads all bytes from a file into a byte array.
      *
      * @param pathName A pathName string
      * @throws NullPointerException If the {@code pathName} argument is
      * {@code null}
-     * @return A {@code String} containing all the bytes from file
+     * @return A byte array containing all the bytes from file
      */
-    static final String readEncodedFile(final String pathName) {
+    static final byte[] readFileAsBytes(final String pathName) {
         final File file = new File(requireNonNull(pathName));
         final byte[] bytes;
         try {
@@ -155,7 +163,7 @@ class Utilities {
             LOGGER.warn(format("{0}: {1}", makeParam(ex)));
             return null;
         }
-        return new String(bytes, US_ASCII);
+        return bytes;
     }
 
     /**

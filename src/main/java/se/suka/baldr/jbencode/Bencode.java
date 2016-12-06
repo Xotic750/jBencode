@@ -30,8 +30,10 @@ import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
 import org.slf4j.Logger;
 import static org.slf4j.LoggerFactory.getLogger;
+import static se.suka.baldr.jbencode.AtomString.isAtomString;
+import static se.suka.baldr.jbencode.Utilities.asciiBytesToString;
 import static se.suka.baldr.jbencode.Utilities.findFirstNotOf;
-import static se.suka.baldr.jbencode.Utilities.readEncodedFile;
+import static se.suka.baldr.jbencode.Utilities.readFileAsBytes;
 
 /**
  * Bencode (pronounced like B encode) is the encoding used by the peer-to-peer
@@ -58,6 +60,25 @@ import static se.suka.baldr.jbencode.Utilities.readEncodedFile;
 public class Bencode {
 
     private static final Logger LOGGER = getLogger(Bencode.class);
+
+    /**
+     *
+     * @param x
+     * @return
+     */
+    public static final Atom decode(final byte[] x) {
+        return decode(x, 0);
+    }
+
+    /**
+     *
+     * @param x
+     * @param uiStart
+     * @return
+     */
+    public static final Atom decode(final byte[] x, final int uiStart) {
+        return decode(asciiBytesToString(x), uiStart);
+    }
 
     /**
      *
@@ -100,6 +121,25 @@ public class Bencode {
      * @param x
      * @return
      */
+    public static final AtomDictionary decodeDict(final byte[] x) {
+        return decodeDict(x, 0);
+    }
+
+    /**
+     *
+     * @param x
+     * @param uiStart
+     * @return
+     */
+    public static final AtomDictionary decodeDict(final byte[] x, final int uiStart) {
+        return decodeDict(asciiBytesToString(x), uiStart);
+    }
+
+    /**
+     *
+     * @param x
+     * @return
+     */
     public static final AtomDictionary decodeDict(final String x) {
         return decodeDict(x, 0);
     }
@@ -123,7 +163,7 @@ public class Bencode {
         final int length = x.length();
         while (isMore(x, uiStart, length)) {
             final Atom key = decode(x, uiStart);
-            if (!(key instanceof AtomString)) {
+            if (!isAtomString(key)) {
                 itemError("decodeDict", "key");
                 return null;
             }
@@ -149,8 +189,26 @@ public class Bencode {
      * @return
      */
     public static final Atom decodeFile(final String fileName) {
-        final String s = readEncodedFile(fileName);
-        return decode(s);
+        return decode(readFileAsBytes(fileName));
+    }
+
+    /**
+     *
+     * @param x
+     * @return
+     */
+    public static final AtomInteger decodeInt(final byte[] x) {
+        return decodeInt(x, 0);
+    }
+
+    /**
+     *
+     * @param x
+     * @param uiStart
+     * @return
+     */
+    public static final AtomInteger decodeInt(final byte[] x, final int uiStart) {
+        return decodeInt(asciiBytesToString(x), uiStart);
     }
 
     /**
@@ -199,6 +257,25 @@ public class Bencode {
      * @param x
      * @return
      */
+    public static final AtomList decodeList(final byte[] x) {
+        return decodeList(x, 0);
+    }
+
+    /**
+     *
+     * @param x
+     * @param uiStart
+     * @return
+     */
+    public static final AtomList decodeList(final byte[] x, final int uiStart) {
+        return decodeList(asciiBytesToString(x), uiStart);
+    }
+
+    /**
+     *
+     * @param x
+     * @return
+     */
     public static final AtomList decodeList(final String x) {
         return decodeList(x, 0);
     }
@@ -234,6 +311,25 @@ public class Bencode {
         }
         charNotFound("decodeList", "e");
         return null;
+    }
+
+    /**
+     *
+     * @param x
+     * @return
+     */
+    public static final AtomString decodeStr(final byte[] x) {
+        return decodeStr(x, 0);
+    }
+
+    /**
+     *
+     * @param x
+     * @param uiStart
+     * @return
+     */
+    public static final AtomString decodeStr(final byte[] x, final int uiStart) {
+        return decodeStr(asciiBytesToString(x), uiStart);
     }
 
     /**
@@ -290,6 +386,19 @@ public class Bencode {
             return atom.encode();
         }
         LOGGER.warn("encode: error encoding, halting encode");
+        return null;
+    }
+
+    /**
+     *
+     * @param atom
+     * @return
+     */
+    public static final byte[] encodeAsBytes(final Atom atom) {
+        if (nonNull(atom)) {
+            return atom.encodeAsBytes();
+        }
+        LOGGER.warn("encodeAsBytes: error encoding, halting encode");
         return null;
     }
 

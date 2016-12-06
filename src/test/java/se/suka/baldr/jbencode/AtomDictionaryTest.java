@@ -24,17 +24,23 @@
 package se.suka.baldr.jbencode;
 
 import org.junit.AfterClass;
+import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import org.slf4j.Logger;
+import static org.slf4j.LoggerFactory.getLogger;
+import static se.suka.baldr.jbencode.AtomDictionary.requireAtomDictionary;
 
 /**
  * @author Graham Fairweather
  * @see <a href="https://en.wikipedia.org/wiki/Bencode">Bencode</a>
  */
 public final class AtomDictionaryTest {
+
+    private static final Logger LOGGER = getLogger(AtomDictionaryTest.class);
 
     /**
      *
@@ -295,6 +301,67 @@ public final class AtomDictionaryTest {
         assertEquals(ai, aj);
         ai.entrySet().stream().
                 forEach(entry -> assertTrue(entry.getValue() != aj.get(entry.getKey())));
+    }
+
+    /**
+     * Test of requireAtomDictionary method, of class AtomDictionary.
+     */
+    @Test
+    public void testRequireAtomDictionary_GenericType() {
+        LOGGER.info("requireAtomDictionary");
+        Atom actual = null;
+        final Atom expected = null;
+        boolean caught = false;
+        try {
+            actual = requireAtomDictionary(null);
+        } catch (final ClassCastException ex) {
+            caught = true;
+            assertEquals("", ex.getMessage());
+        }
+        assertTrue(caught);
+        assertEquals(expected, actual);
+    }
+
+    /**
+     * Test of requireAtomDictionary method, of class AtomDictionary.
+     */
+    @Test
+    public void testRequireAtomDictionary_GenericType_1() {
+        LOGGER.info("requireAtomDictionary");
+        final AtomDictionary actual = new AtomDictionary();
+        final AtomDictionary expected = requireAtomDictionary(actual);
+        assertEquals(expected, actual);
+    }
+
+    /**
+     * Test of requireAtomList method, of class AtomDictionary.
+     */
+    @Test
+    public void testRequireAtomDictionary_GenericType_String() {
+        LOGGER.info("requireAtomDictionary with message");
+        Atom actual = null;
+        final Atom expected = null;
+        boolean caught = false;
+        try {
+            actual = requireAtomDictionary(null, "Message");
+        } catch (final ClassCastException ex) {
+            caught = true;
+            assertEquals("Message", ex.getMessage());
+        }
+        assertTrue(caught);
+        assertEquals(expected, actual);
+    }
+
+    /**
+     * Test of encodeAsBytes method, of class AtomDictionary.
+     */
+    @Test
+    public void testEncodeAsBytes() {
+        LOGGER.info("encodeAsBytes");
+        final AtomDictionary atomDictionary = new AtomDictionary();
+        final byte[] actual = atomDictionary.encodeAsBytes();
+        final byte[] expected = {0x64, 0x65};
+        assertArrayEquals(expected, actual);
     }
 
 }

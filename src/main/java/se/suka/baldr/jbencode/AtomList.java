@@ -47,6 +47,7 @@ import org.slf4j.Logger;
 import static org.slf4j.LoggerFactory.getLogger;
 import static se.suka.baldr.jbencode.Utilities.clamp;
 import static se.suka.baldr.jbencode.Utilities.randInt;
+import static se.suka.baldr.jbencode.Utilities.stringToAsciiBytes;
 
 /**
  * A list of values is encoded as l&lt;contents&gt;e . The contents consist of
@@ -93,6 +94,52 @@ public final class AtomList extends Atom implements List<Atom>, RandomAccess, Cl
     private static final long serialVersionUID = -1527286384432951976L;
 
     private static final Logger LOGGER = getLogger(AtomList.class);
+
+    /**
+     * Test if an object reference is an instance of {@code AtomList}.
+     *
+     * @param o the object reference to check is instance of {@code AtomList}
+     * @return {@code true} if the object is an instance of {@code AtomList},
+     * otherwise {@code false}
+     */
+    public static boolean isAtomList(Object o) {
+        return o instanceof AtomList;
+    }
+
+    /**
+     * Test if an object reference is an instance of {@code AtomList}, throw a
+     * {@link ClassCastException} if it is not, otherwise return the reference
+     * object.
+     *
+     * @param <T> the type of the value being boxed
+     * @param o the object reference to check
+     * @throws ClassCastException if {@code obj} is not an instance of
+     * {@code AtomList}
+     * @return the object reference
+     */
+    public static final <T> T requireAtomList(T o) {
+        return requireAtom(o, "");
+    }
+
+    /**
+     * Test if an object reference is an instance of {@code AtomList}, throw a
+     * {@link ClassCastException} if it is not, otherwise return the reference
+     * object.
+     *
+     * @param <T> the type of the value being boxed
+     * @param o the object reference to check
+     * @param message detail message to be used in the event that a
+     * {@code ClassCastException} is thrown
+     * @throws ClassCastException if {@code obj} is not an instance of
+     * {@code AtomList}
+     * @return the object reference
+     */
+    public static final <T> T requireAtomList(T o, String message) {
+        if (!isAtomList(o)) {
+            throw new ClassCastException(message);
+        }
+        return o;
+    }
 
     /**
      * Backing List
@@ -328,6 +375,16 @@ public final class AtomList extends Atom implements List<Atom>, RandomAccess, Cl
         return value.stream()
                 .map(atom -> atom.encode())
                 .collect(joining("", "l", "e"));
+    }
+
+    /**
+     * Returns the Bencoded ASCII bytes of this {@link Atom}.
+     *
+     * @return The Benoded ASCII bytes
+     */
+    @Override
+    public byte[] encodeAsBytes() {
+        return stringToAsciiBytes(encode());
     }
 
     /**

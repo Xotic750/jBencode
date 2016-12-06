@@ -23,10 +23,13 @@
  */
 package se.suka.baldr.jbencode;
 
+import java.nio.charset.StandardCharsets;
 import java.util.Objects;
 import static java.util.Objects.requireNonNull;
 import org.slf4j.Logger;
 import static org.slf4j.LoggerFactory.getLogger;
+import static se.suka.baldr.jbencode.Utilities.asciiBytesToString;
+import static se.suka.baldr.jbencode.Utilities.stringToAsciiBytes;
 
 /**
  * A byte string (a sequence of bytes, not necessarily characters) is encoded as
@@ -48,6 +51,52 @@ public final class AtomString extends Atom implements Comparable<AtomString> {
     private static final long serialVersionUID = 1252496632535400969L;
 
     private static final Logger LOGGER = getLogger(AtomString.class);
+
+    /**
+     * Test if an object reference is an instance of {@code AtomString}.
+     *
+     * @param o the object reference to check is instance of {@code AtomString}
+     * @return {@code true} if the object is an instance of {@code AtomString},
+     * otherwise {@code false}
+     */
+    public static boolean isAtomString(Object o) {
+        return o instanceof AtomString;
+    }
+
+    /**
+     * Test if an object reference is an instance of {@code AtomString}, throw a
+     * {@link ClassCastException} if it is not, otherwise return the reference
+     * object.
+     *
+     * @param <T> the type of the value being boxed
+     * @param o the object reference to check
+     * @throws ClassCastException if {@code obj} is not an instance of
+     * {@code AtomString}
+     * @return the object reference
+     */
+    public static final <T> T requireAtomString(T o) {
+        return requireAtom(o, "");
+    }
+
+    /**
+     * Test if an object reference is an instance of {@code AtomString}, throw a
+     * {@link ClassCastException} if it is not, otherwise return the reference
+     * object.
+     *
+     * @param <T> the type of the value being boxed
+     * @param o the object reference to check
+     * @param message detail message to be used in the event that a
+     * {@code ClassCastException} is thrown
+     * @throws ClassCastException if {@code obj} is not an instance of
+     * {@code AtomString}
+     * @return the object reference
+     */
+    public static final <T> T requireAtomString(T o, String message) {
+        if (!isAtomString(o)) {
+            throw new ClassCastException(message);
+        }
+        return o;
+    }
 
     /**
      * Backing {@link String}
@@ -89,6 +138,22 @@ public final class AtomString extends Atom implements Comparable<AtomString> {
     }
 
     /**
+     * Constructs a new {@code AtomString} by decoding the specified array of
+     * bytes using the specified {@linkplain StandardCharsets#US_ASCII}. The
+     * length of the new {@code AtomString} is a function of the charset, and
+     * hence may not be equal to the length of the byte array.
+     *
+     * <p>
+     * The behavior of this constructor when the given bytes are not valid in
+     * the given charset is unspecified.
+     *
+     * @param value The bytes to be decoded into characters
+     */
+    public AtomString(final byte[] value) {
+        this.value = asciiBytesToString(value);
+    }
+
+    /**
      * Returns the length of the Bencoded string of this {@link Atom}. This
      * method is faster than performing an <code>encode().length()</code>.
      *
@@ -108,6 +173,16 @@ public final class AtomString extends Atom implements Comparable<AtomString> {
     @Override
     public String encode() {
         return value.length() + ":" + value;
+    }
+
+    /**
+     * Returns the Bencoded ASCII bytes of this {@link Atom}.
+     *
+     * @return The Benoded ASCII bytes
+     */
+    @Override
+    public byte[] encodeAsBytes() {
+        return stringToAsciiBytes(encode());
     }
 
     /**
@@ -171,6 +246,22 @@ public final class AtomString extends Atom implements Comparable<AtomString> {
             return value.equals(obj.toString());
         }
         return false;
+    }
+
+    /**
+     * Encodes this {@code AtomString} into a sequence of bytes using the given
+     * {@linkplain StandardCharsets#US_ASCII}, storing the result into a new
+     * byte array.
+     *
+     * <p>
+     * This method always replaces malformed-input and unmappable-character
+     * sequences with this charset's default replacement byte array.
+     *
+     *
+     * @return The resultant byte array
+     */
+    public byte[] getBytes() {
+        return stringToAsciiBytes(value);
     }
 
     /**

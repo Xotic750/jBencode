@@ -44,6 +44,7 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import org.slf4j.Logger;
 import static org.slf4j.LoggerFactory.getLogger;
+import static se.suka.baldr.jbencode.AtomList.requireAtomList;
 
 /**
  * @author Graham Fairweather
@@ -412,6 +413,20 @@ public final class AtomListTest {
         final String actual = atomList.encode();
         final String expected = "li1e3:Heje";
         assertEquals(expected, actual);
+    }
+
+    /**
+     * Test of encodeAsBytes method, of class AtomList.
+     */
+    @Test
+    public void testEncodeAsBytes() {
+        LOGGER.info("encodeAsBytes");
+        final AtomList atomList = new AtomList();
+        atomList.add(new AtomInteger(1));
+        atomList.add(new AtomString("Hej"));
+        final byte[] actual = atomList.encodeAsBytes();
+        final byte[] expected = {0x6c, 0x69, 0x31, 0x65, 0x33, 0x3a, 0x48, 0x65, 0x6a, 0x65};
+        assertArrayEquals(expected, actual);
     }
 
     /**
@@ -1035,6 +1050,66 @@ public final class AtomListTest {
         expected = 48;
         result = atomList1.compareTo(atomList2);
         assertEquals(expected, result);
+    }
+
+    /**
+     * Test of requireAtomList method, of class AtomList.
+     */
+    @Test
+    public void testRequireAtomList_GenericType() {
+        LOGGER.info("requireAtomList");
+        Atom actual = null;
+        final Atom expected = null;
+        boolean caught = false;
+        try {
+            actual = requireAtomList(null);
+        } catch (final ClassCastException ex) {
+            caught = true;
+            assertEquals("", ex.getMessage());
+        }
+        assertTrue(caught);
+        assertEquals(expected, actual);
+    }
+
+    /**
+     * Test of requireAtomList method, of class AtomList.
+     */
+    @Test
+    public void testRequireAtomList_GenericType_1() {
+        LOGGER.info("requireAtomString");
+        final AtomList actual = new AtomList();
+        final AtomList expected = requireAtomList(actual);
+        assertEquals(expected, actual);
+    }
+
+    /**
+     * Test of requireAtomList method, of class AtomList.
+     */
+    @Test
+    public void testRequireAtomList_GenericType_String_1() {
+        LOGGER.info("requireAtomList with message");
+        Atom actual = null;
+        final Atom expected = null;
+        boolean caught = false;
+        try {
+            actual = requireAtomList(null, "Message");
+        } catch (final ClassCastException ex) {
+            caught = true;
+            assertEquals("Message", ex.getMessage());
+        }
+        assertTrue(caught);
+        assertEquals(expected, actual);
+    }
+
+    /**
+     * Test of requireAtomList method, of class AtomList.
+     */
+    @Test
+    public void testRequireAtomList_GenericType_String_2() {
+        LOGGER.info("requireAtomList with message");
+        final AtomList actual = new AtomList();
+        final AtomList expected = requireAtomList(actual, "Message");
+        assertEquals(expected, actual);
     }
 
 }

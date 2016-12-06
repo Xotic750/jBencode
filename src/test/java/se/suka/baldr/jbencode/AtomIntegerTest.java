@@ -25,6 +25,7 @@ package se.suka.baldr.jbencode;
 
 import org.junit.After;
 import org.junit.AfterClass;
+import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotEquals;
@@ -34,6 +35,7 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import org.slf4j.Logger;
 import static org.slf4j.LoggerFactory.getLogger;
+import static se.suka.baldr.jbencode.AtomInteger.requireAtomInteger;
 
 /**
  * @author Graham Fairweather
@@ -198,6 +200,18 @@ public final class AtomIntegerTest {
         final String actual = new AtomInteger().encode();
         final String expected = "i0e";
         assertEquals(expected, actual);
+    }
+
+    /**
+     * Test of encodeAsBytes method, of class AtomInteger.
+     */
+    @Test
+    public void testEncodeAsBytes() {
+        LOGGER.info("encodeAsBytes");
+        final AtomInteger atomInteger = new AtomInteger();
+        final byte[] actual = atomInteger.encodeAsBytes();
+        final byte[] expected = {0x69, 0x30, 0x65};
+        assertArrayEquals(expected, actual);
     }
 
     /**
@@ -409,6 +423,66 @@ public final class AtomIntegerTest {
         assertEquals(atomInteger1, atomInteger2);
         final int actual = atomInteger2.intValue();
         final int expected = value;
+        assertEquals(expected, actual);
+    }
+
+    /**
+     * Test of requireAtomInteger method, of class AtomInteger.
+     */
+    @Test
+    public void testRequireAtomInteger_GenericType() {
+        LOGGER.info("requireAtomInteger");
+        Atom actual = null;
+        final Atom expected = null;
+        boolean caught = false;
+        try {
+            actual = requireAtomInteger(null);
+        } catch (final ClassCastException ex) {
+            caught = true;
+            assertEquals("", ex.getMessage());
+        }
+        assertTrue(caught);
+        assertEquals(expected, actual);
+    }
+
+    /**
+     * Test of requireAtomInteger method, of class AtomInteger.
+     */
+    @Test
+    public void testRequireAtomInteger_GenericType_1() {
+        LOGGER.info("requireAtomInteger_1");
+        final AtomInteger actual = new AtomInteger();
+        final AtomInteger expected = requireAtomInteger(actual);
+        assertEquals(expected, actual);
+    }
+
+    /**
+     * Test of requireAtomInteger method, of class AtomInteger.
+     */
+    @Test
+    public void testRequireAtomInteger_GenericType_String_1() {
+        LOGGER.info("requireAtomInteger with message");
+        Atom actual = null;
+        final Atom expected = null;
+        boolean caught = false;
+        try {
+            actual = requireAtomInteger(null, "Message");
+        } catch (final ClassCastException ex) {
+            caught = true;
+            assertEquals("Message", ex.getMessage());
+        }
+        assertTrue(caught);
+        assertEquals(expected, actual);
+    }
+
+    /**
+     * Test of requireAtomInteger method, of class AtomInteger.
+     */
+    @Test
+    public void testRequireAtomInteger_GenericType_String_2() {
+        LOGGER.info("requireAtomInteger with message");
+        final AtomInteger actual = new AtomInteger();
+        final AtomInteger expected = requireAtomInteger(actual, "Message");
         assertEquals(expected, actual);
     }
 
