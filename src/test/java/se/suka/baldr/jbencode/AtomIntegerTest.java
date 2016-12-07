@@ -348,7 +348,7 @@ public final class AtomIntegerTest {
         LOGGER.info("testHashCode");
         final long value = 10;
         final int actual = new AtomInteger(value).hashCode();
-        final int expected = 19 * 7 + (int) (value ^ (value >>> 32));
+        final int expected = 175 + Long.hashCode(value);
         assertEquals(expected, actual);
     }
 

@@ -23,9 +23,10 @@
  */
 package se.suka.baldr.jbencode;
 
+import java.io.Serializable;
 import java.nio.charset.StandardCharsets;
-import java.util.Objects;
 import static java.util.Objects.requireNonNull;
+import java.util.stream.IntStream;
 import org.slf4j.Logger;
 import static org.slf4j.LoggerFactory.getLogger;
 import static se.suka.baldr.jbencode.Utilities.asciiBytesToString;
@@ -46,7 +47,7 @@ import static se.suka.baldr.jbencode.Utilities.stringToAsciiBytes;
  * @author Graham Fairweather
  * @see <a href="https://en.wikipedia.org/wiki/Bencode">Bencode</a>
  */
-public final class AtomString extends Atom implements Comparable<AtomString> {
+public final class AtomString implements Atom, Serializable, CharSequence, Comparable<AtomString> {
 
     private static final long serialVersionUID = 1252496632535400969L;
 
@@ -74,8 +75,8 @@ public final class AtomString extends Atom implements Comparable<AtomString> {
      * {@code AtomString}
      * @return the object reference
      */
-    public static final <T> T requireAtomString(T o) {
-        return requireAtom(o, "");
+    public static <T> T requireAtomString(T o) {
+        return requireAtomString(o, "");
     }
 
     /**
@@ -91,7 +92,7 @@ public final class AtomString extends Atom implements Comparable<AtomString> {
      * {@code AtomString}
      * @return the object reference
      */
-    public static final <T> T requireAtomString(T o, String message) {
+    public static <T> T requireAtomString(T o, String message) {
         if (!isAtomString(o)) {
             throw new ClassCastException(message);
         }
@@ -122,7 +123,7 @@ public final class AtomString extends Atom implements Comparable<AtomString> {
      * @throws NullPointerException If anotherAtomstring is {@code null}
      */
     public AtomString(final AtomString anotherAtomstring) {
-        this(requireNonNull(anotherAtomstring).toString());
+        this(anotherAtomstring.toString());
     }
 
     /**
@@ -132,9 +133,10 @@ public final class AtomString extends Atom implements Comparable<AtomString> {
      * string.
      *
      * @param value A {@code String}
+     * @throws NullPointerException If value is {@code null}
      */
     public AtomString(final String value) {
-        this.value = value;
+        this.value = requireNonNull(value);
     }
 
     /**
@@ -148,6 +150,7 @@ public final class AtomString extends Atom implements Comparable<AtomString> {
      * the given charset is unspecified.
      *
      * @param value The bytes to be decoded into characters
+     * @throws NullPointerException If value is {@code null}
      */
     public AtomString(final byte[] value) {
         this.value = asciiBytesToString(value);
@@ -161,7 +164,7 @@ public final class AtomString extends Atom implements Comparable<AtomString> {
      */
     @Override
     public int bLength() {
-        final int len = value.length();
+        final int len = length();
         return Integer.toString(len).length() + 1 + len;
     }
 
@@ -172,7 +175,7 @@ public final class AtomString extends Atom implements Comparable<AtomString> {
      */
     @Override
     public String encode() {
-        return value.length() + ":" + value;
+        return length() + ":" + value;
     }
 
     /**
@@ -221,9 +224,7 @@ public final class AtomString extends Atom implements Comparable<AtomString> {
      */
     @Override
     public int hashCode() {
-        int hash = 7;
-        hash = 61 * hash + Objects.hashCode(this.value);
-        return hash;
+        return 427 + value.hashCode();
     }
 
     /**
@@ -288,7 +289,7 @@ public final class AtomString extends Atom implements Comparable<AtomString> {
      */
     @Override
     public int compareTo(final AtomString anotherAtomString) {
-        return value.compareTo(requireNonNull(anotherAtomString).toString());
+        return value.compareTo(anotherAtomString.toString());
     }
 
     /**
@@ -299,6 +300,100 @@ public final class AtomString extends Atom implements Comparable<AtomString> {
     @Override
     public AtomString copy() {
         return new AtomString(value);
+    }
+
+    /**
+     * Returns the length of this string. The length is equal to the number of
+     * <a href="Character.html#unicode">Unicode code units</a> in the string.
+     *
+     * @return the length of the sequence of characters represented by this
+     * object.
+     */
+    @Override
+    public int length() {
+        return value.length();
+    }
+
+    /**
+     * Returns the {@code char} value at the specified index. An index ranges
+     * from {@code 0} to {@code length() - 1}. The first {@code char} value of
+     * the sequence is at index {@code 0}, the next at index {@code 1}, and so
+     * on, as for array indexing.
+     *
+     * <p>
+     * If the {@code char} value specified by the index is a
+     * <a href="Character.html#unicode">surrogate</a>, the surrogate value is
+     * returned.
+     *
+     * @param index the index of the {@code char} value.
+     * @return the {@code char} value at the specified index of this string. The
+     * first {@code char} value is at index {@code 0}.
+     * @exception IndexOutOfBoundsException if the {@code index} argument is
+     * negative or not less than the length of this string.
+     */
+    @Override
+    public char charAt(final int index) {
+        return value.charAt(index);
+    }
+
+    /**
+     * Returns a character sequence that is a subsequence of this sequence.
+     *
+     * <p>
+     * An invocation of this method of the form
+     *
+     * <blockquote><pre>
+     * str.subSequence(begin,&nbsp;end)</pre></blockquote>
+     *
+     * behaves in exactly the same way as the invocation
+     *
+     * <blockquote><pre>
+     * str.substring(begin,&nbsp;end)</pre></blockquote>
+     *
+     * @return the specified subsequence.
+     *
+     * @throws IndexOutOfBoundsException if {@code beginIndex} or
+     * {@code endIndex} is negative, if {@code endIndex} is greater than
+     * {@code length()}, or if {@code beginIndex} is greater than
+     * {@code endIndex}
+     */
+    @Override
+    public CharSequence subSequence(final int start, final int end) {
+        return value.subSequence(start, end);
+    }
+
+    /**
+     * Returns a stream of {@code int} zero-extending the {@code char} values
+     * from this sequence. Any char which maps to a
+     * <a href="{@docRoot}/java/lang/Character.html#unicode">surrogate code
+     * point</a> is passed through uninterpreted.
+     *
+     * <p>
+     * If the sequence is mutated while the stream is being read, the result is
+     * undefined.
+     */
+    @Override
+    public IntStream chars() {
+        return value.chars();
+    }
+
+    /**
+     * Returns a stream of code point values from this sequence. Any surrogate
+     * pairs encountered in the sequence are combined as if by {@linkplain
+     * Character#toCodePoint Character.toCodePoint} and the result is passed to
+     * the stream. Any other code units, including ordinary BMP characters,
+     * unpaired surrogates, and undefined code units, are zero-extended to
+     * {@code int} values which are then passed to the stream.
+     *
+     * <p>
+     * If the sequence is mutated while the stream is being read, the result is
+     * undefined.
+     *
+     * @return an IntStream of Unicode code points from this sequence
+     */
+    @Override
+    public IntStream codePoints() {
+        return value.codePoints();
     }
 
 }

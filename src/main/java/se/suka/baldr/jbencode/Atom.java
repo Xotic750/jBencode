@@ -23,7 +23,9 @@
  */
 package se.suka.baldr.jbencode;
 
-import java.io.Serializable;
+import java.util.Collection;
+import static java.util.Collections.unmodifiableCollection;
+import static java.util.Objects.requireNonNull;
 
 /**
  * The smallest abstract class that is extended by all other types Bencoded atom
@@ -31,9 +33,7 @@ import java.io.Serializable;
  *
  * @author Graham Fairweather
  */
-public abstract class Atom implements Serializable {
-
-    private static final long serialVersionUID = 8172793379529745181L;
+public interface Atom {
 
     /**
      * Test if an object reference is an instance of {@code Atom}.
@@ -57,7 +57,7 @@ public abstract class Atom implements Serializable {
      * {@code Atom}
      * @return the object reference
      */
-    public static final <T> T requireAtom(T o) {
+    public static <T> T requireAtom(T o) {
         return requireAtom(o, "");
     }
 
@@ -74,11 +74,33 @@ public abstract class Atom implements Serializable {
      * {@code Atom}
      * @return the object reference
      */
-    public static final <T> T requireAtom(T o, String message) {
+    public static <T> T requireAtom(T o, String message) {
         if (!isAtom(o)) {
             throw new ClassCastException(message);
         }
         return o;
+    }
+
+    /**
+     *
+     * @param <T>
+     * @param o
+     * @return
+     */
+    public static <T> T requireNonNullAtom(T o) {
+        return requireAtom(requireNonNull(o));
+    }
+
+    /**
+     *
+     * @param <T>
+     * @param c
+     * @return
+     */
+    public static <T> Collection<T> requireAtomCollection(final Collection<T> c) {
+        final Collection<T> uc = unmodifiableCollection(c);
+        uc.stream().parallel().forEach(atom -> requireNonNullAtom(atom));
+        return uc;
     }
 
     /**

@@ -23,6 +23,7 @@
  */
 package se.suka.baldr.jbencode;
 
+import static java.lang.System.out;
 import static java.nio.charset.StandardCharsets.US_ASCII;
 import org.junit.After;
 import org.junit.AfterClass;
@@ -32,11 +33,13 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import org.slf4j.Logger;
 import static org.slf4j.LoggerFactory.getLogger;
+import static se.suka.baldr.jbencode.Utilities.asciiBytesToString;
 import static se.suka.baldr.jbencode.Utilities.clamp;
 import static se.suka.baldr.jbencode.Utilities.findFirstNotOf;
 import static se.suka.baldr.jbencode.Utilities.randInt;
 import static se.suka.baldr.jbencode.Utilities.randIntClosed;
 import static se.suka.baldr.jbencode.Utilities.readFileAsBytes;
+import static se.suka.baldr.jbencode.Utilities.stringToAsciiBytes;
 
 /**
  *
@@ -384,10 +387,10 @@ public class UtilitiesTest {
      */
     @Test
     public void testAsciiBytesToString() {
-        System.out.println("asciiBytesToString");
+        out.println("asciiBytesToString");
         final byte[] x = {0x48, 0x65, 0x6c, 0x6c, 0x6f};
         final String expected = "Hello";
-        final String actual = Utilities.asciiBytesToString(x);
+        final String actual = asciiBytesToString(x);
 
         assertEquals(expected, actual);
     }
@@ -397,10 +400,10 @@ public class UtilitiesTest {
      */
     @Test
     public void testStringToAsciiBytes() {
-        System.out.println("stringToAsciiBytes");
+        out.println("stringToAsciiBytes");
         final String x = "Hello";
         final byte[] expected = {0x48, 0x65, 0x6c, 0x6c, 0x6f};
-        final byte[] actual = Utilities.stringToAsciiBytes(x);
+        final byte[] actual = stringToAsciiBytes(x);
         assertArrayEquals(expected, actual);
     }
 

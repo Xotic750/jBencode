@@ -29,9 +29,8 @@ import java.io.File;
 import java.io.IOException;
 import static java.lang.Math.max;
 import static java.lang.Math.min;
-import java.nio.charset.StandardCharsets;
+import static java.nio.charset.StandardCharsets.US_ASCII;
 import static java.text.MessageFormat.format;
-import static java.util.Objects.requireNonNull;
 import java.util.Random;
 import org.slf4j.Logger;
 import static org.slf4j.LoggerFactory.getLogger;
@@ -99,7 +98,7 @@ class Utilities {
      * such characters are found, the function returns -1
      */
     static final int findFirstNotOf(final String sequence, final String matcherSequence, final int startIndex) {
-        return anyOf(requireNonNull(matcherSequence)).negate().indexIn(requireNonNull(sequence), startIndex);
+        return anyOf(matcherSequence).negate().indexIn(sequence, startIndex);
     }
 
     /**
@@ -133,17 +132,17 @@ class Utilities {
      */
     private static Object[] makeParam(final Throwable ex) {
         return new Object[]{
-            requireNonNull(ex).getClass().getName(),
+            ex.getClass().getName(),
             ex.getMessage()
         };
     }
 
     static final String asciiBytesToString(final byte[] x) {
-        return new String(x, StandardCharsets.US_ASCII);
+        return new String(x, US_ASCII);
     }
 
     static final byte[] stringToAsciiBytes(final String x) {
-        return x.getBytes(StandardCharsets.US_ASCII);
+        return x.getBytes(US_ASCII);
     }
 
     /**
@@ -155,7 +154,7 @@ class Utilities {
      * @return A byte array containing all the bytes from file
      */
     static final byte[] readFileAsBytes(final String pathName) {
-        final File file = new File(requireNonNull(pathName));
+        final File file = new File(pathName);
         final byte[] bytes;
         try {
             bytes = toByteArray(file);

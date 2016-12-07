@@ -1053,6 +1053,22 @@ public final class AtomListTest {
     }
 
     /**
+     *
+     */
+    @Test
+    public void testCompareTo_1() {
+        LOGGER.info("testCompareTo_1");
+        final AtomList atomList1 = new AtomList();
+        boolean caught = false;
+        try {
+            atomList1.compareTo(null);
+        } catch (final NullPointerException ex) {
+            caught = true;
+        }
+        assertTrue(caught);
+    }
+
+    /**
      * Test of requireAtomList method, of class AtomList.
      */
     @Test

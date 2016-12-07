@@ -30,7 +30,6 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.NavigableSet;
 import java.util.NoSuchElementException;
-import java.util.Objects;
 import static java.util.Objects.requireNonNull;
 import java.util.Set;
 import java.util.concurrent.ConcurrentNavigableMap;
@@ -43,6 +42,7 @@ import static java.util.stream.Collectors.summingInt;
 import static java.util.stream.Collectors.toMap;
 import org.slf4j.Logger;
 import static org.slf4j.LoggerFactory.getLogger;
+import static se.suka.baldr.jbencode.Atom.requireAtom;
 import static se.suka.baldr.jbencode.Utilities.stringToAsciiBytes;
 
 /**
@@ -57,7 +57,7 @@ import static se.suka.baldr.jbencode.Utilities.stringToAsciiBytes;
  * @author Graham Fairweather
  * @see <a href="https://en.wikipedia.org/wiki/Bencode">Bencode</a>
  */
-public final class AtomDictionary extends Atom implements Map<String, Atom>, Cloneable, Comparable<AtomDictionary> {
+public final class AtomDictionary extends ConcurrentSkipListMap<String, Atom> implements Atom, ConcurrentNavigableMap<String, Atom>, Cloneable, Comparable<AtomDictionary> {
 
     private static final long serialVersionUID = -7602783133044374261L;
 
@@ -127,8 +127,8 @@ public final class AtomDictionary extends Atom implements Map<String, Atom>, Clo
      * {@code AtomDictionary}
      * @return the object reference
      */
-    public static final <T> T requireAtomDictionary(T o) {
-        return requireAtom(o, "");
+    public static <T> T requireAtomDictionary(T o) {
+        return requireAtomDictionary(o, "");
     }
 
     /**
@@ -144,7 +144,7 @@ public final class AtomDictionary extends Atom implements Map<String, Atom>, Clo
      * {@code AtomDictionary}
      * @return the object reference
      */
-    public static final <T> T requireAtomDictionary(T o, String message) {
+    public static <T> T requireAtomDictionary(T o, String message) {
         if (!isAtomDictionary(o)) {
             throw new ClassCastException(message);
         }
@@ -152,16 +152,11 @@ public final class AtomDictionary extends Atom implements Map<String, Atom>, Clo
     }
 
     /**
-     * Backing {@link ConcurrentSkipListMap}
-     */
-    private ConcurrentSkipListMap<String, Atom> value;
-
-    /**
      * Constructs a new, empty {@code AtomDictionary}, using the natural
      * ordering of its keys.
      */
     public AtomDictionary() {
-        value = new ConcurrentSkipListMap<>();
+        super();
     }
 
     /**
@@ -174,7 +169,7 @@ public final class AtomDictionary extends Atom implements Map<String, Atom>, Clo
      */
     public AtomDictionary(Map<? extends String, ? extends Atom> m) {
         this();
-        putAll(requireNonNull(m));
+        putAll(m);
     }
 
     /**
@@ -185,7 +180,7 @@ public final class AtomDictionary extends Atom implements Map<String, Atom>, Clo
      */
     @Override
     public int bLength() {
-        return 2 + value.entrySet().stream().parallel()
+        return 2 + super.entrySet().stream().parallel()
                 .collect(summingInt(entry -> {
                     Atom atom = new AtomString(entry.getKey());
                     return atom.bLength() + entry.getValue().bLength();
@@ -202,8 +197,9 @@ public final class AtomDictionary extends Atom implements Map<String, Atom>, Clo
      * @return
      * @throws NullPointerException if the specified key is {@code null}
      */
+    @Override
     public Entry<String, Atom> ceilingEntry(final String key) {
-        return value.ceilingEntry(requireNonNull(key));
+        return super.ceilingEntry(requireNonNull(key));
     }
 
     /**
@@ -211,8 +207,9 @@ public final class AtomDictionary extends Atom implements Map<String, Atom>, Clo
      * @return
      * @throws NullPointerException if the specified key is null
      */
+    @Override
     public String ceilingKey(final String key) {
-        return value.ceilingKey(requireNonNull(key));
+        return super.ceilingKey(requireNonNull(key));
     }
 
     /**
@@ -221,7 +218,7 @@ public final class AtomDictionary extends Atom implements Map<String, Atom>, Clo
      */
     @Override
     public void clear() {
-        value.clear();
+        super.clear();
     }
 
     /**
@@ -232,22 +229,16 @@ public final class AtomDictionary extends Atom implements Map<String, Atom>, Clo
      */
     @Override
     public AtomDictionary clone() {
-        try {
-            final AtomDictionary atomDictionary = (AtomDictionary) super.clone();
-            atomDictionary.value = new ConcurrentSkipListMap<>(value);
-            return atomDictionary;
-        } catch (CloneNotSupportedException e) {
-            // this shouldn't happen, since we are Cloneable
-            throw new InternalError(e);
-        }
+        return (AtomDictionary) super.clone();
     }
 
     /**
      *
      * @return
      */
+    @Override
     public Comparator<? super String> comparator() {
-        return value.comparator();
+        return super.comparator();
     }
 
     /**
@@ -263,7 +254,7 @@ public final class AtomDictionary extends Atom implements Map<String, Atom>, Clo
      */
     @Override
     public Atom compute(final String key, final BiFunction<? super String, ? super Atom, ? extends Atom> remappingFunction) {
-        return value.compute(requireNonNull(key), requireNonNull(remappingFunction));
+        return super.compute(requireNonNull(key), requireNonNull(remappingFunction));
     }
 
     /**
@@ -281,7 +272,7 @@ public final class AtomDictionary extends Atom implements Map<String, Atom>, Clo
      */
     @Override
     public Atom computeIfAbsent(final String key, final Function<? super String, ? extends Atom> mappingFunction) {
-        return value.computeIfAbsent(requireNonNull(key), requireNonNull(mappingFunction));
+        return super.computeIfAbsent(requireNonNull(key), requireNonNull(mappingFunction));
     }
 
     /**
@@ -297,7 +288,7 @@ public final class AtomDictionary extends Atom implements Map<String, Atom>, Clo
      */
     @Override
     public Atom computeIfPresent(final String key, final BiFunction<? super String, ? super Atom, ? extends Atom> remappingFunction) {
-        return value.computeIfPresent(requireNonNull(key), requireNonNull(remappingFunction));
+        return super.computeIfPresent(requireNonNull(key), requireNonNull(remappingFunction));
     }
 
     /**
@@ -317,7 +308,7 @@ public final class AtomDictionary extends Atom implements Map<String, Atom>, Clo
      */
     @Override
     public boolean containsKey(final Object key) {
-        return value.containsKey(requireString(requireNonNull(key)));
+        return super.containsKey(requireString(requireNonNull(key)));
     }
 
     /**
@@ -337,23 +328,25 @@ public final class AtomDictionary extends Atom implements Map<String, Atom>, Clo
      */
     @Override
     public boolean containsValue(final Object o) {
-        return value.containsValue(requireAtom(requireNonNull(o)));
+        return super.containsValue(requireAtom(requireNonNull(o)));
     }
 
     /**
      *
      * @return
      */
+    @Override
     public NavigableSet<String> descendingKeySet() {
-        return value.descendingKeySet();
+        return super.descendingKeySet();
     }
 
     /**
      *
      * @return
      */
+    @Override
     public ConcurrentNavigableMap<String, Atom> descendingMap() {
-        return value.descendingMap();
+        return super.descendingMap();
     }
 
     /**
@@ -363,7 +356,7 @@ public final class AtomDictionary extends Atom implements Map<String, Atom>, Clo
      */
     @Override
     public AtomDictionary copy() {
-        Map<String, Atom> collect = value.entrySet().stream()
+        Map<String, Atom> collect = super.entrySet().stream()
                 .collect(toMap(Entry::getKey, e -> e.getValue().copy()));
         return new AtomDictionary(collect);
     }
@@ -375,7 +368,7 @@ public final class AtomDictionary extends Atom implements Map<String, Atom>, Clo
      */
     @Override
     public String encode() {
-        return value.entrySet().stream()
+        return super.entrySet().stream()
                 .map(entry -> new AtomString(entry.getKey()).encode() + entry.getValue().encode())
                 .collect(joining("", "d", "e"));
     }
@@ -408,7 +401,7 @@ public final class AtomDictionary extends Atom implements Map<String, Atom>, Clo
      */
     @Override
     public Set<Entry<String, Atom>> entrySet() {
-        return value.entrySet();
+        return super.entrySet();
     }
 
     /**
@@ -418,8 +411,9 @@ public final class AtomDictionary extends Atom implements Map<String, Atom>, Clo
      *
      * @return
      */
+    @Override
     public Entry<String, Atom> firstEntry() {
-        return value.firstEntry();
+        return super.firstEntry();
     }
 
     /**
@@ -432,8 +426,9 @@ public final class AtomDictionary extends Atom implements Map<String, Atom>, Clo
      * @return
      * @throws NullPointerException if the specified key is null
      */
+    @Override
     public Entry<String, Atom> floorEntry(final String key) {
-        return value.floorEntry(requireNonNull(key));
+        return super.floorEntry(requireNonNull(key));
     }
 
     /**
@@ -441,21 +436,23 @@ public final class AtomDictionary extends Atom implements Map<String, Atom>, Clo
      * @return
      * @throws NullPointerException if the specified key is null
      */
+    @Override
     public String floorKey(final String key) {
-        return value.floorKey(requireNonNull(key));
+        return super.floorKey(requireNonNull(key));
     }
 
     /**
      *
      * @return
      */
+    @Override
     public String firstKey() {
-        return value.firstKey();
+        return super.firstKey();
     }
 
     @Override
     public void forEach(BiConsumer<? super String, ? super Atom> action) {
-        value.forEach(requireNonNull(action));
+        super.forEach(requireNonNull(action));
     }
 
     /**
@@ -484,7 +481,7 @@ public final class AtomDictionary extends Atom implements Map<String, Atom>, Clo
      */
     @Override
     public Atom get(final Object key) {
-        return value.get(requireString(requireNonNull(key)));
+        return super.get(requireString(requireNonNull(key)));
     }
 
     /**
@@ -501,7 +498,7 @@ public final class AtomDictionary extends Atom implements Map<String, Atom>, Clo
      */
     @Override
     public Atom getOrDefault(final Object key, final Atom defaultValue) {
-        return value.getOrDefault(requireString(requireNonNull(key)), defaultValue);
+        return super.getOrDefault(requireString(requireNonNull(key)), defaultValue);
     }
 
     /**
@@ -509,8 +506,9 @@ public final class AtomDictionary extends Atom implements Map<String, Atom>, Clo
      * @return
      * @throws NullPointerException if {@code toKey} is null
      */
+    @Override
     public ConcurrentNavigableMap<String, Atom> headMap(final String toKey) {
-        return value.headMap(requireNonNull(toKey));
+        return super.headMap(requireNonNull(toKey));
     }
 
     /**
@@ -519,8 +517,9 @@ public final class AtomDictionary extends Atom implements Map<String, Atom>, Clo
      * @return
      * @throws NullPointerException if {@code toKey} is null
      */
+    @Override
     public ConcurrentNavigableMap<String, Atom> headMap(final String toKey, final boolean inclusive) {
-        return value.headMap(requireNonNull(toKey), inclusive);
+        return super.headMap(requireNonNull(toKey), inclusive);
     }
 
     /**
@@ -533,8 +532,9 @@ public final class AtomDictionary extends Atom implements Map<String, Atom>, Clo
      * @return
      * @throws NullPointerException if the specified key is null
      */
+    @Override
     public Entry<String, Atom> higherEntry(final String key) {
-        return value.higherEntry(requireNonNull(key));
+        return super.higherEntry(requireNonNull(key));
     }
 
     /**
@@ -542,8 +542,9 @@ public final class AtomDictionary extends Atom implements Map<String, Atom>, Clo
      * @return
      * @throws NullPointerException if the specified key is null
      */
+    @Override
     public String higherKey(final String key) {
-        return value.higherKey(requireNonNull(key));
+        return super.higherKey(requireNonNull(key));
     }
 
     /**
@@ -553,7 +554,7 @@ public final class AtomDictionary extends Atom implements Map<String, Atom>, Clo
      */
     @Override
     public boolean isEmpty() {
-        return value.isEmpty();
+        return super.isEmpty();
     }
 
     /**
@@ -572,8 +573,8 @@ public final class AtomDictionary extends Atom implements Map<String, Atom>, Clo
      * @return a set view of the keys contained in this map
      */
     @Override
-    public Set<String> keySet() {
-        return value.keySet();
+    public NavigableSet<String> keySet() {
+        return super.keySet();
     }
 
     /**
@@ -583,15 +584,17 @@ public final class AtomDictionary extends Atom implements Map<String, Atom>, Clo
      *
      * @return
      */
+    @Override
     public Entry<String, Atom> lastEntry() {
-        return value.lastEntry();
+        return super.lastEntry();
     }
 
     /**
      * @return @throws NoSuchElementException {@inheritDoc}
      */
+    @Override
     public String lastKey() {
-        return value.lastKey();
+        return super.lastKey();
     }
 
     /**
@@ -605,8 +608,9 @@ public final class AtomDictionary extends Atom implements Map<String, Atom>, Clo
      * @throws ClassCastException {@inheritDoc}
      * @throws NullPointerException if the specified key is null
      */
-    public Map.Entry<String, Atom> lowerEntry(String key) {
-        return value.lowerEntry(key);
+    @Override
+    public Map.Entry<String, Atom> lowerEntry(final String key) {
+        return super.lowerEntry(requireNonNull(key));
     }
 
     /**
@@ -615,8 +619,9 @@ public final class AtomDictionary extends Atom implements Map<String, Atom>, Clo
      * @throws ClassCastException {@inheritDoc}
      * @throws NullPointerException if the specified key is null
      */
-    public String lowerKey(String key) {
-        return value.lowerKey(key);
+    @Override
+    public String lowerKey(final String key) {
+        return super.lowerKey(requireNonNull(key));
     }
 
     /**
@@ -636,15 +641,16 @@ public final class AtomDictionary extends Atom implements Map<String, Atom>, Clo
      */
     @Override
     public Atom merge(String key, Atom value, BiFunction<? super Atom, ? super Atom, ? extends Atom> remappingFunction) {
-        return this.value.merge(key, value, remappingFunction);
+        return super.merge(key, value, remappingFunction);
     }
 
     /**
      *
      * @return
      */
+    @Override
     public NavigableSet<String> navigableKeySet() {
-        return value.navigableKeySet();
+        return super.navigableKeySet();
     }
 
     /**
@@ -654,8 +660,9 @@ public final class AtomDictionary extends Atom implements Map<String, Atom>, Clo
      *
      * @return
      */
+    @Override
     public Map.Entry<String, Atom> pollFirstEntry() {
-        return value.pollFirstEntry();
+        return super.pollFirstEntry();
     }
 
     /**
@@ -665,8 +672,9 @@ public final class AtomDictionary extends Atom implements Map<String, Atom>, Clo
      *
      * @return
      */
+    @Override
     public Map.Entry<String, Atom> pollLastEntry() {
-        return value.pollLastEntry();
+        return super.pollLastEntry();
     }
 
     /**
@@ -690,7 +698,7 @@ public final class AtomDictionary extends Atom implements Map<String, Atom>, Clo
      */
     @Override
     public Atom put(final String key, final Atom atom) {
-        return value.put(requireNonNull(key), requireNonNull(atom));
+        return super.put(requireNonNull(key), requireNonNull(atom));
     }
 
     /**
@@ -711,7 +719,7 @@ public final class AtomDictionary extends Atom implements Map<String, Atom>, Clo
                 .forEachOrdered(entry -> {
                     final String key = requireNonNull(entry.getKey());
                     final Atom atom = requireNonNull(entry.getValue());
-                    value.put(key, atom);
+                    super.put(key, atom);
                 });
     }
 
@@ -726,7 +734,7 @@ public final class AtomDictionary extends Atom implements Map<String, Atom>, Clo
      */
     @Override
     public Atom putIfAbsent(String key, Atom value) {
-        return this.value.putIfAbsent(key, value);
+        return super.putIfAbsent(key, value);
     }
 
     /**
@@ -759,12 +767,12 @@ public final class AtomDictionary extends Atom implements Map<String, Atom>, Clo
      */
     @Override
     public Atom remove(final Object key) {
-        return value.remove(requireString(requireNonNull(key)));
+        return super.remove(requireString(requireNonNull(key)));
     }
 
     @Override
     public void replaceAll(BiFunction<? super String, ? super Atom, ? extends Atom> function) {
-        value.replaceAll(function);
+        super.replaceAll(function);
     }
 
     /**
@@ -776,7 +784,7 @@ public final class AtomDictionary extends Atom implements Map<String, Atom>, Clo
      */
     @Override
     public int size() {
-        return value.size();
+        return super.size();
     }
 
     /**
@@ -787,8 +795,9 @@ public final class AtomDictionary extends Atom implements Map<String, Atom>, Clo
      * @throws NullPointerException if {@code fromKey} or {@code toKey} is null
      * @throws IllegalArgumentException {@inheritDoc}
      */
+    @Override
     public ConcurrentNavigableMap<String, Atom> subMap(String fromKey, String toKey) {
-        return value.subMap(fromKey, toKey);
+        return super.subMap(fromKey, toKey);
     }
 
     /**
@@ -801,8 +810,9 @@ public final class AtomDictionary extends Atom implements Map<String, Atom>, Clo
      * @throws NullPointerException if {@code fromKey} or {@code toKey} is null
      * @throws IllegalArgumentException {@inheritDoc}
      */
+    @Override
     public ConcurrentNavigableMap<String, Atom> subMap(String fromKey, boolean fromInclusive, String toKey, boolean toInclusive) {
-        return value.subMap(fromKey, fromInclusive, toKey, toInclusive);
+        return super.subMap(fromKey, fromInclusive, toKey, toInclusive);
     }
 
     /**
@@ -812,8 +822,9 @@ public final class AtomDictionary extends Atom implements Map<String, Atom>, Clo
      * @throws NullPointerException if {@code fromKey} is null
      * @throws IllegalArgumentException {@inheritDoc}
      */
+    @Override
     public ConcurrentNavigableMap<String, Atom> tailMap(String fromKey) {
-        return value.tailMap(fromKey);
+        return super.tailMap(fromKey);
     }
 
     /**
@@ -824,8 +835,9 @@ public final class AtomDictionary extends Atom implements Map<String, Atom>, Clo
      * @throws NullPointerException if {@code fromKey} is null
      * @throws IllegalArgumentException {@inheritDoc}
      */
+    @Override
     public ConcurrentNavigableMap<String, Atom> tailMap(String fromKey, boolean inclusive) {
-        return value.tailMap(fromKey, inclusive);
+        return super.tailMap(fromKey, inclusive);
     }
 
     /**
@@ -845,7 +857,7 @@ public final class AtomDictionary extends Atom implements Map<String, Atom>, Clo
      */
     @Override
     public Collection<Atom> values() {
-        return value.values();
+        return super.values();
     }
 
     /**
@@ -884,9 +896,7 @@ public final class AtomDictionary extends Atom implements Map<String, Atom>, Clo
      */
     @Override
     public int hashCode() {
-        int hash = 7;
-        hash = 67 * hash + Objects.hashCode(this.value);
-        return hash;
+        return 469 + super.hashCode();
     }
 
     /**
@@ -907,7 +917,7 @@ public final class AtomDictionary extends Atom implements Map<String, Atom>, Clo
             return true;
         }
         if (obj instanceof AtomDictionary) {
-            return value.equals(((AtomDictionary) obj).value);
+            return super.equals(obj);
         }
         return false;
     }
@@ -920,7 +930,7 @@ public final class AtomDictionary extends Atom implements Map<String, Atom>, Clo
      */
     @Override
     public String toString() {
-        return value.toString();
+        return super.toString();
     }
 
     /**
@@ -939,7 +949,7 @@ public final class AtomDictionary extends Atom implements Map<String, Atom>, Clo
      */
     @Override
     public int compareTo(final AtomDictionary anotherAtomDictionary) {
-        return encode().compareTo(requireNonNull(anotherAtomDictionary).encode());
+        return encode().compareTo(anotherAtomDictionary.encode());
     }
 
 }

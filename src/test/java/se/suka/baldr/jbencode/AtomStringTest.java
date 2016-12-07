@@ -24,7 +24,10 @@
 package se.suka.baldr.jbencode;
 
 import java.nio.charset.StandardCharsets;
+import static java.nio.charset.StandardCharsets.US_ASCII;
 import java.util.Objects;
+import java.util.stream.Collectors;
+import static java.util.stream.Collectors.joining;
 import org.junit.After;
 import org.junit.AfterClass;
 import static org.junit.Assert.assertArrayEquals;
@@ -189,7 +192,7 @@ public final class AtomStringTest {
     public void testAtomString_7() {
         LOGGER.info("testAtomString_7");
         final String s = "Hello";
-        final byte[] b = s.getBytes(StandardCharsets.US_ASCII);
+        final byte[] b = s.getBytes(US_ASCII);
         AtomString atomString1 = new AtomString(b);
         AtomString atomString2 = new AtomString(s);
         assertEquals(atomString1, atomString2);
@@ -434,16 +437,68 @@ public final class AtomStringTest {
     }
 
     /**
-     * Test the Constructor, of class AtomString.
+     * Test the getBytes method, of class AtomString.
      */
     @Test
     public void testGetBytes() {
         LOGGER.info("testGetBytes");
         final String s = "Hello";
-        final byte[] expected = s.getBytes(StandardCharsets.US_ASCII);
+        final byte[] expected = s.getBytes(US_ASCII);
         final AtomString atomString1 = new AtomString(s);
         final byte[] actual = atomString1.getBytes();
         assertArrayEquals(expected, actual);
+    }
+
+    /**
+     * Test the charAt method, of class AtomString.
+     */
+    @Test
+    public void testCharAt() {
+        LOGGER.info("testCharAt");
+        final AtomString atomString1 = new AtomString("Hello");
+        final char expected = 'e';
+        final char actual = atomString1.charAt(1);
+        assertEquals(expected, actual);
+    }
+
+    /**
+     * Test the charAt method, of class AtomString.
+     */
+    @Test
+    public void testSubSequence() {
+        LOGGER.info("testSubSequence");
+        final AtomString atomString1 = new AtomString("Hello");
+        final CharSequence expected = "el";
+        final CharSequence actual = atomString1.subSequence(1, 3);
+        assertEquals(expected, actual);
+    }
+
+    /**
+     * Test the chars method, of class AtomString.
+     */
+    @Test
+    public void testChars() {
+        LOGGER.info("testChars");
+        final String expected = "Hello";
+        final AtomString atomString1 = new AtomString(expected);
+        final String actual = atomString1.chars()
+                .mapToObj(i -> new String(new int[]{i}, 0, 1))
+                .collect(joining());
+        assertEquals(expected, actual);
+    }
+
+    /**
+     * Test the codePoints method, of class AtomString.
+     */
+    @Test
+    public void testCodePoints() {
+        LOGGER.info("testCodePoints");
+        final String expected = "Hello";
+        final AtomString atomString1 = new AtomString(expected);
+        final String actual = atomString1.codePoints()
+                .mapToObj(i -> new String(new int[]{i}, 0, 1))
+                .collect(joining());
+        assertEquals(expected, actual);
     }
 
 }

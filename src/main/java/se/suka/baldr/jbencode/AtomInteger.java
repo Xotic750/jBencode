@@ -24,7 +24,6 @@
 package se.suka.baldr.jbencode;
 
 import static java.lang.Double.compare;
-import static java.util.Objects.requireNonNull;
 import org.slf4j.Logger;
 import static org.slf4j.LoggerFactory.getLogger;
 import static se.suka.baldr.jbencode.Utilities.stringToAsciiBytes;
@@ -39,7 +38,7 @@ import static se.suka.baldr.jbencode.Utilities.stringToAsciiBytes;
  * @author Graham Fairweather
  * @see <a href="https://en.wikipedia.org/wiki/Bencode">Bencode</a>
  */
-public final class AtomInteger extends Atom implements Comparable<AtomInteger> {
+public final class AtomInteger extends Number implements Atom, Comparable<AtomInteger> {
 
     private static final long serialVersionUID = 8464216577156678961L;
 
@@ -67,8 +66,8 @@ public final class AtomInteger extends Atom implements Comparable<AtomInteger> {
      * {@code AtomInteger}
      * @return the object reference
      */
-    public static final <T> T requireAtomInteger(T o) {
-        return requireAtom(o, "");
+    public static <T> T requireAtomInteger(T o) {
+        return requireAtomInteger(o, "");
     }
 
     /**
@@ -84,7 +83,7 @@ public final class AtomInteger extends Atom implements Comparable<AtomInteger> {
      * {@code AtomInteger}
      * @return the object reference
      */
-    public static final <T> T requireAtomInteger(T o, String message) {
+    public static <T> T requireAtomInteger(T o, String message) {
         if (!isAtomInteger(o)) {
             throw new ClassCastException(message);
         }
@@ -114,7 +113,7 @@ public final class AtomInteger extends Atom implements Comparable<AtomInteger> {
      * @throws NullPointerException If anotherAtomInteger is {@code null}
      */
     public AtomInteger(final AtomInteger anotherAtomInteger) {
-        this(requireNonNull(anotherAtomInteger).longValue());
+        this(anotherAtomInteger.longValue());
     }
 
     /**
@@ -165,6 +164,7 @@ public final class AtomInteger extends Atom implements Comparable<AtomInteger> {
      *
      * @return the byte value
      */
+    @Override
     public byte byteValue() {
         return (byte) value;
     }
@@ -175,6 +175,7 @@ public final class AtomInteger extends Atom implements Comparable<AtomInteger> {
      *
      * @return the short value
      */
+    @Override
     public short shortValue() {
         return (short) value;
     }
@@ -185,6 +186,7 @@ public final class AtomInteger extends Atom implements Comparable<AtomInteger> {
      *
      * @return the int value
      */
+    @Override
     public int intValue() {
         return (int) value;
     }
@@ -194,6 +196,7 @@ public final class AtomInteger extends Atom implements Comparable<AtomInteger> {
      *
      * @return the long value
      */
+    @Override
     public long longValue() {
         return value;
     }
@@ -204,6 +207,7 @@ public final class AtomInteger extends Atom implements Comparable<AtomInteger> {
      *
      * @return the float value
      */
+    @Override
     public float floatValue() {
         return value;
     }
@@ -214,6 +218,7 @@ public final class AtomInteger extends Atom implements Comparable<AtomInteger> {
      *
      * @return the double value
      */
+    @Override
     public double doubleValue() {
         return value;
     }
@@ -233,7 +238,7 @@ public final class AtomInteger extends Atom implements Comparable<AtomInteger> {
      */
     @Override
     public int compareTo(final AtomInteger anotherAtomInteger) {
-        return compare(value, requireNonNull(anotherAtomInteger).value);
+        return compare(value, anotherAtomInteger.value);
     }
 
     /**
@@ -272,9 +277,7 @@ public final class AtomInteger extends Atom implements Comparable<AtomInteger> {
      */
     @Override
     public int hashCode() {
-        int hash = 7;
-        hash = 19 * hash + (int) (this.value ^ (this.value >>> 32));
-        return hash;
+        return 175 + Long.hashCode(value);
     }
 
     /**
@@ -293,7 +296,7 @@ public final class AtomInteger extends Atom implements Comparable<AtomInteger> {
             return true;
         }
         if (obj instanceof AtomInteger) {
-            return value == ((AtomInteger) obj).longValue();
+            return value == ((Number) obj).longValue();
         }
         return false;
     }

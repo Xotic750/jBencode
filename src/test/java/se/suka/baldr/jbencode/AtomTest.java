@@ -206,9 +206,7 @@ public class AtomTest {
     /**
      * A test class
      */
-    static class AtomImpl extends Atom {
-
-        private static final long serialVersionUID = -3640442364342462294L;
+    static class AtomImpl implements Atom {
 
         /**
          * Returns the length of the Bencoded string of this {@link Atom}. This
