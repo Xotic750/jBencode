@@ -24,7 +24,6 @@
 package se.suka.baldr.jbencode;
 
 import static java.lang.Character.isDigit;
-import static java.lang.Integer.parseInt;
 import static java.text.MessageFormat.format;
 import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
@@ -60,6 +59,30 @@ import static se.suka.baldr.jbencode.Utilities.readFileAsBytes;
 public class Bencode {
 
     private static final Logger LOGGER = getLogger(Bencode.class);
+
+    private static boolean isInteger(final String s) {
+        return s.matches("^(0|-?[1-9]\\d*)$");
+    }
+
+    private static boolean isUInteger(final String s) {
+        return s.matches("^(0|[1-9]\\d*)$");
+    }
+
+    static Integer parseInt(final String s) {
+        try {
+            return Integer.parseInt(s, 10);
+        } catch (final NumberFormatException nfe) {
+            return null;
+        }
+    }
+
+    static Long parseLong(final String s) {
+        try {
+            return Long.parseLong(s, 10);
+        } catch (final NumberFormatException nfe) {
+            return null;
+        }
+    }
 
     /**
      *
@@ -174,7 +197,7 @@ public class Bencode {
                 return null;
             }
             uiStart += value.bLength();
-            dict.put(key.toString(), value);
+            dict.put((AtomString) key, value);
         }
         if (isComplete(x, uiStart, length)) {
             return dict;
@@ -240,16 +263,16 @@ public class Bencode {
             return null;
         }
         final String s = x.substring(uiStart + 1, uiEnd);
-        if (s.equals("-0")) {
-            invalidInt("decodeInt", s);
+        if (!isInteger(s)) {
+            invalidNumber("decodeInt", s);
             return null;
         }
-        try {
-            return new AtomInteger(parseInt(s, 10));
-        } catch (final NumberFormatException nfe) {
-            invalidInt("decodeInt", s);
+        final Long value = parseLong(s);
+        if (isNull(value)) {
+            invalidNumber("decodeInt", s);
             return null;
         }
+        return new AtomInteger(value);
     }
 
     /**
@@ -357,22 +380,24 @@ public class Bencode {
         }
         int uiSplit = findFirstNotOf(x, "1234567890", uiStart);
         if (uiSplit == -1 || x.charAt(uiSplit) != ':') {
-            charNotFound("decodeString", ":");
+            charNotFound("decodeStr", ":");
             return null;
         }
         final String length = x.substring(uiStart, uiSplit);
-        final int uiLength;
-        try {
-            uiLength = parseInt(length, 10);
-        } catch (NumberFormatException nfe) {
-            invalidInt("decodeStr", length);
+        if (!isUInteger(length)) {
+            invalidNumber("decodeStr", length);
+            return null;
+        }
+        final Integer uiLength = parseInt(length);
+        if (uiLength < 0 || isNull(uiLength)) {
+            invalidNumber("decodeStr", uiLength);
             return null;
         }
         if (++uiSplit > x.length() || uiSplit + uiLength > x.length()) {
-            LOGGER.warn("decodeString: out of bounds");
+            LOGGER.warn("decodeStr: out of bounds");
             return null;
         }
-        String contents = x.substring(uiSplit, uiSplit + uiLength);
+        final String contents = x.substring(uiSplit, uiSplit + uiLength);
         return new AtomString(contents);
     }
 
@@ -406,7 +431,7 @@ public class Bencode {
         LOGGER.warn(format("{0}: did not find \"{1}\", halting decode", params));
     }
 
-    private static void invalidInt(final Object... params) {
+    private static void invalidNumber(final Object... params) {
         LOGGER.warn(format("{0}: invalid integer \"{1}\", halting decode", params));
     }
 

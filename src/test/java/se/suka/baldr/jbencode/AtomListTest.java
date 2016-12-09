@@ -120,8 +120,8 @@ public final class AtomListTest {
      */
     @Test
     public void testAtomList() {
-        LOGGER.info("testAtomInteger");
-        AtomList atomList = new AtomList();
+        LOGGER.info("testAtomList");
+        final AtomList atomList = new AtomList();
         atomList.add(new AtomString("foo"));
         atomList.add(new AtomString("bar"));
         atomList.add(new AtomString("boo"));
@@ -130,7 +130,7 @@ public final class AtomListTest {
         atomList.add(new AtomString("ABC90"));
         atomList.add(new AtomString("ABC100"));
         final AtomList actual = new AtomList(atomList);
-        AtomList expected = new AtomList();
+        final AtomList expected = new AtomList();
         expected.add(new AtomString("foo"));
         expected.add(new AtomString("bar"));
         expected.add(new AtomString("boo"));

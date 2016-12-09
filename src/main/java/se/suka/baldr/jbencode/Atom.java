@@ -26,6 +26,7 @@ package se.suka.baldr.jbencode;
 import java.util.Collection;
 import static java.util.Collections.unmodifiableCollection;
 import static java.util.Objects.requireNonNull;
+import static java.util.stream.Collectors.toList;
 
 /**
  * The smallest abstract class that is extended by all other types Bencoded atom
@@ -98,9 +99,9 @@ public interface Atom {
      * @return
      */
     public static <T> Collection<T> requireAtomCollection(final Collection<T> c) {
-        final Collection<T> uc = unmodifiableCollection(c);
-        uc.stream().parallel().forEach(atom -> requireNonNullAtom(atom));
-        return uc;
+        return unmodifiableCollection(c.stream()
+                .map(atom -> requireNonNullAtom(atom))
+                .collect(toList()));
     }
 
     /**
@@ -109,27 +110,27 @@ public interface Atom {
      *
      * @return The length of the Becoded string
      */
-    public abstract int bLength();
+    public int bLength();
 
     /**
      * Returns a deep copy of this {@link Atom}.
      *
      * @return a copy of this {@link Atom}
      */
-    public abstract Atom copy();
+    public Atom copy();
 
     /**
      * Returns the Bencoded string of this {@link Atom}.
      *
      * @return The Benoded string
      */
-    public abstract String encode();
+    public String encode();
 
     /**
      * Returns the Bencoded ASCII bytes of this {@link Atom}.
      *
      * @return The Benoded ASCII bytes
      */
-    public abstract byte[] encodeAsBytes();
+    public byte[] encodeAsBytes();
 
 }

@@ -34,8 +34,6 @@ import static java.util.stream.Collectors.joining;
 import static java.util.stream.Collectors.summingInt;
 import static java.util.stream.Collectors.toCollection;
 import static java.util.stream.IntStream.range;
-import org.slf4j.Logger;
-import static org.slf4j.LoggerFactory.getLogger;
 import static se.suka.baldr.jbencode.Atom.requireAtomCollection;
 import static se.suka.baldr.jbencode.Atom.requireNonNullAtom;
 import static se.suka.baldr.jbencode.Utilities.clamp;
@@ -86,8 +84,7 @@ public final class AtomList extends CopyOnWriteArrayList<Atom> implements Atom, 
 
     private static final long serialVersionUID = -1527286384432951976L;
 
-    private static final Logger LOGGER = getLogger(AtomList.class);
-
+    //private static final Logger LOGGER = getLogger(AtomList.class);
     /**
      * Test if an object reference is an instance of {@code AtomList}.
      *
@@ -151,8 +148,7 @@ public final class AtomList extends CopyOnWriteArrayList<Atom> implements Atom, 
      * @throws NullPointerException if the specified collection is null
      */
     public AtomList(final Collection<? extends Atom> c) {
-        this();
-        addAll(c);
+        super(requireAtomCollection(c));
     }
 
     /**
@@ -327,7 +323,7 @@ public final class AtomList extends CopyOnWriteArrayList<Atom> implements Atom, 
      */
     @Override
     public AtomList copy() {
-        return unmodifiableList(this).stream()
+        return super.stream()
                 .map(atom -> atom.copy())
                 .collect(toCollection(AtomList::new));
     }

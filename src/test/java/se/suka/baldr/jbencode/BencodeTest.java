@@ -23,12 +23,9 @@
  */
 package se.suka.baldr.jbencode;
 
-import java.nio.charset.StandardCharsets;
 import static java.nio.charset.StandardCharsets.US_ASCII;
 import org.junit.After;
 import org.junit.AfterClass;
-import org.junit.Assert;
-import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
@@ -45,6 +42,8 @@ import static se.suka.baldr.jbencode.Bencode.decodeList;
 import static se.suka.baldr.jbencode.Bencode.decodeStr;
 import static se.suka.baldr.jbencode.Bencode.encode;
 import static se.suka.baldr.jbencode.Bencode.encodeAsBytes;
+import static se.suka.baldr.jbencode.Bencode.parseInt;
+import static se.suka.baldr.jbencode.Bencode.parseLong;
 
 /**
  * @author Graham Fairweather
@@ -141,9 +140,9 @@ public final class BencodeTest {
         LOGGER.info("decode");
         final String x = "d1:a11:Hello World1:ble1:ci0ee";
         final AtomDictionary expected = new AtomDictionary();
-        expected.put("a", new AtomString("Hello World"));
-        expected.put("b", new AtomList());
-        expected.put("c", new AtomInteger());
+        expected.put(new AtomString("a"), new AtomString("Hello World"));
+        expected.put(new AtomString("b"), new AtomList());
+        expected.put(new AtomString("c"), new AtomInteger());
         final Atom actual = decode(x);
         assertEquals(expected, actual);
     }
@@ -193,9 +192,9 @@ public final class BencodeTest {
         final String s = "d1:a11:Hello World1:ble1:ci0ee";
         final byte[] x = s.getBytes(US_ASCII);
         final AtomDictionary expected = new AtomDictionary();
-        expected.put("a", new AtomString("Hello World"));
-        expected.put("b", new AtomList());
-        expected.put("c", new AtomInteger());
+        expected.put(new AtomString("a"), new AtomString("Hello World"));
+        expected.put(new AtomString("b"), new AtomList());
+        expected.put(new AtomString("c"), new AtomInteger());
         final Atom actual = decode(x);
         assertEquals(expected, actual);
     }
@@ -234,7 +233,7 @@ public final class BencodeTest {
         LOGGER.info("decodeDict");
         final String x = "d1:a11:Hello Worlde";
         final AtomDictionary expected = new AtomDictionary();
-        expected.put("a", new AtomString("Hello World"));
+        expected.put(new AtomString("a"), new AtomString("Hello World"));
         final Atom actual = decodeDict(x);
         assertEquals(expected, actual);
     }
@@ -308,7 +307,7 @@ public final class BencodeTest {
         final String s = "d1:a11:Hello Worlde";
         final byte[] x = s.getBytes(US_ASCII);
         final AtomDictionary expected = new AtomDictionary();
-        expected.put("a", new AtomString("Hello World"));
+        expected.put(new AtomString("a"), new AtomString("Hello World"));
         final Atom actual = decodeDict(x);
         assertEquals(expected, actual);
     }
@@ -322,7 +321,7 @@ public final class BencodeTest {
         final int uiStart = 5;
         final String x = "li42ed1:a11:Hello Worldee";
         final AtomDictionary expected = new AtomDictionary();
-        expected.put("a", new AtomString("Hello World"));
+        expected.put(new AtomString("a"), new AtomString("Hello World"));
         final Atom actual = decodeDict(x, uiStart);
         assertEquals(expected, actual);
     }
@@ -335,15 +334,15 @@ public final class BencodeTest {
         LOGGER.info("decodeFile");
         final Atom actual = decodeFile("samples/sample1.torrent");
         final AtomDictionary expected = new AtomDictionary();
-        expected.put("announce", new AtomString("udp://tracker.openbittorrent.com:80"));
-        expected.put("creation date", new AtomInteger(1327049827));
+        expected.put(new AtomString("announce"), new AtomString("udp://tracker.openbittorrent.com:80"));
+        expected.put(new AtomString("creation date"), new AtomInteger(1327049827));
         final AtomDictionary info = new AtomDictionary();
-        info.put("length", new AtomInteger(20));
-        info.put("name", new AtomString("sample.txt"));
-        info.put("piece length", new AtomInteger(65536));
-        info.put("pieces", new AtomString(""));
-        info.put("private", new AtomInteger(1));
-        expected.put("info", info);
+        info.put(new AtomString("length"), new AtomInteger(20));
+        info.put(new AtomString("name"), new AtomString("sample.txt"));
+        info.put(new AtomString("piece length"), new AtomInteger(65536));
+        info.put(new AtomString("pieces"), new AtomString(""));
+        info.put(new AtomString("private"), new AtomInteger(1));
+        expected.put(new AtomString("info"), info);
         assertEquals(expected, actual);
     }
 
@@ -423,6 +422,30 @@ public final class BencodeTest {
      * Test of decodeInt method, of class Bencode.
      */
     @Test
+    public void testDecodeInt_String_7() {
+        LOGGER.info("decodeInt");
+        final String x = "i01e";
+        final Atom expected = null;
+        final Atom actual = decodeInt(x);
+        assertEquals(expected, actual);
+    }
+
+    /**
+     * Test of decodeInt method, of class Bencode.
+     */
+    @Test
+    public void testDecodeInt_String_8() {
+        LOGGER.info("decodeInt");
+        final String x = "i+1e";
+        final Atom expected = null;
+        final Atom actual = decodeInt(x);
+        assertEquals(expected, actual);
+    }
+
+    /**
+     * Test of decodeInt method, of class Bencode.
+     */
+    @Test
     public void testDecodeInt_Byte_1() {
         LOGGER.info("decodeInt");
         final String s = "i42e";
@@ -454,7 +477,7 @@ public final class BencodeTest {
         final String x = "li42ed1:a11:Hello Worldee";
         final AtomList expected = new AtomList();
         final AtomDictionary dict = new AtomDictionary();
-        dict.put("a", new AtomString("Hello World"));
+        dict.put(new AtomString("a"), new AtomString("Hello World"));
         expected.add(new AtomInteger(42));
         expected.add(dict);
         final Atom actual = decodeList(x);
@@ -519,7 +542,7 @@ public final class BencodeTest {
         final byte[] x = s.getBytes(US_ASCII);
         final AtomList expected = new AtomList();
         final AtomDictionary dict = new AtomDictionary();
-        dict.put("a", new AtomString("Hello World"));
+        dict.put(new AtomString("a"), new AtomString("Hello World"));
         expected.add(new AtomInteger(42));
         expected.add(dict);
         final Atom actual = decodeList(x);
@@ -536,7 +559,7 @@ public final class BencodeTest {
         final String x = "d1:bli42ed1:a11:Hello Worldeee";
         final AtomList expected = new AtomList();
         final AtomDictionary dict = new AtomDictionary();
-        dict.put("a", new AtomString("Hello World"));
+        dict.put(new AtomString("a"), new AtomString("Hello World"));
         expected.add(new AtomInteger(42));
         expected.add(dict);
         final Atom actual = decodeList(x, uiStart);
@@ -607,6 +630,42 @@ public final class BencodeTest {
      * Test of decodeStr method, of class Bencode.
      */
     @Test
+    public void testDecodeStr_String_6() {
+        LOGGER.info("decodeStr");
+        final String x = "-1:Hello World";
+        final Atom expected = null;
+        final Atom actual = decodeStr(x);
+        assertEquals(expected, actual);
+    }
+
+    /**
+     * Test of decodeStr method, of class Bencode.
+     */
+    @Test
+    public void testDecodeStr_String_7() {
+        LOGGER.info("decodeStr");
+        final String x = "+11:Hello World";
+        final Atom expected = null;
+        final Atom actual = decodeStr(x);
+        assertEquals(expected, actual);
+    }
+
+    /**
+     * Test of decodeStr method, of class Bencode.
+     */
+    @Test
+    public void testDecodeStr_String_8() {
+        LOGGER.info("decodeStr");
+        final String x = "011:Hello World";
+        final Atom expected = null;
+        final Atom actual = decodeStr(x);
+        assertEquals(expected, actual);
+    }
+
+    /**
+     * Test of decodeStr method, of class Bencode.
+     */
+    @Test
     public void testDecodeStr_Byte_1() {
         LOGGER.info("decodeStr");
         final String s = "11:Hello World";
@@ -638,7 +697,7 @@ public final class BencodeTest {
         final String expected = "li42ed1:a11:Hello Worldee";
         final AtomList list = new AtomList();
         final AtomDictionary dict = new AtomDictionary();
-        dict.put("a", new AtomString("Hello World"));
+        dict.put(new AtomString("a"), new AtomString("Hello World"));
         list.add(new AtomInteger(42));
         list.add(dict);
         final String actual = encode(list);
@@ -667,7 +726,7 @@ public final class BencodeTest {
         final byte[] expected = s.getBytes(US_ASCII);
         final AtomList list = new AtomList();
         final AtomDictionary dict = new AtomDictionary();
-        dict.put("a", new AtomString("Hello World"));
+        dict.put(new AtomString("a"), new AtomString("Hello World"));
         list.add(new AtomInteger(42));
         list.add(dict);
         final byte[] actual = encodeAsBytes(list);
@@ -684,6 +743,30 @@ public final class BencodeTest {
         final AtomList list = null;
         final byte[] actual = encodeAsBytes(list);
         assertArrayEquals(expected, actual);
+    }
+
+    /**
+     * Test of parseInt method, of class Bencode.
+     */
+    @Test
+    public void testParseInt() {
+        LOGGER.info("testParseInt");
+        final Integer expected = null;
+        final String num = null;
+        final Integer actual = parseInt(num);
+        assertEquals(expected, actual);
+    }
+
+    /**
+     * Test of parseLong method, of class Bencode.
+     */
+    @Test
+    public void testParseLong() {
+        LOGGER.info("testParseLong");
+        final Long expected = null;
+        final String num = null;
+        final Long actual = parseLong(num);
+        assertEquals(expected, actual);
     }
 
 }

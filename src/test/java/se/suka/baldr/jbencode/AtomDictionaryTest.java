@@ -23,6 +23,8 @@
  */
 package se.suka.baldr.jbencode;
 
+import static java.util.stream.Collectors.joining;
+import org.junit.After;
 import org.junit.AfterClass;
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
@@ -32,6 +34,7 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import org.slf4j.Logger;
 import static org.slf4j.LoggerFactory.getLogger;
+import static se.suka.baldr.jbencode.AtomDictionary.isAtomDictionary;
 import static se.suka.baldr.jbencode.AtomDictionary.requireAtomDictionary;
 
 /**
@@ -39,7 +42,7 @@ import static se.suka.baldr.jbencode.AtomDictionary.requireAtomDictionary;
  * @see <a href="https://en.wikipedia.org/wiki/Bencode">Bencode</a>
  */
 public final class AtomDictionaryTest {
-
+    
     private static final Logger LOGGER = getLogger(AtomDictionaryTest.class);
 
     /**
@@ -68,14 +71,22 @@ public final class AtomDictionaryTest {
     @Before
     public void setUp() {
     }
+    
+    /**
+     *
+     * @throws Exception
+     */
+    @After
+    public void tearDown() throws Exception {
+    }
 
     /**
      *
      */
     @Test
-    public void testAtomDictionaryConstructorAtom() {
-        AtomDictionary ai = new AtomDictionary();
-        Atom atomDictionary = new AtomDictionary(ai);
+    public void testAtomDictionary_1() {
+        final AtomDictionary ai = new AtomDictionary();
+        final Atom atomDictionary = new AtomDictionary(ai);
         assertEquals(ai, atomDictionary);
     }
 
@@ -83,9 +94,9 @@ public final class AtomDictionaryTest {
      *
      */
     @Test
-    public void testAtomDictionaryConstructorAtomSet() {
-        AtomDictionary ai = new AtomDictionary();
-        Atom ai1 = new AtomDictionary(ai);
+    public void testAtomDictionary_2() {
+        final AtomDictionary ai = new AtomDictionary();
+        final Atom ai1 = new AtomDictionary(ai);
         assertEquals(ai, ai1);
     }
 
@@ -93,157 +104,9 @@ public final class AtomDictionaryTest {
      *
      */
     @Test
-    public void testAtomDictionaryConstructorAtomValue() {
-        AtomDictionary ai = new AtomDictionary();
-        Atom ai1 = new AtomDictionary(ai);
-        assertEquals(ai, ai1);
-    }
-
-    /**
-     *
-     */
-    @Test
-    public void testAtomDictionaryConstructorEmpty() {
-        Atom atomDictionary = new AtomDictionary();
+    public void testAtomDictionary_3() {
+        final Atom atomDictionary = new AtomDictionary();
         assertEquals(new AtomDictionary(), atomDictionary);
-    }
-
-    /**
-     *
-     */
-    @Test
-    public void testAtomDictionaryConstructorEmptyBLength() {
-        AtomDictionary ai = new AtomDictionary();
-        Atom i = new AtomInteger(1);
-        ai.put("foo", i);
-        Atom s = new AtomString("Hello");
-        ai.put("bar", s);
-        assertEquals(ai.bLength(), 22);
-    }
-
-    /**
-     *
-     */
-    @Test
-    public void testAtomDictionaryConstructorEmptyEncode() {
-        AtomDictionary ai = new AtomDictionary();
-        Atom i = new AtomInteger(1);
-        ai.put("foo", i);
-        Atom s = new AtomString("Hello");
-        ai.put("bar", s);
-        assertEquals(ai.encode(), "d3:bar5:Hello3:fooi1ee");
-    }
-
-    /**
-     *
-     */
-    @Test
-    public void testAtomDictionaryConstructorEmptyEquals() {
-        AtomDictionary ai = new AtomDictionary();
-        Atom i = new AtomInteger(1);
-        ai.put("foo", i);
-        Atom s = new AtomString("Hello");
-        ai.put("bar", s);
-
-        AtomDictionary ai1 = new AtomDictionary();
-        Atom i1 = new AtomInteger(1);
-        ai1.put("foo", i1);
-        Atom s1 = new AtomString("Hello");
-        ai1.put("bar", s1);
-
-        assertEquals(ai, ai1);
-    }
-
-    /**
-     *
-     */
-    @Test
-    public void testAtomDictionaryConstructorEmptyLength() {
-        AtomDictionary ai = new AtomDictionary();
-        Atom i = new AtomInteger(1);
-        ai.put("foo", i);
-        Atom s = new AtomString("Hello");
-        ai.put("bar", s);
-        assertEquals(ai.size(), 2);
-    }
-
-    /**
-     *
-     */
-    @Test
-    public void testAtomDictionaryConstructorEmptyString() {
-        AtomDictionary ai = new AtomDictionary();
-        Atom i = new AtomInteger(1);
-        ai.put("foo", i);
-        Atom s = new AtomString("Hello");
-        ai.put("bar", s);
-        assertEquals(ai.toString(), "{bar=Hello, foo=1}");
-    }
-
-    /**
-     *
-     */
-    @Test
-    public void testAtomDictionaryConstructorEmptyValue() {
-        Atom ai = new AtomDictionary();
-        assertEquals(ai, new AtomDictionary());
-    }
-
-    /**
-     *
-     */
-    @Test
-    public void testAtomDictionaryConstructorString() {
-        Atom atomDictionary = new AtomDictionary();
-        assertEquals(new AtomDictionary(), atomDictionary);
-    }
-
-    /**
-     *
-     */
-    @Test
-    public void testAtomDictionaryConstructorStringValue() {
-        Atom ai = new AtomDictionary();
-        Atom ai1 = new AtomDictionary();
-        assertEquals(ai, ai1);
-    }
-
-    /**
-     *
-     */
-    @Test
-    public void testAtomDictionaryClear() {
-        Atom ai = new AtomDictionary();
-        AtomDictionary atomDictionary = new AtomDictionary();
-        atomDictionary.put("first", ai);
-        atomDictionary.clear();
-        assertEquals(ai, atomDictionary);
-    }
-
-    /**
-     *
-     */
-    @Test
-    public void testAtomDictionaryIterateKeys() {
-        AtomDictionary ai = new AtomDictionary();
-        Atom i = new AtomInteger(1);
-        ai.put("foo", i);
-        Atom s = new AtomString("Hello");
-        ai.put("bar", s);
-        ai.keySet().stream().forEach(key -> assertTrue(key instanceof String));
-    }
-
-    /**
-     *
-     */
-    @Test
-    public void testAtomDictionaryIterateValues() {
-        AtomDictionary ai = new AtomDictionary();
-        Atom i = new AtomInteger(1);
-        ai.put("foo", i);
-        Atom s = new AtomString("Hello");
-        ai.put("bar", s);
-        ai.values().stream().forEach(value -> assertTrue(value instanceof Atom));
     }
 
     /**
@@ -251,56 +114,17 @@ public final class AtomDictionaryTest {
      */
     @Test
     public void testAtomDictionaryOrder() {
-        AtomDictionary ai = new AtomDictionary();
-        Atom i = new AtomInteger(1);
-        ai.put("foo", i);
-        ai.put("bar", i);
-        ai.put("boo", i);
-        ai.put("90", i);
-        ai.put("100", i);
-        ai.put("ABC90", i);
-        ai.put("ABC100", i);
-        String keysConcat = "";
-        keysConcat = ai.keySet().stream().map(key -> key).reduce(keysConcat, String::concat);
+        final AtomDictionary ai = new AtomDictionary();
+        final Atom i = new AtomInteger(1);
+        ai.put(new AtomString("foo"), i);
+        ai.put(new AtomString("bar"), i);
+        ai.put(new AtomString("boo"), i);
+        ai.put(new AtomString("90"), i);
+        ai.put(new AtomString("100"), i);
+        ai.put(new AtomString("ABC90"), i);
+        ai.put(new AtomString("ABC100"), i);
+        final String keysConcat = ai.keySet().stream().map(key -> key.toString()).collect(joining());
         assertEquals(keysConcat, "10090ABC100ABC90barboofoo");
-    }
-
-    /**
-     *
-     */
-    @Test
-    public void testAtomDictionaryClone() {
-        AtomDictionary ai = new AtomDictionary();
-        Atom i = new AtomInteger(1);
-        ai.put("foo", i);
-        ai.put("bar", i);
-        ai.put("boo", i);
-        ai.put("90", i);
-        ai.put("100", i);
-        ai.put("ABC90", i);
-        ai.put("ABC100", i);
-        AtomDictionary aj = ai.clone();
-        assertTrue(ai != aj);
-        assertTrue(ai.getClass() == aj.getClass());
-        assertEquals(ai, aj);
-    }
-
-    /**
-     *
-     */
-    @Test
-    public void testAtomDictionaryCopy() {
-        AtomDictionary ai = new AtomDictionary();
-        ai.put("foo", new AtomInteger(1));
-        ai.put("bar", new AtomString("hello"));
-        ai.put("boo", new AtomList());
-        ai.put("far", new AtomDictionary());
-        AtomDictionary aj = ai.copy();
-        assertTrue(ai != aj);
-        assertTrue(ai.getClass() == aj.getClass());
-        assertEquals(ai, aj);
-        ai.entrySet().stream().
-                forEach(entry -> assertTrue(entry.getValue() != aj.get(entry.getKey())));
     }
 
     /**
@@ -364,4 +188,135 @@ public final class AtomDictionaryTest {
         assertArrayEquals(expected, actual);
     }
 
+    /**
+     * Test of isAtomDictionary method, of class AtomDictionary.
+     */
+    @Test
+    public void testIsAtomDictionary() {
+        LOGGER.info("isAtomDictionary");
+        final Atom atom = new AtomDictionary();
+        final boolean result = isAtomDictionary(atom);
+        assertTrue(result);
+    }
+
+    /**
+     * Test of bLength method, of class AtomDictionary.
+     */
+    @Test
+    public void testBLength() {
+        LOGGER.info("bLength");
+        final AtomDictionary ai = new AtomDictionary();
+        final Atom i = new AtomInteger(1);
+        ai.put(new AtomString("foo"), i);
+        final Atom s = new AtomString("Hello");
+        ai.put(new AtomString("bar"), s);
+        assertEquals(ai.bLength(), 22);
+    }
+
+    /**
+     * Test of clone method, of class AtomDictionary.
+     */
+    @Test
+    public void testClone() {
+        LOGGER.info("clone");
+        final AtomDictionary ai = new AtomDictionary();
+        final Atom i = new AtomInteger(1);
+        ai.put(new AtomString("foo"), i);
+        ai.put(new AtomString("bar"), i);
+        ai.put(new AtomString("boo"), i);
+        ai.put(new AtomString("90"), i);
+        ai.put(new AtomString("100"), i);
+        ai.put(new AtomString("ABC90"), i);
+        ai.put(new AtomString("ABC100"), i);
+        final AtomDictionary aj = ai.clone();
+        assertTrue(ai != aj);
+        assertTrue(ai.getClass() == aj.getClass());
+        assertEquals(ai, aj);
+    }
+
+    /**
+     * Test of copy method, of class AtomDictionary.
+     */
+    @Test
+    public void testCopy() {
+        LOGGER.info("copy");
+        final AtomDictionary ai = new AtomDictionary();
+        ai.put(new AtomString("foo"), new AtomInteger(1));
+        ai.put(new AtomString("bar"), new AtomString("hello"));
+        ai.put(new AtomString("boo"), new AtomList());
+        ai.put(new AtomString("far"), new AtomDictionary());
+        final AtomDictionary aj = ai.copy();
+        assertTrue(ai != aj);
+        assertTrue(ai.getClass() == aj.getClass());
+        assertEquals(ai, aj);
+        ai.entrySet().stream().
+                forEach(entry -> assertTrue(entry.getValue() != aj.get(entry.getKey())));
+    }
+
+    /**
+     * Test of encode method, of class AtomDictionary.
+     */
+    @Test
+    public void testEncode() {
+        final AtomDictionary ai = new AtomDictionary();
+        final Atom i = new AtomInteger(1);
+        ai.put(new AtomString("foo"), i);
+        final Atom s = new AtomString("Hello");
+        ai.put(new AtomString("bar"), s);
+        assertEquals(ai.encode(), "d3:bar5:Hello3:fooi1ee");
+    }
+
+    /**
+     * Test of hashCode method, of class AtomDictionary.
+     */
+    @Test
+    public void testHashCode() {
+        LOGGER.info("hashCode");
+        final AtomDictionary instance = new AtomDictionary();
+        final int expected = 469;
+        final int actual = instance.hashCode();
+        assertEquals(expected, actual);
+    }
+
+    /**
+     * Test of equals method, of class AtomDictionary.
+     */
+    @Test
+    public void testEquals() {
+        LOGGER.info("equals");
+        final AtomDictionary ai = new AtomDictionary();
+        final Atom i = new AtomInteger(1);
+        ai.put(new AtomString("foo"), i);
+        final Atom s = new AtomString("Hello");
+        ai.put(new AtomString("bar"), s);
+        final AtomDictionary ai1 = new AtomDictionary();
+        final Atom i1 = new AtomInteger(1);
+        ai1.put(new AtomString("foo"), i1);
+        final Atom s1 = new AtomString("Hello");
+        ai1.put(new AtomString("bar"), s1);
+        final boolean result = ai.equals(ai1);
+        assertTrue(result);
+    }
+
+    /**
+     * Test of compareTo method, of class AtomDictionary.
+     */
+    @Test
+    public void testCompareTo() {
+        LOGGER.info("compareTo");
+        final AtomDictionary ai = new AtomDictionary();
+        final Atom i = new AtomInteger(1);
+        ai.put(new AtomString("foo"), i);
+        final Atom s = new AtomString("Hello");
+        ai.put(new AtomString("bar"), s);
+        final AtomDictionary ai1 = new AtomDictionary();
+        final Atom i1 = new AtomInteger(1);
+        ai1.put(new AtomString("foo"), i1);
+        final Atom s1 = new AtomString("Hello");
+        ai1.put(new AtomString("bar"), s1);
+        final int expected = 0;
+        final int actual = ai.compareTo(ai1);
+        assertEquals(expected, actual);
+    }
+    
 }

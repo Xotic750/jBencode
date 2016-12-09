@@ -23,26 +23,13 @@
  */
 package se.suka.baldr.jbencode;
 
-import java.util.Collection;
-import static java.util.Collections.unmodifiableMap;
-import java.util.Comparator;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.NavigableSet;
-import java.util.NoSuchElementException;
-import static java.util.Objects.requireNonNull;
-import java.util.Set;
 import java.util.concurrent.ConcurrentNavigableMap;
 import java.util.concurrent.ConcurrentSkipListMap;
-import java.util.function.BiConsumer;
-import java.util.function.BiFunction;
-import java.util.function.Function;
 import static java.util.stream.Collectors.joining;
 import static java.util.stream.Collectors.summingInt;
 import static java.util.stream.Collectors.toMap;
-import org.slf4j.Logger;
-import static org.slf4j.LoggerFactory.getLogger;
-import static se.suka.baldr.jbencode.Atom.requireAtom;
 import static se.suka.baldr.jbencode.Utilities.stringToAsciiBytes;
 
 /**
@@ -57,53 +44,11 @@ import static se.suka.baldr.jbencode.Utilities.stringToAsciiBytes;
  * @author Graham Fairweather
  * @see <a href="https://en.wikipedia.org/wiki/Bencode">Bencode</a>
  */
-public final class AtomDictionary extends ConcurrentSkipListMap<String, Atom> implements Atom, ConcurrentNavigableMap<String, Atom>, Cloneable, Comparable<AtomDictionary> {
+public final class AtomDictionary extends ConcurrentSkipListMap<AtomString, Atom> implements Atom, ConcurrentNavigableMap<AtomString, Atom>, Cloneable, Comparable<AtomDictionary> {
 
     private static final long serialVersionUID = -7602783133044374261L;
 
-    private static final Logger LOGGER = getLogger(AtomDictionary.class);
-
-    /**
-     * Tests if the supplied object is an instance of {@code String}.
-     *
-     * @param o The object to test
-     * @return {@code true} if the object is an instance of {@code String},
-     * otherwise {@code false}
-     */
-    private static boolean isString(Object o) {
-        return o instanceof String;
-    }
-
-    /**
-     * Requires that the supplied object is an instance of {@code String}.
-     *
-     * @param <T> The {@code Class} of the test object
-     * @param o The object to test
-     * @throws ClassCastException if the object is not an instance of
-     * {@code String}
-     * @return The string object
-     */
-    private static <T> T requireString(T o) {
-        return requireString(o, "");
-    }
-
-    /**
-     * Requires that the supplied object is an instance of {@code String}.
-     *
-     * @param <T> The {@code Class} of the test object
-     * @param o The object to test
-     * @param message The message to throw with {@link ClassCastException}
-     * @throws ClassCastException if the object is not an instance of
-     * {@code String}
-     * @return The string object
-     */
-    private static <T> T requireString(T o, String message) {
-        if (!isString(o)) {
-            throw new ClassCastException(message);
-        }
-        return o;
-    }
-
+    //private static final Logger LOGGER = getLogger(AtomDictionary.class);
     /**
      * Test if an object reference is an instance of {@code AtomDictionary}.
      *
@@ -167,9 +112,8 @@ public final class AtomDictionary extends ConcurrentSkipListMap<String, Atom> im
      * @param m the map whose mappings are to be copied and placed in this map
      * @throws NullPointerException if the specified map is null
      */
-    public AtomDictionary(Map<? extends String, ? extends Atom> m) {
-        this();
-        putAll(m);
+    public AtomDictionary(Map<? extends AtomString, ? extends Atom> m) {
+        super(m);
     }
 
     /**
@@ -181,44 +125,7 @@ public final class AtomDictionary extends ConcurrentSkipListMap<String, Atom> im
     @Override
     public int bLength() {
         return 2 + super.entrySet().stream().parallel()
-                .collect(summingInt(entry -> {
-                    Atom atom = new AtomString(entry.getKey());
-                    return atom.bLength() + entry.getValue().bLength();
-                }));
-    }
-
-    /**
-     * Returns a key-value mapping associated with the least key greater than or
-     * equal to the given key, or {@code null} if there is no such entry. The
-     * returned entry does <em>not</em>
-     * support the {@code Entry.setValue} method.
-     *
-     * @param key
-     * @return
-     * @throws NullPointerException if the specified key is {@code null}
-     */
-    @Override
-    public Entry<String, Atom> ceilingEntry(final String key) {
-        return super.ceilingEntry(requireNonNull(key));
-    }
-
-    /**
-     * @param key
-     * @return
-     * @throws NullPointerException if the specified key is null
-     */
-    @Override
-    public String ceilingKey(final String key) {
-        return super.ceilingKey(requireNonNull(key));
-    }
-
-    /**
-     * Removes all of the mappings from this map (optional operation). The map
-     * will be empty after this call returns.
-     */
-    @Override
-    public void clear() {
-        super.clear();
+                .collect(summingInt(entry -> entry.getKey().bLength() + entry.getValue().bLength()));
     }
 
     /**
@@ -233,130 +140,13 @@ public final class AtomDictionary extends ConcurrentSkipListMap<String, Atom> im
     }
 
     /**
-     *
-     * @return
-     */
-    @Override
-    public Comparator<? super String> comparator() {
-        return super.comparator();
-    }
-
-    /**
-     * Attempts to compute a mapping for the specified key and its current
-     * mapped value (or {@code null} if there is no current mapping). The
-     * function is <em>NOT</em> guaranteed to be applied once atomically.
-     *
-     * @param key key with which the specified value is to be associated
-     * @param remappingFunction the function to compute a value
-     * @return the new value associated with the specified key, or null if none
-     * @throws NullPointerException if the specified key is null or the
-     * remappingFunction is null
-     */
-    @Override
-    public Atom compute(final String key, final BiFunction<? super String, ? super Atom, ? extends Atom> remappingFunction) {
-        return super.compute(requireNonNull(key), requireNonNull(remappingFunction));
-    }
-
-    /**
-     * If the specified key is not already associated with a value, attempts to
-     * compute its value using the given mapping function and enters it into
-     * this map unless {@code null}. The function is <em>NOT</em> guaranteed to
-     * be applied once atomically only if the value is not present.
-     *
-     * @param key key with which the specified value is to be associated
-     * @param mappingFunction the function to compute a value
-     * @return the current (existing or computed) value associated with the
-     * specified key, or null if the computed value is null
-     * @throws NullPointerException if the specified key is null or the
-     * mappingFunction is null
-     */
-    @Override
-    public Atom computeIfAbsent(final String key, final Function<? super String, ? extends Atom> mappingFunction) {
-        return super.computeIfAbsent(requireNonNull(key), requireNonNull(mappingFunction));
-    }
-
-    /**
-     * If the value for the specified key is present, attempts to compute a new
-     * mapping given the key and its current mapped value. The function is
-     * <em>NOT</em> guaranteed to be applied once atomically.
-     *
-     * @param key key with which a value may be associated
-     * @param remappingFunction the function to compute a value
-     * @return the new value associated with the specified key, or null if none
-     * @throws NullPointerException if the specified key is null or the
-     * remappingFunction is null
-     */
-    @Override
-    public Atom computeIfPresent(final String key, final BiFunction<? super String, ? super Atom, ? extends Atom> remappingFunction) {
-        return super.computeIfPresent(requireNonNull(key), requireNonNull(remappingFunction));
-    }
-
-    /**
-     * Returns <tt>true</tt> if this map contains a mapping for the specified
-     * key. More formally, returns <tt>true</tt> if and only if this map
-     * contains a mapping for a key <tt>k</tt> such that
-     * <tt>(key==null ? k==null : key.equals(k))</tt>. (There can be at most one
-     * such mapping.)
-     *
-     * @param key key whose presence in this map is to be tested
-     * @return <tt>true</tt> if this map contains a mapping for the specified
-     * key
-     * @throws ClassCastException if the key is of an inappropriate type for
-     * this map
-     * @throws NullPointerException if the specified key is null and this map
-     * does not permit null keys
-     */
-    @Override
-    public boolean containsKey(final Object key) {
-        return super.containsKey(requireString(requireNonNull(key)));
-    }
-
-    /**
-     * Returns <tt>true</tt> if this map maps one or more keys to the specified
-     * value. More formally, returns <tt>true</tt> if and only if this map
-     * contains at least one mapping to a value <tt>v</tt> such that
-     * <tt>(value==null ? v==null : value.equals(v))</tt>. This operation will
-     * probably require time linear in the map size for most implementations of
-     * the <tt>Map</tt> interface.
-     *
-     * @param o value whose presence in this map is to be tested
-     * @return <tt>true</tt> if this map maps one or more keys to the specified
-     * value
-     * @throws ClassCastException if the value is of an inappropriate type for
-     * this map
-     * @throws NullPointerException if the specified value is null
-     */
-    @Override
-    public boolean containsValue(final Object o) {
-        return super.containsValue(requireAtom(requireNonNull(o)));
-    }
-
-    /**
-     *
-     * @return
-     */
-    @Override
-    public NavigableSet<String> descendingKeySet() {
-        return super.descendingKeySet();
-    }
-
-    /**
-     *
-     * @return
-     */
-    @Override
-    public ConcurrentNavigableMap<String, Atom> descendingMap() {
-        return super.descendingMap();
-    }
-
-    /**
      * Returns a deep copy of this {@link Atom}.
      *
      * @return a copy of this {@link Atom}
      */
     @Override
     public AtomDictionary copy() {
-        Map<String, Atom> collect = super.entrySet().stream()
+        final Map<AtomString, Atom> collect = super.entrySet().stream().parallel()
                 .collect(toMap(Entry::getKey, e -> e.getValue().copy()));
         return new AtomDictionary(collect);
     }
@@ -369,7 +159,7 @@ public final class AtomDictionary extends ConcurrentSkipListMap<String, Atom> im
     @Override
     public String encode() {
         return super.entrySet().stream()
-                .map(entry -> new AtomString(entry.getKey()).encode() + entry.getValue().encode())
+                .map(entry -> entry.getKey().encode() + entry.getValue().encode())
                 .collect(joining("", "d", "e"));
     }
 
@@ -381,483 +171,6 @@ public final class AtomDictionary extends ConcurrentSkipListMap<String, Atom> im
     @Override
     public byte[] encodeAsBytes() {
         return stringToAsciiBytes(encode());
-    }
-
-    /**
-     * Returns a {@link Set} view of the mappings contained in this map. The set
-     * is backed by the map, so changes to the map are reflected in the set, and
-     * vice-versa. If the map is modified while an iteration over the set is in
-     * progress (except through the iterator's own
-     * <tt>remove</tt> operation, or through the
-     * <tt>setValue</tt> operation on a map entry returned by the iterator) the
-     * results of the iteration are undefined. The set supports element removal,
-     * which removes the corresponding mapping from the map, via the
-     * <tt>Iterator.remove</tt>,
-     * <tt>Set.remove</tt>, <tt>removeAll</tt>, <tt>retainAll</tt> and
-     * <tt>clear</tt> operations. It does not support the
-     * <tt>add</tt> or <tt>addAll</tt> operations.
-     *
-     * @return a set view of the mappings contained in this map
-     */
-    @Override
-    public Set<Entry<String, Atom>> entrySet() {
-        return super.entrySet();
-    }
-
-    /**
-     * Returns a key-value mapping associated with the least key in this map, or
-     * {@code null} if the map is empty. The returned entry does <em>not</em>
-     * support the {@code Entry.setValue} method.
-     *
-     * @return
-     */
-    @Override
-    public Entry<String, Atom> firstEntry() {
-        return super.firstEntry();
-    }
-
-    /**
-     * Returns a key-value mapping associated with the greatest key less than or
-     * equal to the given key, or {@code null} if there is no such key. The
-     * returned entry does <em>not</em> support the {@code Entry.setValue}
-     * method.
-     *
-     * @param key the key
-     * @return
-     * @throws NullPointerException if the specified key is null
-     */
-    @Override
-    public Entry<String, Atom> floorEntry(final String key) {
-        return super.floorEntry(requireNonNull(key));
-    }
-
-    /**
-     * @param key the key
-     * @return
-     * @throws NullPointerException if the specified key is null
-     */
-    @Override
-    public String floorKey(final String key) {
-        return super.floorKey(requireNonNull(key));
-    }
-
-    /**
-     *
-     * @return
-     */
-    @Override
-    public String firstKey() {
-        return super.firstKey();
-    }
-
-    @Override
-    public void forEach(BiConsumer<? super String, ? super Atom> action) {
-        super.forEach(requireNonNull(action));
-    }
-
-    /**
-     * Returns the value to which the specified key is mapped, or {@code null}
-     * if this map contains no mapping for the key.
-     *
-     * <p>
-     * More formally, if this map contains a mapping from a key {@code k} to a
-     * value {@code v} such that {@code (key==null ? k==null :
-     * key.equals(k))}, then this method returns {@code v}; otherwise it returns
-     * {@code null}. (There can be at most one such mapping.)
-     *
-     * <p>
-     * If this map permits null values, then a return value of {@code null} does
-     * not <i>necessarily</i> indicate that the map contains no mapping for the
-     * key; it's also possible that the map explicitly maps the key to
-     * {@code null}. The {@link #containsKey
-     * containsKey} operation may be used to distinguish these two cases.
-     *
-     * @param key the key whose associated value is to be returned
-     * @return the value to which the specified key is mapped, or {@code null}
-     * if this map contains no mapping for the key
-     * @throws ClassCastException if the key is of an inappropriate type for
-     * this map
-     * @throws NullPointerException if the specified key is null
-     */
-    @Override
-    public Atom get(final Object key) {
-        return super.get(requireString(requireNonNull(key)));
-    }
-
-    /**
-     * Returns the value to which the specified key is mapped, or the given
-     * defaultValue if this map contains no mapping for the key.
-     *
-     * @param key the key
-     * @param defaultValue the value to return if this map contains no mapping
-     * for the given key
-     * @return the mapping for the key, if present; else the defaultValue
-     * @throws ClassCastException if the key is of an inappropriate type for
-     * this map
-     * @throws NullPointerException if the specified key is null
-     */
-    @Override
-    public Atom getOrDefault(final Object key, final Atom defaultValue) {
-        return super.getOrDefault(requireString(requireNonNull(key)), defaultValue);
-    }
-
-    /**
-     * @param toKey
-     * @return
-     * @throws NullPointerException if {@code toKey} is null
-     */
-    @Override
-    public ConcurrentNavigableMap<String, Atom> headMap(final String toKey) {
-        return super.headMap(requireNonNull(toKey));
-    }
-
-    /**
-     * @param toKey
-     * @param inclusive
-     * @return
-     * @throws NullPointerException if {@code toKey} is null
-     */
-    @Override
-    public ConcurrentNavigableMap<String, Atom> headMap(final String toKey, final boolean inclusive) {
-        return super.headMap(requireNonNull(toKey), inclusive);
-    }
-
-    /**
-     * Returns a key-value mapping associated with the least key strictly
-     * greater than the given key, or {@code null} if there is no such key. The
-     * returned entry does <em>not</em> support the {@code Entry.setValue}
-     * method.
-     *
-     * @param key the key
-     * @return
-     * @throws NullPointerException if the specified key is null
-     */
-    @Override
-    public Entry<String, Atom> higherEntry(final String key) {
-        return super.higherEntry(requireNonNull(key));
-    }
-
-    /**
-     * @param key the key
-     * @return
-     * @throws NullPointerException if the specified key is null
-     */
-    @Override
-    public String higherKey(final String key) {
-        return super.higherKey(requireNonNull(key));
-    }
-
-    /**
-     * Returns <tt>true</tt> if this map contains no key-value mappings.
-     *
-     * @return <tt>true</tt> if this map contains no key-value mappings
-     */
-    @Override
-    public boolean isEmpty() {
-        return super.isEmpty();
-    }
-
-    /**
-     * Returns a {@link Set} view of the keys contained in this map. The set is
-     * backed by the map, so changes to the map are reflected in the set, and
-     * vice-versa. If the map is modified while an iteration over the set is in
-     * progress (except through the iterator's own <tt>remove</tt>
-     * operation), the results of the iteration are undefined. The set supports
-     * element removal, which removes the corresponding mapping from the map,
-     * via the
-     * <tt>Iterator.remove</tt>, <tt>Set.remove</tt>,
-     * <tt>removeAll</tt>, <tt>retainAll</tt>, and <tt>clear</tt>
-     * operations. It does not support the <tt>add</tt> or <tt>addAll</tt>
-     * operations.
-     *
-     * @return a set view of the keys contained in this map
-     */
-    @Override
-    public NavigableSet<String> keySet() {
-        return super.keySet();
-    }
-
-    /**
-     * Returns a key-value mapping associated with the greatest key in this map,
-     * or {@code null} if the map is empty. The returned entry does <em>not</em>
-     * support the {@code Entry.setValue} method.
-     *
-     * @return
-     */
-    @Override
-    public Entry<String, Atom> lastEntry() {
-        return super.lastEntry();
-    }
-
-    /**
-     * @return @throws NoSuchElementException {@inheritDoc}
-     */
-    @Override
-    public String lastKey() {
-        return super.lastKey();
-    }
-
-    /**
-     * Returns a key-value mapping associated with the greatest key strictly
-     * less than the given key, or {@code null} if there is no such key. The
-     * returned entry does <em>not</em> support the {@code Entry.setValue}
-     * method.
-     *
-     * @param key
-     * @return
-     * @throws ClassCastException {@inheritDoc}
-     * @throws NullPointerException if the specified key is null
-     */
-    @Override
-    public Map.Entry<String, Atom> lowerEntry(final String key) {
-        return super.lowerEntry(requireNonNull(key));
-    }
-
-    /**
-     * @param key
-     * @return
-     * @throws ClassCastException {@inheritDoc}
-     * @throws NullPointerException if the specified key is null
-     */
-    @Override
-    public String lowerKey(final String key) {
-        return super.lowerKey(requireNonNull(key));
-    }
-
-    /**
-     * If the specified key is not already associated with a value, associates
-     * it with the given value. Otherwise, replaces the value with the results
-     * of the given remapping function, or removes if {@code null}. The function
-     * is <em>NOT</em>
-     * guaranteed to be applied once atomically.
-     *
-     * @param key key with which the specified value is to be associated
-     * @param value the value to use if absent
-     * @param remappingFunction the function to recompute a value if present
-     * @return the new value associated with the specified key, or null if none
-     * @throws NullPointerException if the specified key or value is null or the
-     * remappingFunction is null
-     * @since 1.8
-     */
-    @Override
-    public Atom merge(String key, Atom value, BiFunction<? super Atom, ? super Atom, ? extends Atom> remappingFunction) {
-        return super.merge(key, value, remappingFunction);
-    }
-
-    /**
-     *
-     * @return
-     */
-    @Override
-    public NavigableSet<String> navigableKeySet() {
-        return super.navigableKeySet();
-    }
-
-    /**
-     * Removes and returns a key-value mapping associated with the least key in
-     * this map, or {@code null} if the map is empty. The returned entry does
-     * <em>not</em> support the {@code Entry.setValue} method.
-     *
-     * @return
-     */
-    @Override
-    public Map.Entry<String, Atom> pollFirstEntry() {
-        return super.pollFirstEntry();
-    }
-
-    /**
-     * Removes and returns a key-value mapping associated with the greatest key
-     * in this map, or {@code null} if the map is empty. The returned entry does
-     * <em>not</em> support the {@code Entry.setValue} method.
-     *
-     * @return
-     */
-    @Override
-    public Map.Entry<String, Atom> pollLastEntry() {
-        return super.pollLastEntry();
-    }
-
-    /**
-     * Associates the specified value with the specified key in this map
-     * (optional operation). If the map previously contained a mapping for the
-     * key, the old value is replaced by the specified value. (A map
-     * <tt>m</tt> is said to contain a mapping for a key <tt>k</tt> if and only
-     * if {@link #containsKey(Object) m.containsKey(k)} would return
-     * <tt>true</tt>.)
-     *
-     * @param key key with which the specified value is to be associated
-     * @param atom value to be associated with the specified key
-     * @return the previous value associated with <tt>key</tt>, or
-     * <tt>null</tt> if there was no mapping for <tt>key</tt>. (A
-     * <tt>null</tt>
-     * return can also indicate that the map previously associated
-     * <tt>null</tt>
-     * with <tt>key</tt>, if the implementation supports <tt>null</tt>
-     * values.)
-     * @throws NullPointerException if the specified key or value is null
-     */
-    @Override
-    public Atom put(final String key, final Atom atom) {
-        return super.put(requireNonNull(key), requireNonNull(atom));
-    }
-
-    /**
-     * Copies all of the mappings from the specified map to this map (optional
-     * operation). The effect of this call is equivalent to that of calling
-     * {@link #put(Object,Object) put(k, v)} on this map once for each mapping
-     * from key <tt>k</tt> to value <tt>v</tt> in the specified map. The
-     * behaviour of this operation is undefined if the specified map is modified
-     * while the operation is in progress.
-     *
-     * @param m mappings to be stored in this map
-     * @throws NullPointerException if the specified map is null, or if the
-     * specified map contains null keys or values
-     */
-    @Override
-    public void putAll(final Map<? extends String, ? extends Atom> m) {
-        unmodifiableMap(requireNonNull(m)).entrySet().stream()
-                .forEachOrdered(entry -> {
-                    final String key = requireNonNull(entry.getKey());
-                    final Atom atom = requireNonNull(entry.getValue());
-                    super.put(key, atom);
-                });
-    }
-
-    /**
-     * {@inheritDoc}
-     *
-     * @return the previous value associated with the specified key, or
-     * {@code null} if there was no mapping for the key
-     * @throws ClassCastException if the specified key cannot be compared with
-     * the keys currently in the map
-     * @throws NullPointerException if the specified key or value is null
-     */
-    @Override
-    public Atom putIfAbsent(String key, Atom value) {
-        return super.putIfAbsent(key, value);
-    }
-
-    /**
-     * Removes the mapping for a key from this map if it is present (optional
-     * operation). More formally, if this map contains a mapping from key
-     * <tt>k</tt> to value <tt>v</tt> such that
-     * <code>(key==null ?  k==null : key.equals(k))</code>, that mapping is
-     * removed. (The map can contain at most one such mapping.)
-     *
-     * <p>
-     * Returns the value to which this map previously associated the key, or
-     * <tt>null</tt> if the map contained no mapping for the key.
-     *
-     * <p>
-     * If this map permits null values, then a return value of
-     * <tt>null</tt> does not <i>necessarily</i> indicate that the map contained
-     * no mapping for the key; it's also possible that the map explicitly mapped
-     * the key to <tt>null</tt>.
-     *
-     * <p>
-     * The map will not contain a mapping for the specified key once the call
-     * returns.
-     *
-     * @param key key whose mapping is to be removed from the map
-     * @return the previous value associated with <tt>key</tt>, or
-     * <tt>null</tt> if there was no mapping for <tt>key</tt>.
-     * @throws ClassCastException if the key is of an inappropriate type for
-     * this map
-     * @throws NullPointerException if the specified key is null
-     */
-    @Override
-    public Atom remove(final Object key) {
-        return super.remove(requireString(requireNonNull(key)));
-    }
-
-    @Override
-    public void replaceAll(BiFunction<? super String, ? super Atom, ? extends Atom> function) {
-        super.replaceAll(function);
-    }
-
-    /**
-     * Returns the number of key-value mappings in this map. If the map contains
-     * more than <tt>Integer.MAX_VALUE</tt> elements, returns
-     * <tt>Integer.MAX_VALUE</tt>.
-     *
-     * @return the number of key-value mappings in this map
-     */
-    @Override
-    public int size() {
-        return super.size();
-    }
-
-    /**
-     * @param fromKey
-     * @param toKey
-     * @return
-     * @throws ClassCastException {@inheritDoc}
-     * @throws NullPointerException if {@code fromKey} or {@code toKey} is null
-     * @throws IllegalArgumentException {@inheritDoc}
-     */
-    @Override
-    public ConcurrentNavigableMap<String, Atom> subMap(String fromKey, String toKey) {
-        return super.subMap(fromKey, toKey);
-    }
-
-    /**
-     * @param fromKey
-     * @param fromInclusive
-     * @param toKey
-     * @param toInclusive
-     * @return
-     * @throws ClassCastException {@inheritDoc}
-     * @throws NullPointerException if {@code fromKey} or {@code toKey} is null
-     * @throws IllegalArgumentException {@inheritDoc}
-     */
-    @Override
-    public ConcurrentNavigableMap<String, Atom> subMap(String fromKey, boolean fromInclusive, String toKey, boolean toInclusive) {
-        return super.subMap(fromKey, fromInclusive, toKey, toInclusive);
-    }
-
-    /**
-     * @param fromKey
-     * @return
-     * @throws ClassCastException {@inheritDoc}
-     * @throws NullPointerException if {@code fromKey} is null
-     * @throws IllegalArgumentException {@inheritDoc}
-     */
-    @Override
-    public ConcurrentNavigableMap<String, Atom> tailMap(String fromKey) {
-        return super.tailMap(fromKey);
-    }
-
-    /**
-     * @param fromKey
-     * @param inclusive
-     * @return
-     * @throws ClassCastException {@inheritDoc}
-     * @throws NullPointerException if {@code fromKey} is null
-     * @throws IllegalArgumentException {@inheritDoc}
-     */
-    @Override
-    public ConcurrentNavigableMap<String, Atom> tailMap(String fromKey, boolean inclusive) {
-        return super.tailMap(fromKey, inclusive);
-    }
-
-    /**
-     * Returns a {@link Collection} view of the values contained in this map.
-     * The collection is backed by the map, so changes to the map are reflected
-     * in the collection, and vice-versa. If the map is modified while an
-     * iteration over the collection is in progress (except through the
-     * iterator's own <tt>remove</tt> operation), the results of the iteration
-     * are undefined. The collection supports element removal, which removes the
-     * corresponding mapping from the map, via the
-     * <tt>Iterator.remove</tt>,
-     * <tt>Collection.remove</tt>, <tt>removeAll</tt>,
-     * <tt>retainAll</tt> and <tt>clear</tt> operations. It does not support the
-     * <tt>add</tt> or <tt>addAll</tt> operations.
-     *
-     * @return a collection view of the values contained in this map
-     */
-    @Override
-    public Collection<Atom> values() {
-        return super.values();
     }
 
     /**
@@ -920,17 +233,6 @@ public final class AtomDictionary extends ConcurrentSkipListMap<String, Atom> im
             return super.equals(obj);
         }
         return false;
-    }
-
-    /**
-     * Returns a {@code String} object representing this
-     * {@code AtomDictionary}'s value.
-     *
-     * @return a string representation of the value of this object
-     */
-    @Override
-    public String toString() {
-        return super.toString();
     }
 
     /**
