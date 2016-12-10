@@ -25,7 +25,6 @@ package se.suka.baldr.jbencode;
 
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.concurrent.ConcurrentNavigableMap;
 import java.util.concurrent.ConcurrentSkipListMap;
 import static java.util.stream.Collectors.joining;
 import static java.util.stream.Collectors.summingInt;
@@ -44,7 +43,7 @@ import static se.suka.baldr.jbencode.Utilities.stringToAsciiBytes;
  * @author Graham Fairweather
  * @see <a href="https://en.wikipedia.org/wiki/Bencode">Bencode</a>
  */
-public final class AtomDictionary extends ConcurrentSkipListMap<AtomString, Atom> implements Atom, ConcurrentNavigableMap<AtomString, Atom>, Cloneable, Comparable<AtomDictionary> {
+public final class AtomDictionary extends ConcurrentSkipListMap<AtomString, Atom> implements Atom, Comparable<AtomDictionary> {
 
     private static final long serialVersionUID = -7602783133044374261L;
 

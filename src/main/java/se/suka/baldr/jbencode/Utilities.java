@@ -31,6 +31,7 @@ import static java.lang.Math.max;
 import static java.lang.Math.min;
 import static java.nio.charset.StandardCharsets.US_ASCII;
 import static java.text.MessageFormat.format;
+import java.util.Optional;
 import java.util.Random;
 import org.slf4j.Logger;
 import static org.slf4j.LoggerFactory.getLogger;
@@ -153,16 +154,14 @@ class Utilities {
      * {@code null}
      * @return A byte array containing all the bytes from file
      */
-    static final byte[] readFileAsBytes(final String pathName) {
+    static final Optional<byte[]> readFileAsBytes(final String pathName) {
         final File file = new File(pathName);
-        final byte[] bytes;
         try {
-            bytes = toByteArray(file);
+            return Optional.of(toByteArray(file));
         } catch (IOException | IllegalArgumentException ex) {
             LOGGER.warn(format("{0}: {1}", makeParam(ex)));
-            return null;
+            return Optional.empty();
         }
-        return bytes;
     }
 
     /**

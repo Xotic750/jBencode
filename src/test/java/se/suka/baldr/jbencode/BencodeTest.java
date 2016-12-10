@@ -24,10 +24,14 @@
 package se.suka.baldr.jbencode;
 
 import static java.nio.charset.StandardCharsets.US_ASCII;
+import java.util.Optional;
+import java.util.OptionalInt;
+import java.util.OptionalLong;
 import org.junit.After;
 import org.junit.AfterClass;
-import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -40,8 +44,6 @@ import static se.suka.baldr.jbencode.Bencode.decodeFile;
 import static se.suka.baldr.jbencode.Bencode.decodeInt;
 import static se.suka.baldr.jbencode.Bencode.decodeList;
 import static se.suka.baldr.jbencode.Bencode.decodeStr;
-import static se.suka.baldr.jbencode.Bencode.encode;
-import static se.suka.baldr.jbencode.Bencode.encodeAsBytes;
 import static se.suka.baldr.jbencode.Bencode.parseInt;
 import static se.suka.baldr.jbencode.Bencode.parseLong;
 
@@ -121,7 +123,6 @@ public final class BencodeTest {
     public void testBencode() {
         LOGGER.info("testBencode");
         Bencode actual = null;
-        final Bencode expected = null;
         boolean caught = false;
         try {
             actual = new Bencode();
@@ -129,7 +130,7 @@ public final class BencodeTest {
             caught = true;
         }
         assertTrue(caught);
-        assertEquals(expected, actual);
+        assertNull(actual);
     }
 
     /**
@@ -143,8 +144,8 @@ public final class BencodeTest {
         expected.put(new AtomString("a"), new AtomString("Hello World"));
         expected.put(new AtomString("b"), new AtomList());
         expected.put(new AtomString("c"), new AtomInteger());
-        final Atom actual = decode(x);
-        assertEquals(expected, actual);
+        final Optional<? extends Atom> actual = decode(x);
+        assertEquals(expected, actual.get());
     }
 
     /**
@@ -154,9 +155,8 @@ public final class BencodeTest {
     public void testDecode_String_2() {
         LOGGER.info("decode");
         final String x = null;
-        final Atom expected = null;
-        final Atom actual = decode(x);
-        assertEquals(expected, actual);
+        final Optional<? extends Atom> actual = decode(x);
+        assertFalse(actual.isPresent());
     }
 
     /**
@@ -166,9 +166,8 @@ public final class BencodeTest {
     public void testDecode_String_3() {
         LOGGER.info("decode");
         final String x = "";
-        final Atom expected = null;
-        final Atom actual = decode(x);
-        assertEquals(expected, actual);
+        final Optional<? extends Atom> actual = decode(x);
+        assertFalse(actual.isPresent());
     }
 
     /**
@@ -178,9 +177,8 @@ public final class BencodeTest {
     public void testDecode_String_4() {
         LOGGER.info("decode");
         final String x = "ae";
-        final Atom expected = null;
-        final Atom actual = decode(x);
-        assertEquals(expected, actual);
+        final Optional<? extends Atom> actual = decode(x);
+        assertFalse(actual.isPresent());
     }
 
     /**
@@ -195,8 +193,8 @@ public final class BencodeTest {
         expected.put(new AtomString("a"), new AtomString("Hello World"));
         expected.put(new AtomString("b"), new AtomList());
         expected.put(new AtomString("c"), new AtomInteger());
-        final Atom actual = decode(x);
-        assertEquals(expected, actual);
+        final Optional<? extends Atom> actual = decode(x);
+        assertEquals(expected, actual.get());
     }
 
     /**
@@ -208,8 +206,8 @@ public final class BencodeTest {
         final int uiStart = 4;
         final String x = "d1:a11:Hello Worlde";
         final Atom expected = new AtomString("Hello World");
-        final Atom actual = decode(x, uiStart);
-        assertEquals(expected, actual);
+        final Optional<? extends Atom> actual = decode(x, uiStart);
+        assertEquals(expected, actual.get());
     }
 
     /**
@@ -220,9 +218,8 @@ public final class BencodeTest {
         LOGGER.info("decode at start index");
         final int uiStart = 40;
         final String x = "d1:a11:Hello Worlde";
-        final Atom expected = null;
-        final Atom actual = decode(x, uiStart);
-        assertEquals(expected, actual);
+        final Optional<? extends Atom> actual = decode(x, uiStart);
+        assertFalse(actual.isPresent());
     }
 
     /**
@@ -234,8 +231,8 @@ public final class BencodeTest {
         final String x = "d1:a11:Hello Worlde";
         final AtomDictionary expected = new AtomDictionary();
         expected.put(new AtomString("a"), new AtomString("Hello World"));
-        final Atom actual = decodeDict(x);
-        assertEquals(expected, actual);
+        final Optional<? extends Atom> actual = decodeDict(x);
+        assertEquals(expected, actual.get());
     }
 
     /**
@@ -245,9 +242,8 @@ public final class BencodeTest {
     public void testDecodeDict_String_2() {
         LOGGER.info("decodeDict");
         final String x = null;
-        final AtomDictionary expected = null;
-        final Atom actual = decodeDict(x);
-        assertEquals(expected, actual);
+        final Optional<? extends Atom> actual = decodeDict(x);
+        assertFalse(actual.isPresent());
     }
 
     /**
@@ -257,9 +253,8 @@ public final class BencodeTest {
     public void testDecodeDict_String_3() {
         LOGGER.info("decodeDict");
         final String x = "1:a11:Hello Worlde";
-        final AtomDictionary expected = null;
-        final Atom actual = decodeDict(x);
-        assertEquals(expected, actual);
+        final Optional<? extends Atom> actual = decodeDict(x);
+        assertFalse(actual.isPresent());
     }
 
     /**
@@ -269,9 +264,8 @@ public final class BencodeTest {
     public void testDecodeDict_String_4() {
         LOGGER.info("decodeDict");
         final String x = "d1:a11:Hello World";
-        final AtomDictionary expected = null;
-        final Atom actual = decodeDict(x);
-        assertEquals(expected, actual);
+        final Optional<? extends Atom> actual = decodeDict(x);
+        assertFalse(actual.isPresent());
     }
 
     /**
@@ -281,9 +275,8 @@ public final class BencodeTest {
     public void testDecodeDict_String_5() {
         LOGGER.info("decodeDict");
         final String x = "di0e11:Hello Worlde";
-        final AtomDictionary expected = null;
-        final Atom actual = decodeDict(x);
-        assertEquals(expected, actual);
+        final Optional<? extends Atom> actual = decodeDict(x);
+        assertFalse(actual.isPresent());
     }
 
     /**
@@ -293,9 +286,8 @@ public final class BencodeTest {
     public void testDecodeDict_String_6() {
         LOGGER.info("decodeDict");
         final String x = "d1:a11:Helloe";
-        final AtomDictionary expected = null;
-        final Atom actual = decodeDict(x);
-        assertEquals(expected, actual);
+        final Optional<? extends Atom> actual = decodeDict(x);
+        assertFalse(actual.isPresent());
     }
 
     /**
@@ -308,8 +300,8 @@ public final class BencodeTest {
         final byte[] x = s.getBytes(US_ASCII);
         final AtomDictionary expected = new AtomDictionary();
         expected.put(new AtomString("a"), new AtomString("Hello World"));
-        final Atom actual = decodeDict(x);
-        assertEquals(expected, actual);
+        final Optional<? extends Atom> actual = decodeDict(x);
+        assertEquals(expected, actual.get());
     }
 
     /**
@@ -322,17 +314,17 @@ public final class BencodeTest {
         final String x = "li42ed1:a11:Hello Worldee";
         final AtomDictionary expected = new AtomDictionary();
         expected.put(new AtomString("a"), new AtomString("Hello World"));
-        final Atom actual = decodeDict(x, uiStart);
-        assertEquals(expected, actual);
+        final Optional<? extends Atom> actual = decodeDict(x, uiStart);
+        assertEquals(expected, actual.get());
     }
 
     /**
      * Test of decodeFile method, of class Bencode.
      */
     @Test
-    public void testDecodeFile() {
+    public void testDecodeFile_1() {
         LOGGER.info("decodeFile");
-        final Atom actual = decodeFile("samples/sample1.torrent");
+        final Optional<? extends Atom> actual = decodeFile("samples/sample1.torrent");
         final AtomDictionary expected = new AtomDictionary();
         expected.put(new AtomString("announce"), new AtomString("udp://tracker.openbittorrent.com:80"));
         expected.put(new AtomString("creation date"), new AtomInteger(1327049827));
@@ -343,9 +335,19 @@ public final class BencodeTest {
         info.put(new AtomString("pieces"), new AtomString(""));
         info.put(new AtomString("private"), new AtomInteger(1));
         expected.put(new AtomString("info"), info);
-        assertEquals(expected, actual);
+        assertEquals(expected, actual.get());
     }
 
+    /**
+     * Test of decodeFile method, of class Bencode.
+     */
+    @Test
+    public void testDecodeFile_2() {
+        LOGGER.info("decodeFile");
+        final Optional<? extends Atom> actual = decodeFile("");
+        assertFalse(actual.isPresent());
+    }
+    
     /**
      * Test of decodeInt method, of class Bencode.
      */
@@ -354,8 +356,8 @@ public final class BencodeTest {
         LOGGER.info("decodeInt");
         final String x = "i42e";
         final Atom expected = new AtomInteger(42);
-        final Atom actual = decodeInt(x);
-        assertEquals(expected, actual);
+        final Optional<? extends Atom> actual = decodeInt(x);
+        assertEquals(expected, actual.get());
     }
 
     /**
@@ -365,9 +367,8 @@ public final class BencodeTest {
     public void testDecodeInt_String_2() {
         LOGGER.info("decodeInt");
         final String x = "";
-        final Atom expected = null;
-        final Atom actual = decodeInt(x);
-        assertEquals(expected, actual);
+        final Optional<? extends Atom> actual = decodeInt(x);
+        assertFalse(actual.isPresent());
     }
 
     /**
@@ -377,9 +378,8 @@ public final class BencodeTest {
     public void testDecodeInt_String_3() {
         LOGGER.info("decodeInt");
         final String x = "42e";
-        final Atom expected = null;
-        final Atom actual = decodeInt(x);
-        assertEquals(expected, actual);
+        final Optional<? extends Atom> actual = decodeInt(x);
+        assertFalse(actual.isPresent());
     }
 
     /**
@@ -389,9 +389,8 @@ public final class BencodeTest {
     public void testDecodeInt_String_4() {
         LOGGER.info("decodeInt");
         final String x = "i42x";
-        final Atom expected = null;
-        final Atom actual = decodeInt(x);
-        assertEquals(expected, actual);
+        final Optional<? extends Atom> actual = decodeInt(x);
+        assertFalse(actual.isPresent());
     }
 
     /**
@@ -401,9 +400,8 @@ public final class BencodeTest {
     public void testDecodeInt_String_5() {
         LOGGER.info("decodeInt");
         final String x = "i-0e";
-        final Atom expected = null;
-        final Atom actual = decodeInt(x);
-        assertEquals(expected, actual);
+        final Optional<? extends Atom> actual = decodeInt(x);
+        assertFalse(actual.isPresent());
     }
 
     /**
@@ -413,9 +411,8 @@ public final class BencodeTest {
     public void testDecodeInt_String_6() {
         LOGGER.info("decodeInt");
         final String x = "ixe";
-        final Atom expected = null;
-        final Atom actual = decodeInt(x);
-        assertEquals(expected, actual);
+        final Optional<? extends Atom> actual = decodeInt(x);
+        assertFalse(actual.isPresent());
     }
 
     /**
@@ -425,9 +422,8 @@ public final class BencodeTest {
     public void testDecodeInt_String_7() {
         LOGGER.info("decodeInt");
         final String x = "i01e";
-        final Atom expected = null;
-        final Atom actual = decodeInt(x);
-        assertEquals(expected, actual);
+        final Optional<? extends Atom> actual = decodeInt(x);
+        assertFalse(actual.isPresent());
     }
 
     /**
@@ -437,9 +433,8 @@ public final class BencodeTest {
     public void testDecodeInt_String_8() {
         LOGGER.info("decodeInt");
         final String x = "i+1e";
-        final Atom expected = null;
-        final Atom actual = decodeInt(x);
-        assertEquals(expected, actual);
+        final Optional<? extends Atom> actual = decodeInt(x);
+        assertFalse(actual.isPresent());
     }
 
     /**
@@ -451,8 +446,8 @@ public final class BencodeTest {
         final String s = "i42e";
         final byte[] x = s.getBytes(US_ASCII);
         final Atom expected = new AtomInteger(42);
-        final Atom actual = decodeInt(x);
-        assertEquals(expected, actual);
+        final Optional<? extends Atom> actual = decodeInt(x);
+        assertEquals(expected, actual.get());
     }
 
     /**
@@ -464,8 +459,8 @@ public final class BencodeTest {
         final int uiStart = 1;
         final String x = "li42ee";
         final Atom expected = new AtomInteger(42);
-        final Atom actual = decodeInt(x, uiStart);
-        assertEquals(expected, actual);
+        final Optional<? extends Atom> actual = decodeInt(x, uiStart);
+        assertEquals(expected, actual.get());
     }
 
     /**
@@ -480,8 +475,8 @@ public final class BencodeTest {
         dict.put(new AtomString("a"), new AtomString("Hello World"));
         expected.add(new AtomInteger(42));
         expected.add(dict);
-        final Atom actual = decodeList(x);
-        assertEquals(expected, actual);
+        final Optional<? extends Atom> actual = decodeList(x);
+        assertEquals(expected, actual.get());
     }
 
     /**
@@ -491,9 +486,8 @@ public final class BencodeTest {
     public void testDecodeList_String_2() {
         LOGGER.info("decodeList");
         final String x = "";
-        final AtomList expected = null;
-        final Atom actual = decodeList(x);
-        assertEquals(expected, actual);
+        final Optional<? extends Atom> actual = decodeList(x);
+        assertFalse(actual.isPresent());
     }
 
     /**
@@ -503,9 +497,8 @@ public final class BencodeTest {
     public void testDecodeList_String_3() {
         LOGGER.info("decodeList");
         final String x = "i42ed1:a11:Hello Worldee";
-        final AtomList expected = null;
-        final Atom actual = decodeList(x);
-        assertEquals(expected, actual);
+        final Optional<? extends Atom> actual = decodeList(x);
+        assertFalse(actual.isPresent());
     }
 
     /**
@@ -515,9 +508,8 @@ public final class BencodeTest {
     public void testDecodeList_String_4() {
         LOGGER.info("decodeList");
         final String x = "li42ed1:a11:Hello Worlde";
-        final AtomList expected = null;
-        final Atom actual = decodeList(x);
-        assertEquals(expected, actual);
+        final Optional<? extends Atom> actual = decodeList(x);
+        assertFalse(actual.isPresent());
     }
 
     /**
@@ -527,9 +519,8 @@ public final class BencodeTest {
     public void testDecodeList_String_5() {
         LOGGER.info("decodeList");
         final String x = "li42ed1:a11:Helloe";
-        final AtomList expected = null;
-        final Atom actual = decodeList(x);
-        assertEquals(expected, actual);
+        final Optional<? extends Atom> actual = decodeList(x);
+        assertFalse(actual.isPresent());
     }
 
     /**
@@ -545,8 +536,8 @@ public final class BencodeTest {
         dict.put(new AtomString("a"), new AtomString("Hello World"));
         expected.add(new AtomInteger(42));
         expected.add(dict);
-        final Atom actual = decodeList(x);
-        assertEquals(expected, actual);
+        final Optional<? extends Atom> actual = decodeList(x);
+        assertEquals(expected, actual.get());
     }
 
     /**
@@ -562,8 +553,8 @@ public final class BencodeTest {
         dict.put(new AtomString("a"), new AtomString("Hello World"));
         expected.add(new AtomInteger(42));
         expected.add(dict);
-        final Atom actual = decodeList(x, uiStart);
-        assertEquals(expected, actual);
+        final Optional<? extends Atom> actual = decodeList(x, uiStart);
+        assertEquals(expected, actual.get());
     }
 
     /**
@@ -574,8 +565,8 @@ public final class BencodeTest {
         LOGGER.info("decodeStr");
         final String x = "11:Hello World";
         final Atom expected = new AtomString("Hello World");
-        final Atom actual = decodeStr(x);
-        assertEquals(expected, actual);
+        final Optional<? extends Atom> actual = decodeStr(x);
+        assertEquals(expected, actual.get());
     }
 
     /**
@@ -585,9 +576,8 @@ public final class BencodeTest {
     public void testDecodeStr_String_2() {
         LOGGER.info("decodeStr");
         final String x = "";
-        final Atom expected = null;
-        final Atom actual = decodeStr(x);
-        assertEquals(expected, actual);
+        final Optional<? extends Atom> actual = decodeStr(x);
+        assertFalse(actual.isPresent());
     }
 
     /**
@@ -597,9 +587,8 @@ public final class BencodeTest {
     public void testDecodeStr_String_3() {
         LOGGER.info("decodeStr");
         final String x = "11:Hello";
-        final Atom expected = null;
-        final Atom actual = decodeStr(x);
-        assertEquals(expected, actual);
+        final Optional<? extends Atom> actual = decodeStr(x);
+        assertFalse(actual.isPresent());
     }
 
     /**
@@ -609,9 +598,8 @@ public final class BencodeTest {
     public void testDecodeStr_String_4() {
         LOGGER.info("decodeStr");
         final String x = "xx:Hello World";
-        final Atom expected = null;
-        final Atom actual = decodeStr(x);
-        assertEquals(expected, actual);
+        final Optional<? extends Atom> actual = decodeStr(x);
+        assertFalse(actual.isPresent());
     }
 
     /**
@@ -621,9 +609,8 @@ public final class BencodeTest {
     public void testDecodeStr_String_5() {
         LOGGER.info("decodeStr");
         final String x = "11xHello World";
-        final Atom expected = null;
-        final Atom actual = decodeStr(x);
-        assertEquals(expected, actual);
+        final Optional<? extends Atom> actual = decodeStr(x);
+        assertFalse(actual.isPresent());
     }
 
     /**
@@ -633,9 +620,8 @@ public final class BencodeTest {
     public void testDecodeStr_String_6() {
         LOGGER.info("decodeStr");
         final String x = "-1:Hello World";
-        final Atom expected = null;
-        final Atom actual = decodeStr(x);
-        assertEquals(expected, actual);
+        final Optional<? extends Atom> actual = decodeStr(x);
+        assertFalse(actual.isPresent());
     }
 
     /**
@@ -645,9 +631,8 @@ public final class BencodeTest {
     public void testDecodeStr_String_7() {
         LOGGER.info("decodeStr");
         final String x = "+11:Hello World";
-        final Atom expected = null;
-        final Atom actual = decodeStr(x);
-        assertEquals(expected, actual);
+        final Optional<? extends Atom> actual = decodeStr(x);
+        assertFalse(actual.isPresent());
     }
 
     /**
@@ -657,9 +642,8 @@ public final class BencodeTest {
     public void testDecodeStr_String_8() {
         LOGGER.info("decodeStr");
         final String x = "011:Hello World";
-        final Atom expected = null;
-        final Atom actual = decodeStr(x);
-        assertEquals(expected, actual);
+        final Optional<? extends Atom> actual = decodeStr(x);
+        assertFalse(actual.isPresent());
     }
 
     /**
@@ -671,8 +655,8 @@ public final class BencodeTest {
         final String s = "11:Hello World";
         final byte[] x = s.getBytes(US_ASCII);
         final Atom expected = new AtomString("Hello World");
-        final Atom actual = decodeStr(x);
-        assertEquals(expected, actual);
+        final Optional<? extends Atom> actual = decodeStr(x);
+        assertEquals(expected, actual.get());
     }
 
     /**
@@ -684,65 +668,8 @@ public final class BencodeTest {
         final int uiStart = 4;
         final String x = "d1:a11:Hello Worlde";
         final Atom expected = new AtomString("Hello World");
-        final Atom actual = decodeStr(x, uiStart);
-        assertEquals(expected, actual);
-    }
-
-    /**
-     * Test of encode method, of class Bencode.
-     */
-    @Test
-    public void testEncode_1() {
-        LOGGER.info("encode");
-        final String expected = "li42ed1:a11:Hello Worldee";
-        final AtomList list = new AtomList();
-        final AtomDictionary dict = new AtomDictionary();
-        dict.put(new AtomString("a"), new AtomString("Hello World"));
-        list.add(new AtomInteger(42));
-        list.add(dict);
-        final String actual = encode(list);
-        assertEquals(expected, actual);
-    }
-
-    /**
-     * Test of encode method, of class Bencode.
-     */
-    @Test
-    public void testEncode_2() {
-        LOGGER.info("encode");
-        final String expected = null;
-        final AtomList list = null;
-        final String actual = encode(list);
-        assertEquals(expected, actual);
-    }
-
-    /**
-     * Test of encodeAsBytes method, of class Bencode.
-     */
-    @Test
-    public void testEncodeAsBytes_1() {
-        LOGGER.info("encodeAsBytes");
-        final String s = "li42ed1:a11:Hello Worldee";
-        final byte[] expected = s.getBytes(US_ASCII);
-        final AtomList list = new AtomList();
-        final AtomDictionary dict = new AtomDictionary();
-        dict.put(new AtomString("a"), new AtomString("Hello World"));
-        list.add(new AtomInteger(42));
-        list.add(dict);
-        final byte[] actual = encodeAsBytes(list);
-        assertArrayEquals(expected, actual);
-    }
-
-    /**
-     * Test of encodeAsBytes method, of class Bencode.
-     */
-    @Test
-    public void testEncodeAsBytes_2() {
-        LOGGER.info("encodeAsBytes");
-        final byte[] expected = null;
-        final AtomList list = null;
-        final byte[] actual = encodeAsBytes(list);
-        assertArrayEquals(expected, actual);
+        final Optional<? extends Atom> actual = decodeStr(x, uiStart);
+        assertEquals(expected, actual.get());
     }
 
     /**
@@ -751,10 +678,9 @@ public final class BencodeTest {
     @Test
     public void testParseInt() {
         LOGGER.info("testParseInt");
-        final Integer expected = null;
         final String num = null;
-        final Integer actual = parseInt(num);
-        assertEquals(expected, actual);
+        final OptionalInt actual = parseInt(num);
+        assertFalse(actual.isPresent());
     }
 
     /**
@@ -763,10 +689,9 @@ public final class BencodeTest {
     @Test
     public void testParseLong() {
         LOGGER.info("testParseLong");
-        final Long expected = null;
         final String num = null;
-        final Long actual = parseLong(num);
-        assertEquals(expected, actual);
+        final OptionalLong actual = parseLong(num);
+        assertFalse(actual.isPresent());
     }
 
 }

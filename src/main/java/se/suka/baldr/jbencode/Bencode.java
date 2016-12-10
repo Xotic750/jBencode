@@ -26,7 +26,9 @@ package se.suka.baldr.jbencode;
 import static java.lang.Character.isDigit;
 import static java.text.MessageFormat.format;
 import static java.util.Objects.isNull;
-import static java.util.Objects.nonNull;
+import java.util.Optional;
+import java.util.OptionalInt;
+import java.util.OptionalLong;
 import org.slf4j.Logger;
 import static org.slf4j.LoggerFactory.getLogger;
 import static se.suka.baldr.jbencode.AtomString.isAtomString;
@@ -68,19 +70,19 @@ public class Bencode {
         return s.matches("^(0|[1-9]\\d*)$");
     }
 
-    static Integer parseInt(final String s) {
+    static OptionalInt parseInt(final String s) {
         try {
-            return Integer.parseInt(s, 10);
+            return OptionalInt.of(Integer.parseInt(s, 10));
         } catch (final NumberFormatException nfe) {
-            return null;
+            return OptionalInt.empty();
         }
     }
 
-    static Long parseLong(final String s) {
+    static OptionalLong parseLong(final String s) {
         try {
-            return Long.parseLong(s, 10);
+            return OptionalLong.of(Long.parseLong(s, 10));
         } catch (final NumberFormatException nfe) {
-            return null;
+            return OptionalLong.empty();
         }
     }
 
@@ -89,7 +91,7 @@ public class Bencode {
      * @param x
      * @return
      */
-    public static final Atom decode(final byte[] x) {
+    public static final Optional<? extends Atom> decode(final byte[] x) {
         return decode(x, 0);
     }
 
@@ -99,7 +101,7 @@ public class Bencode {
      * @param uiStart
      * @return
      */
-    public static final Atom decode(final byte[] x, final int uiStart) {
+    public static final Optional<? extends Atom> decode(final byte[] x, final int uiStart) {
         return decode(asciiBytesToString(x), uiStart);
     }
 
@@ -108,7 +110,7 @@ public class Bencode {
      * @param x
      * @return
      */
-    public static final Atom decode(final String x) {
+    public static final Optional<? extends Atom> decode(final String x) {
         return decode(x, 0);
     }
 
@@ -118,9 +120,9 @@ public class Bencode {
      * @param uiStart
      * @return
      */
-    public static final Atom decode(final String x, final int uiStart) {
+    public static final Optional<? extends Atom> decode(final String x, final int uiStart) {
         if (!isArgCheckOk(x, uiStart, "decode")) {
-            return null;
+            return Optional.empty();
         }
         final char c = x.charAt(uiStart);
         switch (c) {
@@ -136,7 +138,7 @@ public class Bencode {
                 }
         }
         LOGGER.warn(format("decode: found unexpected character '{0}' at {1}, halting decode", new Object[]{c, uiStart}));
-        return null;
+        return Optional.empty();
     }
 
     /**
@@ -144,7 +146,7 @@ public class Bencode {
      * @param x
      * @return
      */
-    public static final AtomDictionary decodeDict(final byte[] x) {
+    public static final Optional<AtomDictionary> decodeDict(final byte[] x) {
         return decodeDict(x, 0);
     }
 
@@ -154,7 +156,7 @@ public class Bencode {
      * @param uiStart
      * @return
      */
-    public static final AtomDictionary decodeDict(final byte[] x, final int uiStart) {
+    public static final Optional<AtomDictionary> decodeDict(final byte[] x, final int uiStart) {
         return decodeDict(asciiBytesToString(x), uiStart);
     }
 
@@ -163,7 +165,7 @@ public class Bencode {
      * @param x
      * @return
      */
-    public static final AtomDictionary decodeDict(final String x) {
+    public static final Optional<AtomDictionary> decodeDict(final String x) {
         return decodeDict(x, 0);
     }
 
@@ -173,37 +175,37 @@ public class Bencode {
      * @param uiStart
      * @return
      */
-    public static final AtomDictionary decodeDict(final String x, int uiStart) {
+    public static final Optional<AtomDictionary> decodeDict(final String x, int uiStart) {
         if (!isArgCheckOk(x, uiStart, "decodeDict")) {
-            return null;
+            return Optional.empty();
         }
         if (x.charAt(uiStart) != 'd') {
             charNotFound("decodeDict", "d");
-            return null;
+            return Optional.empty();
         }
         uiStart++;
         final AtomDictionary dict = new AtomDictionary();
         final int length = x.length();
         while (isMore(x, uiStart, length)) {
-            final Atom key = decode(x, uiStart);
-            if (!isAtomString(key)) {
+            final Optional<? extends Atom> key = decode(x, uiStart);
+            if (!key.isPresent() || !isAtomString(key.get())) {
                 itemError("decodeDict", "key");
-                return null;
+                return Optional.empty();
             }
-            uiStart += key.bLength();
-            final Atom value = decode(x, uiStart);
-            if (isNull(value)) {
+            uiStart += key.get().bLength();
+            final Optional<? extends Atom> value = decode(x, uiStart);
+            if (!value.isPresent()) {
                 itemError("decodeDict", "value");
-                return null;
+                return Optional.empty();
             }
-            uiStart += value.bLength();
-            dict.put((AtomString) key, value);
+            uiStart += value.get().bLength();
+            dict.put((AtomString) key.get(), value.get());
         }
         if (isComplete(x, uiStart, length)) {
-            return dict;
+            return Optional.of(dict);
         }
         charNotFound("decodeDict", "e");
-        return null;
+        return Optional.empty();
     }
 
     /**
@@ -211,8 +213,12 @@ public class Bencode {
      * @param fileName
      * @return
      */
-    public static final Atom decodeFile(final String fileName) {
-        return decode(readFileAsBytes(fileName));
+    public static final Optional<? extends Atom> decodeFile(final String fileName) {
+        final Optional<byte[]> b = readFileAsBytes(fileName);
+        if (b.isPresent()) {
+            return decode(b.get());
+        }
+        return Optional.empty();
     }
 
     /**
@@ -220,7 +226,7 @@ public class Bencode {
      * @param x
      * @return
      */
-    public static final AtomInteger decodeInt(final byte[] x) {
+    public static final Optional<AtomInteger> decodeInt(final byte[] x) {
         return decodeInt(x, 0);
     }
 
@@ -230,7 +236,7 @@ public class Bencode {
      * @param uiStart
      * @return
      */
-    public static final AtomInteger decodeInt(final byte[] x, final int uiStart) {
+    public static final Optional<AtomInteger> decodeInt(final byte[] x, final int uiStart) {
         return decodeInt(asciiBytesToString(x), uiStart);
     }
 
@@ -239,7 +245,7 @@ public class Bencode {
      * @param x
      * @return
      */
-    public static final AtomInteger decodeInt(final String x) {
+    public static final Optional<AtomInteger> decodeInt(final String x) {
         return decodeInt(x, 0);
     }
 
@@ -249,30 +255,30 @@ public class Bencode {
      * @param uiStart
      * @return
      */
-    public static final AtomInteger decodeInt(final String x, final int uiStart) {
+    public static final Optional<AtomInteger> decodeInt(final String x, final int uiStart) {
         if (!isArgCheckOk(x, uiStart, "decodeInt")) {
-            return null;
+            return Optional.empty();
         }
         if (x.charAt(uiStart) != 'i') {
             charNotFound("decodeInt", "i");
-            return null;
+            return Optional.empty();
         }
         final int uiEnd = x.indexOf('e', uiStart);
         if (uiEnd == -1) {
             charNotFound("decodeInt", "e");
-            return null;
+            return Optional.empty();
         }
         final String s = x.substring(uiStart + 1, uiEnd);
         if (!isInteger(s)) {
             invalidNumber("decodeInt", s);
-            return null;
+            return Optional.empty();
         }
-        final Long value = parseLong(s);
+        final Long value = parseLong(s).orElseGet(null);
         if (isNull(value)) {
             invalidNumber("decodeInt", s);
-            return null;
+            return Optional.empty();
         }
-        return new AtomInteger(value);
+        return Optional.of(new AtomInteger(value));
     }
 
     /**
@@ -280,7 +286,7 @@ public class Bencode {
      * @param x
      * @return
      */
-    public static final AtomList decodeList(final byte[] x) {
+    public static final Optional<AtomList> decodeList(final byte[] x) {
         return decodeList(x, 0);
     }
 
@@ -290,7 +296,7 @@ public class Bencode {
      * @param uiStart
      * @return
      */
-    public static final AtomList decodeList(final byte[] x, final int uiStart) {
+    public static final Optional<AtomList> decodeList(final byte[] x, final int uiStart) {
         return decodeList(asciiBytesToString(x), uiStart);
     }
 
@@ -299,7 +305,7 @@ public class Bencode {
      * @param x
      * @return
      */
-    public static final AtomList decodeList(final String x) {
+    public static final Optional<AtomList> decodeList(final String x) {
         return decodeList(x, 0);
     }
 
@@ -309,31 +315,31 @@ public class Bencode {
      * @param uiStart
      * @return
      */
-    public static final AtomList decodeList(final String x, int uiStart) {
+    public static final Optional<AtomList> decodeList(final String x, int uiStart) {
         if (!isArgCheckOk(x, uiStart, "decodeList")) {
-            return null;
+            return Optional.empty();
         }
         if (x.charAt(uiStart) != 'l') {
             charNotFound("decodeList", "d");
-            return null;
+            return Optional.empty();
         }
         uiStart++;
         final AtomList list = new AtomList();
         final int length = x.length();
         while (isMore(x, uiStart, length)) {
-            final Atom value = decode(x, uiStart);
-            if (isNull(value)) {
+            final Optional<? extends Atom> value = decode(x, uiStart);
+            if (!value.isPresent()) {
                 itemError("decodeList", "value");
-                return null;
+                return Optional.empty();
             }
-            uiStart += value.bLength();
-            list.add(value);
+            uiStart += value.get().bLength();
+            list.add(value.get());
         }
         if (isComplete(x, uiStart, length)) {
-            return list;
+            return Optional.of(list);
         }
         charNotFound("decodeList", "e");
-        return null;
+        return Optional.empty();
     }
 
     /**
@@ -341,7 +347,7 @@ public class Bencode {
      * @param x
      * @return
      */
-    public static final AtomString decodeStr(final byte[] x) {
+    public static final Optional<AtomString> decodeStr(final byte[] x) {
         return decodeStr(x, 0);
     }
 
@@ -351,7 +357,7 @@ public class Bencode {
      * @param uiStart
      * @return
      */
-    public static final AtomString decodeStr(final byte[] x, final int uiStart) {
+    public static final Optional<AtomString> decodeStr(final byte[] x, final int uiStart) {
         return decodeStr(asciiBytesToString(x), uiStart);
     }
 
@@ -360,7 +366,7 @@ public class Bencode {
      * @param x
      * @return
      */
-    public static final AtomString decodeStr(final String x) {
+    public static final Optional<AtomString> decodeStr(final String x) {
         return decodeStr(x, 0);
     }
 
@@ -370,61 +376,35 @@ public class Bencode {
      * @param uiStart
      * @return
      */
-    public static final AtomString decodeStr(final String x, int uiStart) {
+    public static final Optional<AtomString> decodeStr(final String x, int uiStart) {
         if (!isArgCheckOk(x, uiStart, "decodeStr")) {
-            return null;
+            return Optional.empty();
         }
         if (!isDigit(x.charAt(uiStart))) {
             charNotFound("decodeStr", "1234567890");
-            return null;
+            return Optional.empty();
         }
         int uiSplit = findFirstNotOf(x, "1234567890", uiStart);
         if (uiSplit == -1 || x.charAt(uiSplit) != ':') {
             charNotFound("decodeStr", ":");
-            return null;
+            return Optional.empty();
         }
         final String length = x.substring(uiStart, uiSplit);
         if (!isUInteger(length)) {
             invalidNumber("decodeStr", length);
-            return null;
+            return Optional.empty();
         }
-        final Integer uiLength = parseInt(length);
-        if (uiLength < 0 || isNull(uiLength)) {
+        final Integer uiLength = parseInt(length).orElseGet(null);
+        if (isNull(uiLength) || uiLength < 0) {
             invalidNumber("decodeStr", uiLength);
-            return null;
+            return Optional.empty();
         }
         if (++uiSplit > x.length() || uiSplit + uiLength > x.length()) {
             LOGGER.warn("decodeStr: out of bounds");
-            return null;
+            return Optional.empty();
         }
         final String contents = x.substring(uiSplit, uiSplit + uiLength);
-        return new AtomString(contents);
-    }
-
-    /**
-     *
-     * @param atom
-     * @return
-     */
-    public static final String encode(final Atom atom) {
-        if (nonNull(atom)) {
-            return atom.encode();
-        }
-        LOGGER.warn("encode: error encoding, halting encode");
-        return null;
-    }
-
-    /**
-     *
-     * @param atom
-     * @return
-     */
-    public static final byte[] encodeAsBytes(final Atom atom) {
-        if (nonNull(atom)) {
-            return atom.encodeAsBytes();
-        }
-        LOGGER.warn("encodeAsBytes: error encoding, halting encode");
-        return null;
+        return Optional.of(new AtomString(contents));
     }
 
     private static void charNotFound(final Object... params) {

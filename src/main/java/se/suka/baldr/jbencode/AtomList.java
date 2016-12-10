@@ -27,7 +27,6 @@ import java.util.Collection;
 import static java.util.Collections.unmodifiableList;
 import java.util.List;
 import static java.util.Objects.requireNonNull;
-import java.util.RandomAccess;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.function.UnaryOperator;
 import static java.util.stream.Collectors.joining;
@@ -80,7 +79,7 @@ import static se.suka.baldr.jbencode.Utilities.stringToAsciiBytes;
  * @see <a href="https://en.wikipedia.org/wiki/Bencode">Bencode</a>
  * @see CopyOnWriteArrayList
  */
-public final class AtomList extends CopyOnWriteArrayList<Atom> implements Atom, List<Atom>, RandomAccess, Cloneable, Comparable<AtomList> {
+public final class AtomList extends CopyOnWriteArrayList<Atom> implements Atom, Comparable<AtomList> {
 
     private static final long serialVersionUID = -1527286384432951976L;
 

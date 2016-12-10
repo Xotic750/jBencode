@@ -42,7 +42,7 @@ import static se.suka.baldr.jbencode.AtomDictionary.requireAtomDictionary;
  * @see <a href="https://en.wikipedia.org/wiki/Bencode">Bencode</a>
  */
 public final class AtomDictionaryTest {
-    
+
     private static final Logger LOGGER = getLogger(AtomDictionaryTest.class);
 
     /**
@@ -71,7 +71,7 @@ public final class AtomDictionaryTest {
     @Before
     public void setUp() {
     }
-    
+
     /**
      *
      * @throws Exception
@@ -318,5 +318,5 @@ public final class AtomDictionaryTest {
         final int actual = ai.compareTo(ai1);
         assertEquals(expected, actual);
     }
-    
+
 }

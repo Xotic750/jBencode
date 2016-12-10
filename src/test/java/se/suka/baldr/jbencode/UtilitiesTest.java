@@ -25,6 +25,7 @@ package se.suka.baldr.jbencode;
 
 import static java.lang.System.out;
 import static java.nio.charset.StandardCharsets.US_ASCII;
+import java.util.Optional;
 import org.junit.After;
 import org.junit.AfterClass;
 import static org.junit.Assert.*;
@@ -251,8 +252,8 @@ public class UtilitiesTest {
     @Test
     public void testReadFileAsBytes_1() {
         LOGGER.info("testReadFileAsBytes_1");
-        final byte[] b = readFileAsBytes("");
-        assertNull(b);
+        final Optional<byte[]> b = readFileAsBytes("");
+        assertFalse(b.isPresent());
     }
 
     /**
@@ -276,8 +277,8 @@ public class UtilitiesTest {
     @Test
     public void testReadFileAsBytes_3() {
         LOGGER.info("testReadFileAsBytes_3");
-        final byte[] b = readFileAsBytes("samples");
-        assertNull(b);
+        final Optional<byte[]> b = readFileAsBytes("samples");
+        assertFalse(b.isPresent());
     }
 
     /**
@@ -286,8 +287,8 @@ public class UtilitiesTest {
     @Test
     public void testReadFileAsBytes_4() {
         LOGGER.info("testReadFileAsBytes_4");
-        final byte[] b = readFileAsBytes("wibble");
-        assertNull(b);
+        final Optional<byte[]> b = readFileAsBytes("wibble");
+        assertFalse(b.isPresent());
     }
 
     /**
@@ -296,10 +297,10 @@ public class UtilitiesTest {
     @Test
     public void testReadFileAsBytes_5() {
         LOGGER.info("testReadFileAsBytes_5");
-        final byte[] f = readFileAsBytes("samples/sample1.torrent");
+        final Optional<byte[]> f = readFileAsBytes("samples/sample1.torrent");
         final String s = "d8:announce35:udp://tracker.openbittorrent.com:8013:creation datei1327049827e4:infod6:lengthi20e4:name10:sample.txt12:piece lengthi65536e6:pieces0:7:privatei1eee\r";
         final byte[] b = s.getBytes(US_ASCII);
-        assertArrayEquals(f, b);
+        assertArrayEquals(f.get(), b);
     }
 
     /**
@@ -308,8 +309,8 @@ public class UtilitiesTest {
     @Test
     public void testReadFileAsBytes_6() {
         LOGGER.info("testReadFileAsBytes_6");
-        final byte[] b = readFileAsBytes("samples/sample2.torrent");
-        assertNotNull(b);
+        final Optional<byte[]> b = readFileAsBytes("samples/sample2.torrent");
+        assertTrue(b.isPresent());
     }
 
     /**

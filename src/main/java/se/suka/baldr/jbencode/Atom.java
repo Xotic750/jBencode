@@ -24,7 +24,6 @@
 package se.suka.baldr.jbencode;
 
 import java.util.Collection;
-import static java.util.Collections.unmodifiableCollection;
 import static java.util.Objects.requireNonNull;
 import static java.util.stream.Collectors.toList;
 
@@ -54,8 +53,9 @@ public interface Atom {
      *
      * @param <T> the type of the value being boxed
      * @param o the object reference to check
-     * @throws ClassCastException if {@code obj} is not an instance of
+     * @throws ClassCastException if {@code o} is not an instance of
      * {@code Atom}
+     * @throws NullPointerException if the specified element is null
      * @return the object reference
      */
     public static <T> T requireAtom(T o) {
@@ -71,8 +71,9 @@ public interface Atom {
      * @param o the object reference to check
      * @param message detail message to be used in the event that a
      * {@code ClassCastException} is thrown
-     * @throws ClassCastException if {@code obj} is not an instance of
+     * @throws ClassCastException if {@code o} is not an instance of
      * {@code Atom}
+     * @throws NullPointerException if the specified element is null
      * @return the object reference
      */
     public static <T> T requireAtom(T o, String message) {
@@ -84,9 +85,12 @@ public interface Atom {
 
     /**
      *
-     * @param <T>
-     * @param o
-     * @return
+     * @param <T> the type of the value being boxed
+     * @param o the object reference to check
+     * @return the object reference
+     * @throws ClassCastException if {@code o} is not an instance of
+     * {@code Atom}
+     * @throws NullPointerException if the specified element is null
      */
     public static <T> T requireNonNullAtom(T o) {
         return requireAtom(requireNonNull(o));
@@ -94,14 +98,18 @@ public interface Atom {
 
     /**
      *
-     * @param <T>
-     * @param c
-     * @return
+     * @param <T> the type of the value being boxed
+     * @param c the object reference to check
+     * @return the object reference
+     * @throws ClassCastException if the types of one or more elements in the
+     * specified collection are incompatible with this list
+     * @throws NullPointerException if the specified collection contains one or
+     * more null elements, or if the specified collection is null
      */
     public static <T> Collection<T> requireAtomCollection(final Collection<T> c) {
-        return unmodifiableCollection(c.stream()
+        return c.stream()
                 .map(atom -> requireNonNullAtom(atom))
-                .collect(toList()));
+                .collect(toList());
     }
 
     /**
