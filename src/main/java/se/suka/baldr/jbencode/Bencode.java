@@ -27,7 +27,6 @@ import static java.lang.Character.isDigit;
 import static java.text.MessageFormat.format;
 import static java.util.Objects.isNull;
 import java.util.Optional;
-import java.util.OptionalInt;
 import java.util.OptionalLong;
 import org.slf4j.Logger;
 import static org.slf4j.LoggerFactory.getLogger;
@@ -68,14 +67,6 @@ public class Bencode {
 
     private static boolean isUInteger(final String s) {
         return s.matches("^(0|[1-9]\\d*)$");
-    }
-
-    static OptionalInt parseInt(final String s) {
-        try {
-            return OptionalInt.of(Integer.parseInt(s, 10));
-        } catch (final NumberFormatException nfe) {
-            return OptionalInt.empty();
-        }
     }
 
     static OptionalLong parseLong(final String s) {
@@ -215,10 +206,7 @@ public class Bencode {
      */
     public static final Optional<? extends Atom> decodeFile(final String fileName) {
         final Optional<byte[]> b = readFileAsBytes(fileName);
-        if (b.isPresent()) {
-            return decode(b.get());
-        }
-        return Optional.empty();
+        return b.isPresent() ? decode(b.get()) : Optional.empty();
     }
 
     /**
@@ -273,12 +261,12 @@ public class Bencode {
             invalidNumber("decodeInt", s);
             return Optional.empty();
         }
-        final Long value = parseLong(s).orElseGet(null);
-        if (isNull(value)) {
+        final OptionalLong value = parseLong(s);
+        if (!value.isPresent()) {
             invalidNumber("decodeInt", s);
             return Optional.empty();
         }
-        return Optional.of(new AtomInteger(value));
+        return Optional.of(new AtomInteger(value.getAsLong()));
     }
 
     /**
@@ -394,8 +382,8 @@ public class Bencode {
             invalidNumber("decodeStr", length);
             return Optional.empty();
         }
-        final Integer uiLength = parseInt(length).orElseGet(null);
-        if (isNull(uiLength) || uiLength < 0) {
+        final Integer uiLength = (int) parseLong(length).orElse(-1);
+        if (uiLength < 0) {
             invalidNumber("decodeStr", uiLength);
             return Optional.empty();
         }

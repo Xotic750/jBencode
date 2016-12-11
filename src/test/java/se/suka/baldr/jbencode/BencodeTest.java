@@ -25,7 +25,6 @@ package se.suka.baldr.jbencode;
 
 import static java.nio.charset.StandardCharsets.US_ASCII;
 import java.util.Optional;
-import java.util.OptionalInt;
 import java.util.OptionalLong;
 import org.junit.After;
 import org.junit.AfterClass;
@@ -44,7 +43,6 @@ import static se.suka.baldr.jbencode.Bencode.decodeFile;
 import static se.suka.baldr.jbencode.Bencode.decodeInt;
 import static se.suka.baldr.jbencode.Bencode.decodeList;
 import static se.suka.baldr.jbencode.Bencode.decodeStr;
-import static se.suka.baldr.jbencode.Bencode.parseInt;
 import static se.suka.baldr.jbencode.Bencode.parseLong;
 
 /**
@@ -670,17 +668,6 @@ public final class BencodeTest {
         final Atom expected = new AtomString("Hello World");
         final Optional<? extends Atom> actual = decodeStr(x, uiStart);
         assertEquals(expected, actual.get());
-    }
-
-    /**
-     * Test of parseInt method, of class Bencode.
-     */
-    @Test
-    public void testParseInt() {
-        LOGGER.info("testParseInt");
-        final String num = null;
-        final OptionalInt actual = parseInt(num);
-        assertFalse(actual.isPresent());
     }
 
     /**
