@@ -218,6 +218,8 @@ public final class AtomStringTest {
         AtomString atomString1 = new AtomString("Hello");
         AtomString atomString2 = new AtomString(s);
         assertEquals(atomString1, atomString2);
+        final StringBuilder ss = new StringBuilder(atomString1);
+        assertEquals(s.toString(), ss.toString());
     }
 
     /**
