@@ -140,6 +140,19 @@ public final class AtomString implements Atom, Serializable, CharSequence, Compa
     }
 
     /**
+     * Initialises a newly created {@code AtomString} object so that it
+     * represents the same sequence of characters as the argument; in other
+     * words, the newly created {@code AtomString} is a copy of the argument
+     * string.
+     *
+     * @param value A {@code CharSequence}
+     * @throws NullPointerException If value is {@code null}
+     */
+    public AtomString(final CharSequence value) {
+        this.value = value.toString();
+    }
+
+    /**
      * Constructs a new {@code AtomString} by decoding the specified array of
      * bytes using the specified {@linkplain StandardCharsets#US_ASCII}. The
      * length of the new {@code AtomString} is a function of the charset, and

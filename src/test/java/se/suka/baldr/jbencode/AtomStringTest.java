@@ -23,10 +23,8 @@
  */
 package se.suka.baldr.jbencode;
 
-import java.nio.charset.StandardCharsets;
 import static java.nio.charset.StandardCharsets.US_ASCII;
 import java.util.Objects;
-import java.util.stream.Collectors;
 import static java.util.stream.Collectors.joining;
 import org.junit.After;
 import org.junit.AfterClass;
@@ -194,6 +192,30 @@ public final class AtomStringTest {
         final String s = "Hello";
         final byte[] b = s.getBytes(US_ASCII);
         AtomString atomString1 = new AtomString(b);
+        AtomString atomString2 = new AtomString(s);
+        assertEquals(atomString1, atomString2);
+    }
+
+    /**
+     * Test the Constructor, of class AtomString.
+     */
+    @Test
+    public void testAtomString_8() {
+        LOGGER.info("testAtomString_8");
+        final CharSequence s = "Hello";
+        AtomString atomString1 = new AtomString("Hello");
+        AtomString atomString2 = new AtomString(s);
+        assertEquals(atomString1, atomString2);
+    }
+
+    /**
+     * Test the Constructor, of class AtomString.
+     */
+    @Test
+    public void testAtomString_9() {
+        LOGGER.info("testAtomString_9");
+        final StringBuilder s = new StringBuilder("Hello");
+        AtomString atomString1 = new AtomString("Hello");
         AtomString atomString2 = new AtomString(s);
         assertEquals(atomString1, atomString2);
     }
